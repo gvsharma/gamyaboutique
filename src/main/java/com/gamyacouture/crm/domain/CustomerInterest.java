@@ -40,11 +40,23 @@ public class CustomerInterest extends BaseSoftDeletableEntity {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @Column(nullable = false)
+    @Column(name = "customer_name", nullable = false, length = 200)
+    private String customerName;
+
+    @Column(length = 255)
     private String email;
 
     @Column(nullable = false, length = 30)
     private String phone;
+
+    @Column(length = 30)
+    private String whatsapp;
+
+    @Column(length = 50)
+    private String size;
+
+    @Column(length = 100)
+    private String color;
 
     @Column(columnDefinition = "TEXT")
     private String message;

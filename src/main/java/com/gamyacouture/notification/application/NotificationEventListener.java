@@ -25,8 +25,20 @@ public class NotificationEventListener {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("interestId", event.interestId().toString());
         payload.put("productId", event.productId().toString());
-        payload.put("email", event.email());
+        payload.put("customerName", event.customerName());
         payload.put("phone", event.phone());
+        if (event.email() != null) {
+            payload.put("email", event.email());
+        }
+        if (event.whatsapp() != null) {
+            payload.put("whatsapp", event.whatsapp());
+        }
+        if (event.size() != null) {
+            payload.put("size", event.size());
+        }
+        if (event.color() != null) {
+            payload.put("color", event.color());
+        }
         if (event.message() != null) {
             payload.put("message", event.message());
         }

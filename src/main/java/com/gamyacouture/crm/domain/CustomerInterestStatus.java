@@ -3,7 +3,9 @@ package com.gamyacouture.crm.domain;
 public enum CustomerInterestStatus {
     NEW,
     CONTACTED,
-    QUALIFIED,
-    CONVERTED,
-    CLOSED
+    INTERESTED,
+    TRIAL_BOOKED,
+    CONFIRMED,
+    DELIVERED,
+    LOST
 }

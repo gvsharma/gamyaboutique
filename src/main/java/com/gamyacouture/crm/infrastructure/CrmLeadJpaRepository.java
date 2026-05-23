@@ -17,6 +17,8 @@ public interface CrmLeadJpaRepository extends JpaRepository<CrmLead, UUID> {
 
     Optional<CrmLead> findByEmailIgnoreCaseAndProduct_Id(String email, UUID productId);
 
+    Optional<CrmLead> findByPhoneAndProduct_Id(String phone, UUID productId);
+
     @Query("""
             SELECT l.status AS status, COUNT(l) AS count
             FROM CrmLead l
