@@ -1,6 +1,6 @@
 package com.gamyacouture.product.domain;
 
-import com.gamyacouture.shared.domain.BaseAuditableEntity;
+import com.gamyacouture.shared.domain.BaseSoftDeletableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,10 +20,10 @@ import java.util.UUID;
 @Table(name = "product_images")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ProductImage extends BaseAuditableEntity {
+public class ProductImage extends BaseSoftDeletableEntity {
 
     @Id
     private UUID id;

@@ -4,9 +4,11 @@ import com.gamyacouture.auth.api.dto.LoginRequest;
 import com.gamyacouture.auth.api.dto.RegisterRequest;
 import com.gamyacouture.auth.api.dto.TokenResponse;
 import com.gamyacouture.auth.api.dto.UserProfileResponse;
-import com.gamyacouture.auth.domain.Role;
+import com.gamyacouture.auth.domain.RoleCode;
+import com.gamyacouture.auth.domain.RoleEntity;
 import com.gamyacouture.auth.domain.UserAccount;
 import com.gamyacouture.auth.infrastructure.CustomUserDetailsService;
+import com.gamyacouture.auth.infrastructure.RoleJpaRepository;
 import com.gamyacouture.auth.infrastructure.UserAccountJpaRepository;
 import com.gamyacouture.customer.api.CustomerRegistrationApi;
 import com.gamyacouture.shared.config.JwtProperties;
@@ -32,6 +34,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserAccountJpaRepository userAccountRepository;
+    private final RoleJpaRepository roleRepository;
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -59,7 +62,8 @@ public class AuthService {
                 .firstName(request.firstName().trim())
                 .lastName(request.lastName().trim())
                 .enabled(true)
-                .roles(Set.of(Role.CUSTOMER))
+                .roles(Set.of(roleRepository.findByCode(RoleCode.CUSTOMER)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.INTERNAL_ERROR, "Customer role missing"))))
                 .build();
         userAccountRepository.save(user);
 
@@ -80,7 +84,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getRoles());
+                user.getRoles().stream().map(r -> r.getCode().name()).toList());
     }
 
     private UserAccount resolveCurrentAccount() {

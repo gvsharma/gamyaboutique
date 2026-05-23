@@ -1,11 +1,16 @@
 package com.gamyacouture.crm.domain;
 
-import com.gamyacouture.shared.domain.BaseAuditableEntity;
+import com.gamyacouture.customer.domain.Customer;
+import com.gamyacouture.product.domain.Product;
+import com.gamyacouture.shared.domain.BaseSoftDeletableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +27,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CrmLead extends BaseAuditableEntity {
+public class CrmLead extends BaseSoftDeletableEntity {
 
     @Id
     private UUID id;
@@ -49,9 +54,11 @@ public class CrmLead extends BaseAuditableEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "product_id")
-    private UUID productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    @Column(name = "customer_id")
-    private UUID customerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 }

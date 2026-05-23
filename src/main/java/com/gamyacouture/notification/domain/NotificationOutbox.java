@@ -1,6 +1,6 @@
 package com.gamyacouture.notification.domain;
 
-import com.gamyacouture.shared.domain.BaseAuditableEntity;
+import com.gamyacouture.shared.domain.BaseSoftDeletableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationOutbox extends BaseAuditableEntity {
+public class NotificationOutbox extends BaseSoftDeletableEntity {
 
     @Id
     private UUID id;

@@ -2,7 +2,7 @@ package com.gamyacouture.crm.domain;
 
 public enum LeadSource {
     WEBSITE,
-    PRODUCT_INTEREST,
+    CUSTOMER_INTEREST,
     REFERRAL,
     WALK_IN,
     OTHER

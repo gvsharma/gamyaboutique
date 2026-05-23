@@ -6,7 +6,7 @@ import com.gamyacouture.catalog.infrastructure.CategoryJpaRepository;
 import com.gamyacouture.crm.domain.LeadStatus;
 import com.gamyacouture.crm.infrastructure.CrmLeadJpaRepository;
 import com.gamyacouture.product.domain.ProductStatus;
-import com.gamyacouture.product.infrastructure.ProductInterestJpaRepository;
+import com.gamyacouture.crm.infrastructure.CustomerInterestJpaRepository;
 import com.gamyacouture.product.infrastructure.ProductJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class AdminDashboardService {
     private final ProductJpaRepository productRepository;
     private final CategoryJpaRepository categoryRepository;
     private final CrmLeadJpaRepository leadRepository;
-    private final ProductInterestJpaRepository interestRepository;
+    private final CustomerInterestJpaRepository interestRepository;
 
     public DashboardSummaryDto getSummary() {
         Instant sevenDaysAgo = Instant.now().minus(7, ChronoUnit.DAYS);

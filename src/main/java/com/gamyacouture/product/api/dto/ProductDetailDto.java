@@ -12,9 +12,16 @@ public record ProductDetailDto(
         String name,
         String description,
         BigDecimal price,
+        BigDecimal compareAtPrice,
+        BigDecimal effectivePrice,
+        boolean onOffer,
         String currency,
         ProductStatus status,
-        List<ProductImageDto> images,
-        List<UUID> categoryIds
+        FabricDto fabric,
+        PrintDto print,
+        OfferSummaryDto offer,
+        List<TagDto> tags,
+        List<CategorySummaryDto> categories,
+        List<ProductImageDto> images
 ) {
 }

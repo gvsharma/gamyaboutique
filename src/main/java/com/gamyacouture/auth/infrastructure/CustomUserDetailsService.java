@@ -1,6 +1,5 @@
 package com.gamyacouture.auth.infrastructure;
 
-import com.gamyacouture.auth.domain.Role;
 import com.gamyacouture.auth.domain.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,7 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .username(account.getId().toString())
                 .password(account.getPasswordHash())
                 .authorities(account.getRoles().stream()
-                        .map(Role::getAuthority)
+                        .map(role -> role.getCode().getAuthority())
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toSet()))
                 .build();
