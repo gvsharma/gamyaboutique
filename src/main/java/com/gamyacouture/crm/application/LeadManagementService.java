@@ -73,13 +73,20 @@ public class LeadManagementService {
 
     @Transactional
     public void createOrUpdateFromProductInterest(ProductInterestSubmittedEvent event) {
-        leadRepository.findByEmailIgnoreCaseAndProduct_Id(event.email(), event.productId())
-                .ifPresentOrElse(
-                        existing -> updateFromInterest(existing, event),
-                        () -> leadRepository.save(buildLeadFromInterest(event)));
+        findExistingLead(event).ifPresentOrElse(
+                existing -> updateFromInterest(existing, event),
+                () -> leadRepository.save(buildLeadFromInterest(event)));
+    }
+
+    private java.util.Optional<CrmLead> findExistingLead(ProductInterestSubmittedEvent event) {
+        if (event.email() != null && !event.email().isBlank()) {
+            return leadRepository.findByEmailIgnoreCaseAndProduct_Id(event.email(), event.productId());
+        }
+        return leadRepository.findByPhoneAndProduct_Id(event.phone(), event.productId());
     }
 
     private void updateFromInterest(CrmLead lead, ProductInterestSubmittedEvent event) {
+        lead.setName(event.customerName());
         lead.setPhone(event.phone());
         if (event.customerId() != null) {
             lead.setCustomer(customerRepository.getReferenceById(event.customerId()));
@@ -91,28 +98,52 @@ public class LeadManagementService {
     }
 
     private CrmLead buildLeadFromInterest(ProductInterestSubmittedEvent event) {
+        String email = event.email() != null && !event.email().isBlank()
+                ? event.email().trim().toLowerCase()
+                : placeholderEmail(event.phone(), event.productId());
+
         return CrmLead.builder()
                 .id(UUID.randomUUID())
-                .name(deriveName(event.email()))
-                .email(event.email().trim().toLowerCase())
+                .name(event.customerName())
+                .email(email)
                 .phone(event.phone())
                 .source(LeadSource.CUSTOMER_INTEREST)
                 .status(LeadStatus.NEW)
-                .notes(blankToNull(event.message()))
+                .notes(buildNotes(event))
                 .product(productRepository.getReferenceById(event.productId()))
                 .customer(event.customerId() != null
                         ? customerRepository.getReferenceById(event.customerId()) : null)
                 .build();
     }
 
+    private static String buildNotes(ProductInterestSubmittedEvent event) {
+        StringBuilder notes = new StringBuilder();
+        if (event.message() != null && !event.message().isBlank()) {
+            notes.append(event.message().trim());
+        }
+        appendLine(notes, "WhatsApp", event.whatsapp());
+        appendLine(notes, "Size", event.size());
+        appendLine(notes, "Color", event.color());
+        return notes.isEmpty() ? null : notes.toString().trim();
+    }
+
+    private static void appendLine(StringBuilder notes, String label, String value) {
+        if (value != null && !value.isBlank()) {
+            if (!notes.isEmpty()) {
+                notes.append('\n');
+            }
+            notes.append(label).append(": ").append(value.trim());
+        }
+    }
+
+    private static String placeholderEmail(String phone, UUID productId) {
+        String normalizedPhone = phone.replaceAll("\\D", "");
+        return normalizedPhone + "+" + productId + "@interest.gamyacouture.local";
+    }
+
     private CrmLead findLead(UUID id) {
         return leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead not found: " + id));
-    }
-
-    private static String deriveName(String email) {
-        int at = email.indexOf('@');
-        return at > 0 ? email.substring(0, at) : email;
     }
 
     private static String appendNotes(String existing, String addition) {

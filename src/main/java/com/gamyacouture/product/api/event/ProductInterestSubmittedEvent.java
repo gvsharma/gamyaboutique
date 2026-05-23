@@ -5,8 +5,12 @@ import java.util.UUID;
 public record ProductInterestSubmittedEvent(
         UUID interestId,
         UUID productId,
+        String customerName,
         String email,
         String phone,
+        String whatsapp,
+        String size,
+        String color,
         String message,
         UUID customerId
 ) {
