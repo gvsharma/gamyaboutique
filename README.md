@@ -22,6 +22,10 @@ Production-grade modular monolith for Gamya Couture boutique CRM and ecommerce c
 | `admin` | Dashboard APIs (ADMIN only) |
 | `shared` | Security, API envelope, exceptions, audit |
 
+## Frontend
+
+Next.js 15 App Router storefront scaffold lives in [`frontend/`](frontend/). See [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) and [frontend/FOLDER-STRUCTURE.md](frontend/FOLDER-STRUCTURE.md).
+
 ## Prerequisites
 
 - Java 21+
