@@ -1,12 +1,15 @@
 package com.gamyacouture.product.application;
 
+import com.gamyacouture.crm.domain.CustomerInterest;
+import com.gamyacouture.crm.domain.CustomerInterestStatus;
+import com.gamyacouture.crm.infrastructure.CustomerInterestJpaRepository;
+import com.gamyacouture.customer.domain.Customer;
+import com.gamyacouture.customer.infrastructure.CustomerJpaRepository;
 import com.gamyacouture.product.api.dto.ProductInterestCreatedResponse;
 import com.gamyacouture.product.api.dto.ProductInterestRequest;
 import com.gamyacouture.product.api.event.ProductInterestSubmittedEvent;
 import com.gamyacouture.product.domain.Product;
-import com.gamyacouture.product.domain.ProductInterest;
 import com.gamyacouture.product.domain.ProductStatus;
-import com.gamyacouture.product.infrastructure.ProductInterestJpaRepository;
 import com.gamyacouture.product.infrastructure.ProductJpaRepository;
 import com.gamyacouture.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,8 @@ import java.util.UUID;
 public class ProductInterestService {
 
     private final ProductJpaRepository productRepository;
-    private final ProductInterestJpaRepository interestRepository;
+    private final CustomerInterestJpaRepository interestRepository;
+    private final CustomerJpaRepository customerRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -29,14 +33,21 @@ public class ProductInterestService {
         Product product = productRepository.findByIdAndStatus(productId, ProductStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
+        Customer customer = null;
+        if (request.customerId() != null) {
+            customer = customerRepository.findById(request.customerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + request.customerId()));
+        }
+
         UUID interestId = UUID.randomUUID();
-        ProductInterest interest = ProductInterest.builder()
+        CustomerInterest interest = CustomerInterest.builder()
                 .id(interestId)
-                .productId(product.getId())
-                .customerId(request.customerId())
+                .product(product)
+                .customer(customer)
                 .email(request.email().trim())
                 .phone(request.phone().trim())
                 .message(blankToNull(request.message()))
+                .status(CustomerInterestStatus.NEW)
                 .build();
         interestRepository.save(interest);
 
@@ -46,7 +57,7 @@ public class ProductInterestService {
                 interest.getEmail(),
                 interest.getPhone(),
                 interest.getMessage(),
-                interest.getCustomerId()
+                customer != null ? customer.getId() : null
         ));
 
         return new ProductInterestCreatedResponse(interestId);

@@ -1,6 +1,5 @@
 package com.gamyacouture.shared.security;
 
-import com.gamyacouture.auth.domain.Role;
 import com.gamyacouture.auth.domain.UserAccount;
 import com.gamyacouture.shared.config.JwtProperties;
 import io.jsonwebtoken.Claims;
@@ -21,7 +20,7 @@ public class JwtTokenProvider {
     private final JwtProperties jwtProperties;
 
     public String generateAccessToken(UserAccount user) {
-        List<String> roles = user.getRoles().stream().map(Role::name).toList();
+        List<String> roles = user.getRoles().stream().map(r -> r.getCode().name()).toList();
         Date now = new Date();
         Date expiry = new Date(now.getTime() + jwtProperties.accessTokenExpirationMs());
 

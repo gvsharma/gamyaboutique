@@ -1,6 +1,6 @@
 package com.gamyacouture.auth.domain;
 
-public enum Role {
+public enum RoleCode {
     ADMIN,
     STAFF,
     CUSTOMER;

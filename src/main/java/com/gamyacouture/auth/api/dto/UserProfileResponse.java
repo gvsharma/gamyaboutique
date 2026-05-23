@@ -1,8 +1,6 @@
 package com.gamyacouture.auth.api.dto;
 
-import com.gamyacouture.auth.domain.Role;
-
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 public record UserProfileResponse(
@@ -10,6 +8,6 @@ public record UserProfileResponse(
         String email,
         String firstName,
         String lastName,
-        Set<Role> roles
+        List<String> roles
 ) {
 }

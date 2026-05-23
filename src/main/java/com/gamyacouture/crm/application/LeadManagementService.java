@@ -8,7 +8,9 @@ import com.gamyacouture.crm.domain.LeadSource;
 import com.gamyacouture.crm.domain.LeadStatus;
 import com.gamyacouture.crm.infrastructure.CrmLeadJpaRepository;
 import com.gamyacouture.crm.infrastructure.mapper.CrmLeadMapper;
+import com.gamyacouture.customer.infrastructure.CustomerJpaRepository;
 import com.gamyacouture.product.api.event.ProductInterestSubmittedEvent;
+import com.gamyacouture.product.infrastructure.ProductJpaRepository;
 import com.gamyacouture.shared.exception.BusinessException;
 import com.gamyacouture.shared.exception.ErrorCode;
 import com.gamyacouture.shared.exception.ResourceNotFoundException;
@@ -26,6 +28,8 @@ public class LeadManagementService {
 
     private final CrmLeadJpaRepository leadRepository;
     private final CrmLeadMapper leadMapper;
+    private final ProductJpaRepository productRepository;
+    private final CustomerJpaRepository customerRepository;
 
     @Transactional(readOnly = true)
     public Page<CrmLeadDto> listLeads(Pageable pageable) {
@@ -69,7 +73,7 @@ public class LeadManagementService {
 
     @Transactional
     public void createOrUpdateFromProductInterest(ProductInterestSubmittedEvent event) {
-        leadRepository.findByEmailIgnoreCaseAndProductId(event.email(), event.productId())
+        leadRepository.findByEmailIgnoreCaseAndProduct_Id(event.email(), event.productId())
                 .ifPresentOrElse(
                         existing -> updateFromInterest(existing, event),
                         () -> leadRepository.save(buildLeadFromInterest(event)));
@@ -78,7 +82,7 @@ public class LeadManagementService {
     private void updateFromInterest(CrmLead lead, ProductInterestSubmittedEvent event) {
         lead.setPhone(event.phone());
         if (event.customerId() != null) {
-            lead.setCustomerId(event.customerId());
+            lead.setCustomer(customerRepository.getReferenceById(event.customerId()));
         }
         if (event.message() != null && !event.message().isBlank()) {
             lead.setNotes(appendNotes(lead.getNotes(), event.message().trim()));
@@ -92,11 +96,12 @@ public class LeadManagementService {
                 .name(deriveName(event.email()))
                 .email(event.email().trim().toLowerCase())
                 .phone(event.phone())
-                .source(LeadSource.PRODUCT_INTEREST)
+                .source(LeadSource.CUSTOMER_INTEREST)
                 .status(LeadStatus.NEW)
                 .notes(blankToNull(event.message()))
-                .productId(event.productId())
-                .customerId(event.customerId())
+                .product(productRepository.getReferenceById(event.productId()))
+                .customer(event.customerId() != null
+                        ? customerRepository.getReferenceById(event.customerId()) : null)
                 .build();
     }
 

@@ -3,11 +3,7 @@ package com.gamyacouture.catalog.domain;
 import com.gamyacouture.shared.domain.BaseSoftDeletableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,18 +11,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "fabrics")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category extends BaseSoftDeletableEntity {
+public class Fabric extends BaseSoftDeletableEntity {
 
     @Id
     private UUID id;
@@ -40,24 +34,8 @@ public class Category extends BaseSoftDeletableEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private Category parent;
-
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<Category> children = new ArrayList<>();
-
-    @Column(nullable = false, length = 1000)
-    private String path;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private int depth = 0;
-
-    @Column(name = "display_order", nullable = false)
-    @Builder.Default
-    private int displayOrder = 0;
+    @Column(length = 500)
+    private String composition;
 
     @Column(nullable = false)
     @Builder.Default

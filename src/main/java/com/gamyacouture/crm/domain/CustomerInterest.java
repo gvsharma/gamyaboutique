@@ -21,44 +21,36 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name = "crm_leads")
+@Table(name = "customer_interest")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CrmLead extends BaseSoftDeletableEntity {
+public class CustomerInterest extends BaseSoftDeletableEntity {
 
     @Id
     private UUID id;
 
-    @Column(nullable = false, length = 200)
-    private String name;
-
-    @Column(nullable = false)
-    private String email;
-
-    @Column(length = 30)
-    private String phone;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    @Builder.Default
-    private LeadSource source = LeadSource.WEBSITE;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    @Builder.Default
-    private LeadStatus status = LeadStatus.NEW;
-
-    @Column(columnDefinition = "TEXT")
-    private String notes;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private Customer customer;
+
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false, length = 30)
+    private String phone;
+
+    @Column(columnDefinition = "TEXT")
+    private String message;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    @Builder.Default
+    private CustomerInterestStatus status = CustomerInterestStatus.NEW;
 }
