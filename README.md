@@ -1,4 +1,4 @@
-# Gamya Couture — Backend
+# Gamya Couture — Backend - Website(Next js)
 
 Production-grade modular monolith for Gamya Couture boutique CRM and ecommerce catalog.
 
