@@ -1,6 +1,12 @@
 spring:
   application:
     name: gamya-couture
+  mvc:
+    contentnegotiation:
+      # Browsers send Accept: text/html; APIs only serve JSON.
+      ignore-accept-header: true
+      default-content-type: application/json
+      favor-parameter: false
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/gamya_couture}
     username: ${DB_USER:gamya}
@@ -39,6 +45,8 @@ management:
       show-details: when_authorized
 
 app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   security:
     jwt:
       secret: ${JWT_SECRET:change-me-in-production-use-at-least-256-bits-secret-key-here}
