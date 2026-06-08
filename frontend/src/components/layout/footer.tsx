@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
-import { SITE_NAME, SITE_TAGLINE } from "@/constants/site";
+import { CONTACT, SITE_NAME, SITE_TAGLINE } from "@/constants/site";
 
 export function Footer() {
   return (
@@ -30,20 +30,44 @@ export function Footer() {
                 Bridal
               </Link>
             </li>
+            <li>
+              <Link href={ROUTES.about} className="hover:text-burgundy">
+                About us
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
           <p className="text-xs font-medium uppercase tracking-widest text-burgundy">
             Visit
           </p>
-          <p className="mt-4 text-sm text-stone">
-            Hyderabad, Telangana
-            <br />
-            By appointment —{" "}
-            <Link href={ROUTES.contact} className="text-burgundy underline-offset-2 hover:underline">
-              contact us
-            </Link>
-          </p>
+          <div className="mt-4 space-y-2 text-sm text-stone">
+            <p>
+              <a
+                href={CONTACT.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-burgundy"
+              >
+                {CONTACT.address}
+              </a>
+            </p>
+            <p>
+              <a href={CONTACT.phoneHref} className="hover:text-burgundy">
+                {CONTACT.phoneDisplay}
+              </a>
+            </p>
+            <p>
+              <a
+                href={CONTACT.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-burgundy"
+              >
+                {CONTACT.instagramHandle}
+              </a>
+            </p>
+          </div>
         </div>
       </div>
       <div className="border-t border-burgundy/10 py-6 text-center text-xs text-stone">
