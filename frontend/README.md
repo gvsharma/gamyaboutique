@@ -31,7 +31,7 @@ API base: `http://localhost:8080/api/v1` (see repo root README).
 
 ## Deploy to Vercel
 
-The Next.js app lives in **`frontend/`**. The repo root has no `package.json`, so Vercel must use this folder as the project root (a wrong root causes **404** on `gamyacouture.vercel.app`).
+The Next.js app lives in **`frontend/`**. The repo root has no `package.json`, so Vercel must use this folder as the project root (a wrong root causes **404** on `gamyaboutique.vercel.app`).
 
 ### 1. Import or fix the project
 
@@ -51,7 +51,7 @@ In **Settings** → **Environment Variables**, add for **Production**:
 |------|---------------|---------------------|
 | `NEXT_PUBLIC_API_BASE_URL` | `/api/v1` | Spring serves `/api/v1/*` |
 | `API_PROXY_TARGET` | `http://13.232.200.243` | EC2 Elastic IP (nginx → :8080) |
-| `NEXT_PUBLIC_SITE_URL` | `https://gamyacouture.vercel.app` | EC2 `CORS_ALLOWED_ORIGINS` must include this |
+| `NEXT_PUBLIC_SITE_URL` | `https://gamyaboutique.vercel.app` | EC2 `CORS_ALLOWED_ORIGINS` must include this |
 
 **Why the proxy?** Vercel is HTTPS; the dev EC2 API is HTTP only. Browser calls go to `/api/v1` on your Vercel domain; Next.js rewrites proxy to EC2. Server components call EC2 directly via `API_PROXY_TARGET`.
 
@@ -70,7 +70,7 @@ Without a reachable API, pages still build but product data will be empty (RSC p
 On EC2 `.env`, allow your storefront origins (must match `NEXT_PUBLIC_SITE_URL`):
 
 ```bash
-CORS_ALLOWED_ORIGINS=https://gamyacouture.vercel.app,http://localhost:3000
+CORS_ALLOWED_ORIGINS=https://gamyaboutique.vercel.app,http://localhost:3000
 ```
 
 ### 4. Deploy from Git

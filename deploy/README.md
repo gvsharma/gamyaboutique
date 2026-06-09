@@ -74,23 +74,32 @@ sudo chmod 640 /opt/gamya-couture/config/application.env
 sudo chown root:gamya /opt/gamya-couture/config/application.env
 ```
 
-### 3. PostgreSQL (required — not in this repo)
+### 3. RDS PostgreSQL (Terraform-managed)
 
-The dev EC2 has no RDS. Run Postgres locally on the instance, e.g. with Docker:
+Dev uses **RDS**, not local Postgres. Credentials live in SSM:
+
+| SSM path | Value |
+|----------|-------|
+| `/gamya-couture/dev/db/username` | `gamya_admin` |
+| `/gamya-couture/dev/db/password` | (encrypted) |
+
+**Quick setup** — sync into `application.env`:
 
 ```bash
-sudo dnf install -y docker
-sudo systemctl enable --now docker
-sudo docker run -d --name gamya-postgres --restart unless-stopped \
-  -e POSTGRES_DB=gamya_couture \
-  -e POSTGRES_USER=gamya \
-  -e POSTGRES_PASSWORD='<same-as-application.env>' \
-  -p 127.0.0.1:5432:5432 \
-  -v gamya_pg_data:/var/lib/postgresql/data \
-  postgres:16-alpine
+sudo bash deploy/scripts/sync-rds-env-from-ssm.sh
 ```
 
-Ensure `DB_URL=jdbc:postgresql://127.0.0.1:5432/gamya_couture` in `application.env`.
+Then set `JWT_SECRET` and verify `CORS_ALLOWED_ORIGINS` in `/opt/gamya-couture/config/application.env`.
+
+Manual `DB_URL`:
+
+```
+jdbc:postgresql://gamya-couture-dev-pg.c8xkhvlstsfp.ap-south-1.rds.amazonaws.com:5432/gamya
+```
+
+Flyway runs on first Spring Boot start (schema + sample data). See [docs/AWS-DEV-SETUP.md](../docs/AWS-DEV-SETUP.md).
+
+**Alternative:** Docker on EC2 without local Postgres — `./scripts/deploy-ec2-rds.sh` (uses `docker-compose.rds.yml`).
 
 ### 4. Authorize GitHub Actions SSH key
 
@@ -169,7 +178,7 @@ sudo systemctl restart gamya-couture-backend
 |--------|----------------------|
 | `NEXT_PUBLIC_API_BASE_URL=/api/v1` | — |
 | `API_PROXY_TARGET=http://13.232.200.243` | — |
-| `NEXT_PUBLIC_SITE_URL=https://gamyacouture.vercel.app` | `CORS_ALLOWED_ORIGINS` must include this origin |
+| `NEXT_PUBLIC_SITE_URL=https://gamyaboutique.vercel.app` | `CORS_ALLOWED_ORIGINS` must include this origin |
 
 See `frontend/.env.example` in this repo.
 

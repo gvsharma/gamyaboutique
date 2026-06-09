@@ -8,4 +8,13 @@ export const API = {
   categoryProducts: (slug: string) => `/catalog/categories/${slug}/products`,
   authLogin: "/auth/login",
   authMe: "/auth/me",
+  adminDashboardSummary: "/admin/dashboard/summary",
+  adminProducts: "/admin/products",
+  adminProduct: (id: string) => `/admin/products/${id}`,
+  adminProductStatus: (id: string) => `/admin/products/${id}/status`,
+  adminCategories: "/admin/categories",
+  adminCategory: (id: string) => `/admin/categories/${id}`,
+  adminMediaUpload: "/admin/media/upload",
+  adminTaxonomyFabrics: "/admin/taxonomy/fabrics",
+  adminTaxonomyPrints: "/admin/taxonomy/prints",
 } as const;

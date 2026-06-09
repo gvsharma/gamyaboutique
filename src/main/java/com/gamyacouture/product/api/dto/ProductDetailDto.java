@@ -17,6 +17,7 @@ public record ProductDetailDto(
         boolean onOffer,
         String currency,
         ProductStatus status,
+        UUID primaryCategoryId,
         FabricDto fabric,
         PrintDto print,
         OfferSummaryDto offer,

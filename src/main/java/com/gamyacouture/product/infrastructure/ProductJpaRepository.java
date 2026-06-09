@@ -37,4 +37,12 @@ public interface ProductJpaRepository extends JpaRepository<Product, UUID>, JpaS
             @Param("categoryId") UUID categoryId,
             @Param("status") ProductStatus status,
             Pageable pageable);
+
+    @EntityGraph(attributePaths = {"images", "fabric", "print", "offer", "tags", "primaryCategory"})
+    Optional<Product> findDetailedById(UUID id);
+
+    boolean existsBySku(String sku);
+
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Product p WHERE p.sku = :sku AND p.id <> :id")
+    boolean existsBySkuAndIdNot(@Param("sku") String sku, @Param("id") UUID id);
 }

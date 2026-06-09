@@ -61,28 +61,36 @@ After Flyway runs, seed user is available:
 | `JWT_ACCESS_EXPIRATION_MS` | `3600000` |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` |
 
-## Dev EC2 + Vercel (paired setup)
+## Dev EC2 + RDS + Vercel (paired setup)
+
+Full step-by-step: **[docs/AWS-DEV-SETUP.md](docs/AWS-DEV-SETUP.md)**
 
 Backend and frontend env vars are designed to work together. See `frontend/.env.example` and `.env.prod.example`.
 
+**Database:** Flyway migrations in `src/main/resources/db/migration/` create all tables and seed sample data on startup. RDS database name is `gamya` (local Docker uses `gamya_couture`).
+
 **Production deploy:** GitHub Actions deploys to EC2 on every merge to `main`. See [deploy/README.md](deploy/README.md) for EC2 bootstrap, secrets, and systemd setup.
 
-| Layer | Variable | Dev EC2 value |
-|-------|----------|---------------|
-| **EC2** (`.env`) | `CORS_ALLOWED_ORIGINS` | `https://gamyacouture.vercel.app,http://localhost:3000` |
+| Layer | Variable | Dev value |
+|-------|----------|-----------|
+| **EC2** | `DB_URL` | `jdbc:postgresql://gamya-couture-dev-pg....amazonaws.com:5432/gamya` |
+| **EC2** | `DB_USER` / `DB_PASSWORD` | `gamya_admin` / `gamyaadmin` |
+| **EC2** | `APP_STORAGE_S3_BUCKET` | `gamya-couture-dev-media` |
+| **EC2** | `CORS_ALLOWED_ORIGINS` | `https://gamyaboutique.vercel.app,http://localhost:3000` |
 | **EC2** | `SPRING_PROFILES_ACTIVE` | `dev` |
 | **Vercel** | `NEXT_PUBLIC_API_BASE_URL` | `/api/v1` |
 | **Vercel** | `API_PROXY_TARGET` | `http://13.232.200.243` |
-| **Vercel** | `NEXT_PUBLIC_SITE_URL` | `https://gamyacouture.vercel.app` |
+| **Vercel** | `NEXT_PUBLIC_SITE_URL` | `https://gamyaboutique.vercel.app` |
 
-### Deploy backend on EC2
+### Deploy backend on EC2 (RDS)
 
 ```bash
 # On EC2 (Session Manager)
 git clone <repo> && cd gamya-boutique
-cp .env.prod.example .env   # edit secrets
-./scripts/check-env-pairing.sh .env frontend/.env.local   # optional, before Vercel deploy
-./scripts/deploy-ec2-dev.sh
+sudo bash deploy/scripts/ec2-bootstrap.sh
+sudo bash deploy/scripts/sync-rds-env-from-ssm.sh
+# Edit JWT_SECRET in /opt/gamya-couture/config/application.env
+sudo systemctl start gamya-couture-backend
 ./scripts/verify-api-integration.sh http://13.232.200.243
 ```
 

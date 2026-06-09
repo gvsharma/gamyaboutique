@@ -26,6 +26,24 @@ public interface CategoryJpaRepository extends JpaRepository<Category, UUID> {
 
     Optional<Category> findBySlugAndActiveTrue(String slug);
 
+    List<Category> findAllByOrderByDisplayOrderAscNameAsc();
+
+    List<Category> findByParentId(UUID parentId);
+
+    boolean existsBySlugAndParentIsNull(String slug);
+
+    boolean existsBySlugAndParentIsNullAndIdNot(String slug, UUID id);
+
+    boolean existsBySlugAndParentId(String slug, UUID parentId);
+
+    boolean existsBySlugAndParentIdAndIdNot(String slug, UUID parentId, UUID id);
+
+    @Query("""
+            SELECT c FROM Category c
+            WHERE c.path = :path OR c.path LIKE CONCAT(:path, '/%')
+            """)
+    List<Category> findSelfAndDescendants(@Param("path") String path);
+
     @Query("""
             SELECT c.id FROM Category c
             WHERE c.active = true

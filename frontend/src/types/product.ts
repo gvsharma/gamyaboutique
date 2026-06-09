@@ -40,6 +40,7 @@ export interface ProductSummary {
   id: string;
   sku: string;
   name: string;
+  status?: ProductStatus;
   price: number;
   compareAtPrice: number | null;
   effectivePrice: number;
@@ -52,9 +53,12 @@ export interface ProductSummary {
   tags: TagDto[];
 }
 
+export type ProductStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
+
 export interface ProductDetail extends ProductSummary {
   description: string | null;
-  status: string;
+  status: ProductStatus;
+  primaryCategoryId: string | null;
   categories: CategorySummaryDto[];
   images: ProductImageDto[];
 }

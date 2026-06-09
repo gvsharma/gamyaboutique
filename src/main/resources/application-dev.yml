@@ -1,14 +1,37 @@
 spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://gamya-couture-dev-pg.c8xkhvlstsfp.ap-south-1.rds.amazonaws.com:5432/gamya}
+    username: ${DB_USER:gamya_admin}
+    password: ${DB_PASSWORD}
   jpa:
     show-sql: false
+  flyway:
+    # Core schema V1–V9 + admin seed V8; dev synthetic data V11 in migration-dev only.
+    locations: classpath:db/migration,classpath:db/migration-dev
+    baseline-on-migrate: true
 
 server:
   forward-headers-strategy: framework
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://gamyaboutique.vercel.app,http://localhost:3000}
+  security:
+    jwt:
+      secret: ${JWT_SECRET:gamya-dev-jwt-secret-key-min-32-chars!!}
+  storage:
+    s3:
+      enabled: ${APP_STORAGE_S3_ENABLED:true}
+      bucket: ${APP_STORAGE_S3_BUCKET:gamya-couture-dev-media}
+      region: ${APP_STORAGE_S3_REGION:ap-south-1}
+      public-base-url: ${APP_STORAGE_S3_PUBLIC_BASE_URL:https://gamya-couture-dev-media.s3.ap-south-1.amazonaws.com}
+      key-prefix: ${APP_STORAGE_S3_KEY_PREFIX:products/}
 
 logging:
   level:
     com.gamyacouture: INFO
     org.springframework.security: WARN
+    org.flywaydb: INFO
 
 management:
   endpoint:
