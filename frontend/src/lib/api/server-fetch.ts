@@ -1,10 +1,8 @@
 import type { ApiResponse } from "@/types/api";
-
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+import { resolveServerApiBaseUrl } from "@/lib/api/config";
 
 export async function serverFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${baseURL}${path}`, {
+  const res = await fetch(`${resolveServerApiBaseUrl()}${path}`, {
     ...init,
     headers: {
       Accept: "application/json",

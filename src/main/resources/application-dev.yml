@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    show-sql: false
+
+server:
+  forward-headers-strategy: framework
+
+logging:
+  level:
+    com.gamyacouture: INFO
+    org.springframework.security: WARN
+
+management:
+  endpoint:
+    health:
+      show-details: never

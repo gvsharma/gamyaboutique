@@ -1,8 +1,8 @@
 import axios from "axios";
 import { tokenStorage } from "@/lib/auth/token-storage";
+import { resolveBrowserApiBaseUrl } from "@/lib/api/config";
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+const baseURL = resolveBrowserApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL,

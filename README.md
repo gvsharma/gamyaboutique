@@ -59,6 +59,38 @@ After Flyway runs, seed user is available:
 | `DB_PASSWORD` | `gamya_secret` |
 | `JWT_SECRET` | (see `application.yml` — change in production) |
 | `JWT_ACCESS_EXPIRATION_MS` | `3600000` |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` |
+
+## Dev EC2 + Vercel (paired setup)
+
+Backend and frontend env vars are designed to work together. See `frontend/.env.example` and `.env.prod.example`.
+
+**Production deploy:** GitHub Actions deploys to EC2 on every merge to `main`. See [deploy/README.md](deploy/README.md) for EC2 bootstrap, secrets, and systemd setup.
+
+| Layer | Variable | Dev EC2 value |
+|-------|----------|---------------|
+| **EC2** (`.env`) | `CORS_ALLOWED_ORIGINS` | `https://gamyacouture.vercel.app,http://localhost:3000` |
+| **EC2** | `SPRING_PROFILES_ACTIVE` | `dev` |
+| **Vercel** | `NEXT_PUBLIC_API_BASE_URL` | `/api/v1` |
+| **Vercel** | `API_PROXY_TARGET` | `http://13.232.200.243` |
+| **Vercel** | `NEXT_PUBLIC_SITE_URL` | `https://gamyacouture.vercel.app` |
+
+### Deploy backend on EC2
+
+```bash
+# On EC2 (Session Manager)
+git clone <repo> && cd gamya-boutique
+cp .env.prod.example .env   # edit secrets
+./scripts/check-env-pairing.sh .env frontend/.env.local   # optional, before Vercel deploy
+./scripts/deploy-ec2-dev.sh
+./scripts/verify-api-integration.sh http://13.232.200.243
+```
+
+nginx on the host proxies `:80` → Spring Boot `:8080`. Public API base: `http://13.232.200.243/api/v1`.
+
+### Deploy frontend on Vercel
+
+Set the three Vercel variables above, redeploy, then open the storefront — products load from EC2 via same-origin rewrite (avoids HTTPS→HTTP mixed content).
 
 ## Phase 1 APIs
 
