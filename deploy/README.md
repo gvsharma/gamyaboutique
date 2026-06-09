@@ -1,12 +1,12 @@
 # Backend production deployment (EC2 + GitHub Actions)
 
-Deploys the Spring Boot JAR to EC2 over SSH when a PR is merged to `main`. Infrastructure is managed separately in [gamya-couture-infra](https://github.com/gvsharma/gamya-couture-infra).
+Deploys the Spring Boot JAR to EC2 via **S3 + SSM Run Command** when a PR is merged to `main` (no SSH from GitHub runners). Infrastructure is managed in [gamya-couture-infra](https://github.com/gvsharma/gamya-couture-infra).
 
 ## Folder structure
 
 ```
 .github/workflows/
-  deploy.yml                          # CI/CD: build → test → SSH deploy → health check
+  deploy.yml                          # CI/CD: build → test → S3 upload → SSM deploy → health check
 
 deploy/
   README.md                           # This file
@@ -28,29 +28,30 @@ deploy/
   scripts/remote-deploy.sh            # Copied each deploy; also installed at bootstrap
 ```
 
-## GitHub Secrets (required)
+## GitHub configuration (required)
 
-Configure in **Settings → Secrets and variables → Actions → Secrets**:
-
-| Secret | Example | Description |
-|--------|---------|-------------|
-| `SSH_PRIVATE_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` | Private key matching a public key in EC2 `authorized_keys` |
-| `EC2_HOST` | `13.232.200.243` | Elastic IP from Terraform output `api_public_ip` |
-| `EC2_USER` | `ec2-user` | SSH user on Amazon Linux 2023 |
-| `APP_PATH` | `/opt/gamya-couture` | Application root on EC2 (must match bootstrap) |
-
-Never commit secrets. Do not hardcode them in the workflow.
-
-### Generate deploy SSH key pair
-
-On your laptop:
+After `terraform apply` in `gamya-couture-infra/environments/dev`:
 
 ```bash
-ssh-keygen -t ed25519 -C "github-actions-gamya-deploy" -f gamya-deploy-key -N ""
+cd gamya-couture-infra/environments/dev
+terraform output -json backend_deploy_github_setup
 ```
 
-- Add **`gamya-deploy-key.pub`** to EC2: `/home/ec2-user/.ssh/authorized_keys`
-- Add **`gamya-deploy-key`** (private) to GitHub secret `SSH_PRIVATE_KEY`
+**Secrets** (Settings → Secrets and variables → Actions → Secrets):
+
+| Secret | Source |
+|--------|--------|
+| `AWS_BACKEND_DEPLOY_ROLE_ARN` | `backend_deploy_role_arn` output |
+
+**Variables** (Settings → Secrets and variables → Actions → Variables):
+
+| Variable | Source |
+|----------|--------|
+| `DEPLOY_BUCKET` | `backend_deploy_bucket` output |
+| `EC2_INSTANCE_ID` | `ec2_instance_id` output |
+| `EC2_HOST` | `api_public_ip` output |
+
+No SSH keys required for CI. Port 22 can stay locked to your admin IP only.
 
 ## EC2 one-time setup
 
@@ -101,27 +102,7 @@ Flyway runs on first Spring Boot start (schema + sample data). See [docs/AWS-DEV
 
 **Alternative:** Docker on EC2 without local Postgres — `./scripts/deploy-ec2-rds.sh` (uses `docker-compose.rds.yml`).
 
-### 4. Authorize GitHub Actions SSH key
-
-```bash
-mkdir -p ~/.ssh && chmod 700 ~/.ssh
-echo "<contents-of-gamya-deploy-key.pub>" >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-```
-
-### 5. Security group — SSH access for GitHub Actions
-
-Current dev SG allows SSH only from `admin_cidr` (often a single IP). GitHub-hosted runners use dynamic IPs, so you must choose one:
-
-| Option | Tradeoff |
-|--------|----------|
-| **Self-hosted runner** in VPC/subnet | Best for production; no open SSH to internet |
-| **SSM Run Command** (future) | No inbound SSH; requires workflow change |
-| **Temporary SG rule** for GitHub IP ranges | Higher ops burden; not recommended long-term |
-
-For initial dev testing, add your runner’s egress IP or use a self-hosted runner.
-
-### 6. Verify nginx → Spring Boot
+### 4. Verify nginx → Spring Boot
 
 Terraform user-data installs nginx proxying `:80` → `127.0.0.1:8080`. After first deploy:
 
@@ -137,14 +118,11 @@ curl -s http://13.232.200.243/api/v1/products?page=0&size=1
 PR merged → push to main
   → mvn verify (unit + integration tests via Testcontainers)
   → find target/gamya-couture-*.jar
-  → scp JAR → EC2:/opt/gamya-couture/incoming/gamya-couture.jar.new
-  → scp remote-deploy.sh → EC2
-  → ssh sudo remote-deploy.sh
-       → backup current JAR
-       → install new JAR
-       → systemctl restart gamya-couture-backend
-       → curl http://127.0.0.1:8080/actuator/health (up to 30 attempts)
-       → on failure: restore backup JAR + restart + fail job
+  → OIDC assume AWS_BACKEND_DEPLOY_ROLE_ARN
+  → aws s3 cp JAR → s3://<DEPLOY_BUCKET>/incoming/gamya-couture.jar
+  → aws ssm send-command on EC2_INSTANCE_ID
+       → aws s3 cp JAR → /opt/gamya-couture/incoming/gamya-couture.jar.new
+       → remote-deploy.sh (backup, install, systemd restart, health check, rollback)
   → curl http://<EC2_HOST>/actuator/health through nginx
 ```
 

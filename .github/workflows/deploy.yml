@@ -11,12 +11,19 @@ concurrency:
 
 env:
   JAVA_VERSION: "21"
+  AWS_REGION: ap-south-1
+  APP_PATH: /opt/gamya-couture
+  DEPLOY_OBJECT_KEY: incoming/gamya-couture.jar
 
 jobs:
   build-and-deploy:
     name: Build, test, and deploy
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout
@@ -43,70 +50,92 @@ jobs:
           echo "path=${JAR_PATH}" >> "$GITHUB_OUTPUT"
           echo "Resolved JAR: ${JAR_PATH} ($(du -h "$JAR_PATH" | cut -f1))"
 
-      - name: Validate deploy secrets
+      - name: Validate deploy configuration
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          APP_PATH: ${{ secrets.APP_PATH }}
+          AWS_BACKEND_DEPLOY_ROLE_ARN: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          EC2_HOST: ${{ vars.EC2_HOST }}
         run: |
           set -euo pipefail
           missing=()
-          [[ -z "${SSH_PRIVATE_KEY//[[:space:]]/}" ]] && missing+=(SSH_PRIVATE_KEY)
+          [[ -z "${AWS_BACKEND_DEPLOY_ROLE_ARN//[[:space:]]/}" ]] && missing+=(AWS_BACKEND_DEPLOY_ROLE_ARN)
+          [[ -z "${DEPLOY_BUCKET//[[:space:]]/}" ]] && missing+=(DEPLOY_BUCKET)
+          [[ -z "${EC2_INSTANCE_ID//[[:space:]]/}" ]] && missing+=(EC2_INSTANCE_ID)
           [[ -z "${EC2_HOST//[[:space:]]/}" ]] && missing+=(EC2_HOST)
-          [[ -z "${EC2_USER//[[:space:]]/}" ]] && missing+=(EC2_USER)
-          [[ -z "${APP_PATH//[[:space:]]/}" ]] && missing+=(APP_PATH)
           if [[ ${#missing[@]} -gt 0 ]]; then
-            echo "::error title=Missing deploy secrets::Add GitHub Actions secrets: ${missing[*]}. See deploy/README.md#github-secrets-required." >&2
+            echo "::error title=Missing deploy config::Set GitHub secret AWS_BACKEND_DEPLOY_ROLE_ARN and variables DEPLOY_BUCKET, EC2_INSTANCE_ID, EC2_HOST (see gamya-couture-infra: terraform output backend_deploy_github_setup)." >&2
             exit 1
           fi
 
-      - name: Configure SSH
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload JAR to S3
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
         run: |
           set -euo pipefail
-          install -m 700 -d ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          if ! grep -qE 'BEGIN (OPENSSH |RSA )?PRIVATE KEY' ~/.ssh/deploy_key; then
-            echo "::error::SSH_PRIVATE_KEY must be a PEM/OpenSSH private key (see deploy/README.md)." >&2
-            exit 1
-          fi
-          if ! ssh-keyscan -T 15 -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null; then
-            echo "::warning::ssh-keyscan could not reach ${EC2_HOST}:22 (instance stopped or security group blocks GitHub runner IPs). Using StrictHostKeyChecking=accept-new."
-          fi
+          aws s3 cp "${{ steps.jar.outputs.path }}" "s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
+          echo "Uploaded to s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
 
-      - name: Upload JAR and deploy script
+      - name: Deploy on EC2 via SSM
         env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          APP_PATH: ${{ secrets.APP_PATH }}
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
         run: |
           set -euo pipefail
-          REMOTE="${EC2_USER}@${EC2_HOST}"
-          SSH="ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=accept-new"
-          SCP="scp -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=accept-new"
+          cat > /tmp/ssm-deploy-params.json <<EOF
+          {
+            "commands": [
+              "aws s3 cp s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY} ${APP_PATH}/incoming/gamya-couture.jar.new",
+              "APP_PATH=${APP_PATH} bash ${APP_PATH}/scripts/remote-deploy.sh"
+            ]
+          }
+          EOF
 
-          $SSH "$REMOTE" "mkdir -p ${APP_PATH}/incoming ${APP_PATH}/scripts"
-          $SCP "${{ steps.jar.outputs.path }}" "${REMOTE}:${APP_PATH}/incoming/gamya-couture.jar.new"
-          $SCP deploy/scripts/remote-deploy.sh "${REMOTE}:${APP_PATH}/scripts/remote-deploy.sh"
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "GitHub Actions backend deploy" \
+            --parameters file:///tmp/ssm-deploy-params.json \
+            --query 'Command.CommandId' --output text)
+          echo "SSM command id: ${COMMAND_ID}"
 
-      - name: Deploy on EC2 (with rollback on failure)
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          APP_PATH: ${{ secrets.APP_PATH }}
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=accept-new \
-            "${EC2_USER}@${EC2_HOST}" \
-            "sudo APP_PATH='${APP_PATH}' bash '${APP_PATH}/scripts/remote-deploy.sh'"
+          for attempt in $(seq 1 60); do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'Status' --output text 2>/dev/null || echo "Pending")
+            echo "SSM status: ${STATUS} (attempt ${attempt}/60)"
+            case "${STATUS}" in
+              Success)
+                aws ssm get-command-invocation \
+                  --command-id "${COMMAND_ID}" \
+                  --instance-id "${EC2_INSTANCE_ID}" \
+                  --query '[StandardOutputContent,StandardErrorContent]' \
+                  --output text
+                exit 0
+                ;;
+              Failed|Cancelled|TimedOut)
+                aws ssm get-command-invocation \
+                  --command-id "${COMMAND_ID}" \
+                  --instance-id "${EC2_INSTANCE_ID}" \
+                  --output json
+                exit 1
+                ;;
+            esac
+            sleep 10
+          done
+          echo "SSM deploy timed out" >&2
+          exit 1
 
       - name: Verify public health via nginx
         env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_HOST: ${{ vars.EC2_HOST }}
         run: |
           HEALTH_URL="http://${EC2_HOST}/actuator/health"
           echo "Checking ${HEALTH_URL}"
