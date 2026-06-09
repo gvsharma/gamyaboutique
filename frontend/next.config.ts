@@ -9,7 +9,9 @@ const localhostApiDefault = "http://localhost:8080/api/v1";
 if (process.env.VERCEL) {
   if (!publicApiBase || publicApiBase === localhostApiDefault) {
     throw new Error(
-      "NEXT_PUBLIC_API_BASE_URL must be set on Vercel (use /api/v1 with API_PROXY_TARGET).",
+      "Missing Vercel env: set NEXT_PUBLIC_API_BASE_URL=/api/v1 (Project → Settings → Environment Variables → Production). " +
+        "Also set API_PROXY_TARGET=http://13.232.200.243, NEXT_PUBLIC_SITE_URL=https://gamyaboutique.vercel.app, " +
+        "then redeploy. See frontend/.env.example.",
     );
   }
   if (publicApiBase?.startsWith("http://")) {
