@@ -2,5 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "npm ci",
-  "buildCommand": "npm run build"
+  "buildCommand": "npm run build",
+  "env": {
+    "NEXT_PUBLIC_API_BASE_URL": "/api/v1",
+    "API_PROXY_TARGET": "http://13.232.200.243",
+    "NEXT_PUBLIC_SITE_URL": "https://gamyaboutique.vercel.app",
+    "NEXT_PUBLIC_IMAGE_CDN_HOST": "gamya-couture-dev-media.s3.ap-south-1.amazonaws.com"
+  }
 }

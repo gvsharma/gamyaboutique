@@ -1,30 +1,46 @@
 import type { NextConfig } from "next";
 import { API_V1_PREFIX } from "./src/lib/api/config";
 
-const apiProxyTarget = process.env.API_PROXY_TARGET?.replace(/\/$/, "");
-const publicApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+/** Dev EC2 defaults — used when Vercel dashboard env vars are not set. */
+const VERCEL_API_DEFAULTS = {
+  publicApiBase: API_V1_PREFIX,
+  apiProxyTarget: "http://13.232.200.243",
+  imageCdnHost: "gamya-couture-dev-media.s3.ap-south-1.amazonaws.com",
+} as const;
 
+const isVercel = Boolean(process.env.VERCEL);
 const localhostApiDefault = "http://localhost:8080/api/v1";
 
-if (process.env.VERCEL) {
-  if (!publicApiBase || publicApiBase === localhostApiDefault) {
-    throw new Error(
-      "Missing Vercel env: set NEXT_PUBLIC_API_BASE_URL=/api/v1 (Project → Settings → Environment Variables → Production). " +
-        "Also set API_PROXY_TARGET=http://13.232.200.243, NEXT_PUBLIC_SITE_URL=https://gamyaboutique.vercel.app, " +
-        "then redeploy. See frontend/.env.example.",
-    );
+function isLocalApiBase(value: string | undefined): boolean {
+  if (!value) return true;
+  return value === localhostApiDefault || value.startsWith("http://localhost");
+}
+
+const publicApiBase = (() => {
+  const raw = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (isVercel && isLocalApiBase(raw)) {
+    return VERCEL_API_DEFAULTS.publicApiBase;
   }
-  if (publicApiBase?.startsWith("http://")) {
-    throw new Error(
-      "NEXT_PUBLIC_API_BASE_URL must not be plain HTTP on Vercel (mixed content). " +
-        "Use NEXT_PUBLIC_API_BASE_URL=/api/v1 and API_PROXY_TARGET=http://<ec2-ip>.",
-    );
+  return raw || localhostApiDefault;
+})();
+
+const apiProxyTarget = (() => {
+  const raw = process.env.API_PROXY_TARGET?.replace(/\/$/, "");
+  if (isVercel) {
+    return raw || VERCEL_API_DEFAULTS.apiProxyTarget;
   }
-  if (publicApiBase === API_V1_PREFIX && !apiProxyTarget) {
-    throw new Error(
-      "API_PROXY_TARGET is required when NEXT_PUBLIC_API_BASE_URL=/api/v1 on Vercel.",
-    );
-  }
+  return raw ?? "";
+})();
+
+const imageCdnHost =
+  process.env.NEXT_PUBLIC_IMAGE_CDN_HOST?.trim() ||
+  (isVercel ? VERCEL_API_DEFAULTS.imageCdnHost : "");
+
+if (isVercel && publicApiBase.startsWith("http://")) {
+  throw new Error(
+    "NEXT_PUBLIC_API_BASE_URL must not be plain HTTP on Vercel (mixed content). " +
+      "Use NEXT_PUBLIC_API_BASE_URL=/api/v1 and API_PROXY_TARGET=http://<ec2-ip>.",
+  );
 }
 
 const nextConfig: NextConfig = {
@@ -43,16 +59,15 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
-      // S3 / CloudFront product images (set APP_STORAGE_S3_PUBLIC_BASE_URL on backend)
       {
         protocol: "https",
         hostname: "**.amazonaws.com",
       },
-      ...(process.env.NEXT_PUBLIC_IMAGE_CDN_HOST
+      ...(imageCdnHost
         ? [
             {
               protocol: "https" as const,
-              hostname: process.env.NEXT_PUBLIC_IMAGE_CDN_HOST,
+              hostname: imageCdnHost,
             },
           ]
         : []),
