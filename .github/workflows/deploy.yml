@@ -11,7 +11,6 @@ concurrency:
 
 env:
   JAVA_VERSION: "21"
-  MAVEN_OPTS: "-B -ntp"
 
 jobs:
   build-and-deploy:
@@ -31,7 +30,7 @@ jobs:
           cache: maven
 
       - name: Build and test
-        run: mvn verify
+        run: mvn -B -ntp verify
 
       - name: Resolve JAR path
         id: jar
