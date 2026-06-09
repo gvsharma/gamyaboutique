@@ -43,12 +43,40 @@ jobs:
           echo "path=${JAR_PATH}" >> "$GITHUB_OUTPUT"
           echo "Resolved JAR: ${JAR_PATH} ($(du -h "$JAR_PATH" | cut -f1))"
 
-      - name: Configure SSH
+      - name: Validate deploy secrets
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          APP_PATH: ${{ secrets.APP_PATH }}
         run: |
+          set -euo pipefail
+          missing=()
+          [[ -z "${SSH_PRIVATE_KEY//[[:space:]]/}" ]] && missing+=(SSH_PRIVATE_KEY)
+          [[ -z "${EC2_HOST//[[:space:]]/}" ]] && missing+=(EC2_HOST)
+          [[ -z "${EC2_USER//[[:space:]]/}" ]] && missing+=(EC2_USER)
+          [[ -z "${APP_PATH//[[:space:]]/}" ]] && missing+=(APP_PATH)
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error title=Missing deploy secrets::Add GitHub Actions secrets: ${missing[*]}. See deploy/README.md#github-secrets-required." >&2
+            exit 1
+          fi
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          set -euo pipefail
           install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          if ! grep -qE 'BEGIN (OPENSSH |RSA )?PRIVATE KEY' ~/.ssh/deploy_key; then
+            echo "::error::SSH_PRIVATE_KEY must be a PEM/OpenSSH private key (see deploy/README.md)." >&2
+            exit 1
+          fi
+          if ! ssh-keyscan -T 15 -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null; then
+            echo "::warning::ssh-keyscan could not reach ${EC2_HOST}:22 (instance stopped or security group blocks GitHub runner IPs). Using StrictHostKeyChecking=accept-new."
+          fi
 
       - name: Upload JAR and deploy script
         env:
@@ -56,9 +84,10 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           APP_PATH: ${{ secrets.APP_PATH }}
         run: |
+          set -euo pipefail
           REMOTE="${EC2_USER}@${EC2_HOST}"
-          SSH="ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes"
-          SCP="scp -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes"
+          SSH="ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=accept-new"
+          SCP="scp -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=accept-new"
 
           $SSH "$REMOTE" "mkdir -p ${APP_PATH}/incoming ${APP_PATH}/scripts"
           $SCP "${{ steps.jar.outputs.path }}" "${REMOTE}:${APP_PATH}/incoming/gamya-couture.jar.new"
@@ -70,7 +99,8 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           APP_PATH: ${{ secrets.APP_PATH }}
         run: |
-          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes \
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=accept-new \
             "${EC2_USER}@${EC2_HOST}" \
             "sudo APP_PATH='${APP_PATH}' bash '${APP_PATH}/scripts/remote-deploy.sh'"
 
