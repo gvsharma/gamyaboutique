@@ -1,8 +1,8 @@
 import axios from "axios";
 import { tokenStorage } from "@/lib/auth/token-storage";
+import { resolveBrowserApiBaseUrl } from "@/lib/api/config";
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+const baseURL = resolveBrowserApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL,
@@ -14,8 +14,24 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      tokenStorage.clear();
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 export function getApiBaseUrl(): string {
   return baseURL;

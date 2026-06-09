@@ -57,7 +57,29 @@ page.tsx (RSC or client)
 
 ## Environment
 
+All API URLs flow through `lib/api/config.ts` (single source of truth for `/api/v1`).
+
+| Mode | `NEXT_PUBLIC_API_BASE_URL` | `API_PROXY_TARGET` |
+|------|---------------------------|-------------------|
+| Local Spring Boot | `http://localhost:8080/api/v1` | *(unset)* |
+| Vercel + dev EC2 | `/api/v1` | `http://13.232.200.243` |
+
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
+
+### Request paths (Vercel + EC2)
+
+```
+Browser (client components)
+  → GET /api/v1/products  (same origin, HTTPS)
+  → Next.js rewrite
+  → http://13.232.200.243/api/v1/products  (nginx → Spring :8080)
+
+Server components (SSR)
+  → serverFetch("/products")
+  → http://13.232.200.243/api/v1/products  (direct via API_PROXY_TARGET)
+```
+
+Backend CORS on EC2 must include `NEXT_PUBLIC_SITE_URL` for auth flows; catalog GETs via rewrite are same-origin and do not hit CORS in the browser.

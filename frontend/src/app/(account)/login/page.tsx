@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
 import { login, fetchMe } from "@/lib/api/services/auth.service";
+import { isAdmin } from "@/lib/auth/admin";
 import { tokenStorage } from "@/lib/auth/token-storage";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -33,7 +34,7 @@ export default function LoginPage() {
       tokenStorage.set(token.accessToken);
       const user = await fetchMe();
       setUser(user);
-      router.push(ROUTES.home);
+      router.push(isAdmin(user) ? ROUTES.admin.home : ROUTES.home);
     } catch {
       setError("root", { message: "Invalid email or password" });
     }
@@ -42,10 +43,12 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <h1 className="font-display text-3xl text-burgundy">Sign in</h1>
-      <p className="mt-2 text-sm text-stone">
-        Staff and customer accounts. Dev: <code className="text-xs">admin@gamyacouture.com</code> /{" "}
-        <code className="text-xs">Admin@123</code>
-      </p>
+      {process.env.NODE_ENV === "development" && (
+        <p className="mt-2 text-sm text-stone">
+          Dev admin: <code className="text-xs">admin@gamyacouture.com</code> /{" "}
+          <code className="text-xs">Admin@123</code>
+        </p>
+      )}
       <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <div>
           <label className="text-xs uppercase tracking-wider text-stone">Email</label>

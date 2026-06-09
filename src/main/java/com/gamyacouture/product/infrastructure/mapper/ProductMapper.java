@@ -45,6 +45,7 @@ public interface ProductMapper {
     ProductSummaryDto toSummary(Product product);
 
     @Mapping(target = "images", source = "product.images")
+    @Mapping(target = "primaryCategoryId", source = "product.primaryCategory.id")
     @Mapping(target = "tags", expression = "java(mapTags(product.getTags()))")
     @Mapping(target = "categories", source = "categories")
     @Mapping(target = "effectivePrice", source = "product", qualifiedByName = "effectivePrice")

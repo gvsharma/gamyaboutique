@@ -1,0 +1,22 @@
+# EC2 app-only stack when using Terraform RDS (no local Postgres container).
+# Usage: docker compose -f docker-compose.rds.yml up -d --build
+services:
+  app:
+    build: .
+    image: gamya-couture-app:${IMAGE_TAG:-latest}
+    container_name: gamya-couture-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      DB_URL: ${DB_URL:?Set DB_URL to RDS jdbc URL in .env}
+      DB_USER: ${DB_USER:?Set DB_USER in .env}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://gamyaboutique.vercel.app,http://localhost:3000}
+      APP_STORAGE_S3_ENABLED: ${APP_STORAGE_S3_ENABLED:-true}
+      APP_STORAGE_S3_BUCKET: ${APP_STORAGE_S3_BUCKET:-gamya-couture-dev-media}
+      APP_STORAGE_S3_REGION: ${APP_STORAGE_S3_REGION:-ap-south-1}
+      APP_STORAGE_S3_PUBLIC_BASE_URL: ${APP_STORAGE_S3_PUBLIC_BASE_URL:-https://gamya-couture-dev-media.s3.ap-south-1.amazonaws.com}
+      APP_STORAGE_S3_KEY_PREFIX: ${APP_STORAGE_S3_KEY_PREFIX:-products/}

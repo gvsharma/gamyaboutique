@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface ProductCategoryLinkJpaRepository extends JpaRepository<ProductCategoryLink, ProductCategoryLinkId> {
 
     List<ProductCategoryLink> findByProductId(UUID productId);
+
+    void deleteByProductId(UUID productId);
 }

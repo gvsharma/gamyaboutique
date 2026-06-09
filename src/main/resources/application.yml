@@ -1,6 +1,10 @@
 spring:
   application:
     name: gamya-couture
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   mvc:
     contentnegotiation:
       # Browsers send Accept: text/html; APIs only serve JSON.
@@ -52,6 +56,13 @@ app:
       secret: ${JWT_SECRET:change-me-in-production-use-at-least-256-bits-secret-key-here}
       issuer: gamya-couture
       access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:3600000}
+  storage:
+    s3:
+      enabled: ${APP_STORAGE_S3_ENABLED:false}
+      bucket: ${APP_STORAGE_S3_BUCKET:}
+      region: ${APP_STORAGE_S3_REGION:ap-south-1}
+      public-base-url: ${APP_STORAGE_S3_PUBLIC_BASE_URL:}
+      key-prefix: ${APP_STORAGE_S3_KEY_PREFIX:products/}
 
 springdoc:
   api-docs:

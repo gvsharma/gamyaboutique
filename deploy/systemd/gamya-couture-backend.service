@@ -1,0 +1,32 @@
+[Unit]
+Description=Gamya Couture Spring Boot Backend
+Documentation=https://github.com/gvsharma/gamya-boutique
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gamya
+Group=gamya
+WorkingDirectory=/opt/gamya-couture
+
+EnvironmentFile=-/opt/gamya-couture/config/application.env
+
+ExecStart=/usr/bin/java \
+  -XX:+UseContainerSupport \
+  -XX:MaxRAMPercentage=75.0 \
+  -jar /opt/gamya-couture/app/gamya-couture.jar
+
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=90
+
+StandardOutput=append:/opt/gamya-couture/logs/application.log
+StandardError=append:/opt/gamya-couture/logs/application.log
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
