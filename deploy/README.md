@@ -37,19 +37,21 @@ cd gamya-couture-infra/environments/dev
 terraform output -json backend_deploy_github_setup
 ```
 
-**Secrets** (Settings → Secrets and variables → Actions → Secrets):
+Configure in **gvsharma/gamyaboutique** → Settings → Secrets and variables → Actions.
+
+**Secret** (Actions → **Secrets** tab):
 
 | Secret | Source |
 |--------|--------|
 | `AWS_BACKEND_DEPLOY_ROLE_ARN` | `backend_deploy_role_arn` output |
 
-**Variables** (Settings → Secrets and variables → Actions → Variables):
+**Variables or secrets** (Actions → **Variables** tab preferred; **Secrets** also works):
 
-| Variable | Source |
-|----------|--------|
-| `DEPLOY_BUCKET` | `backend_deploy_bucket` output |
-| `EC2_INSTANCE_ID` | `ec2_instance_id` output |
-| `EC2_HOST` | `api_public_ip` output |
+| Name | Example (dev) | Source |
+|------|---------------|--------|
+| `DEPLOY_BUCKET` | `gamya-couture-dev-deploy` | `backend_deploy_bucket` output |
+| `EC2_INSTANCE_ID` | `i-0652a9c1b9bf2c7dd` | `ec2_instance_id` output |
+| `EC2_HOST` | `13.232.200.243` | `api_public_ip` output |
 
 No SSH keys required for CI. Port 22 can stay locked to your admin IP only.
 
