@@ -14,6 +14,7 @@ env:
   AWS_REGION: ap-south-1
   APP_PATH: /opt/gamya-couture
   DEPLOY_OBJECT_KEY: incoming/gamya-couture.jar
+  DEPLOY_SCRIPT_KEY: scripts/remote-deploy.sh
 
 jobs:
   build-and-deploy:
@@ -96,26 +97,50 @@ jobs:
           role-to-assume: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload JAR to S3
+      - name: Upload deploy artifacts to S3
         run: |
           set -euo pipefail
           DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
           aws s3 cp "${{ steps.jar.outputs.path }}" "s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
-          echo "Uploaded to s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
+          aws s3 cp deploy/scripts/remote-deploy.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_SCRIPT_KEY}"
+          echo "Uploaded JAR to s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
+          echo "Uploaded script to s3://${DEPLOY_BUCKET}/${DEPLOY_SCRIPT_KEY}"
 
       - name: Deploy on EC2 via SSM
         run: |
           set -euo pipefail
           DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
           EC2_INSTANCE_ID="${{ steps.deploy_cfg.outputs.ec2_instance_id }}"
-          cat > /tmp/ssm-deploy-params.json <<EOF
-          {
-            "commands": [
-              "aws s3 cp s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY} ${APP_PATH}/incoming/gamya-couture.jar.new",
-              "APP_PATH=${APP_PATH} bash ${APP_PATH}/scripts/remote-deploy.sh"
-            ]
-          }
-          EOF
+
+          PING_STATUS=$(aws ssm describe-instance-information \
+            --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
+            --query 'InstanceInformationList[0].PingStatus' \
+            --output text 2>/dev/null || echo "Unknown")
+          echo "SSM PingStatus for ${EC2_INSTANCE_ID}: ${PING_STATUS}"
+          if [[ "${PING_STATUS}" != "Online" ]]; then
+            echo "::error::EC2 instance is not Online in SSM (status=${PING_STATUS}). Start the instance and ensure SSM agent + instance profile are configured." >&2
+            exit 1
+          fi
+
+          python3 <<'PY' > /tmp/ssm-deploy-params.json
+          import json
+          import os
+
+          app_path = os.environ["APP_PATH"]
+          bucket = os.environ["DEPLOY_BUCKET"]
+          jar_key = os.environ["DEPLOY_OBJECT_KEY"]
+          script_key = os.environ["DEPLOY_SCRIPT_KEY"]
+
+          commands = [
+              "set -euxo pipefail",
+              f"mkdir -p {app_path}/incoming {app_path}/scripts {app_path}/app {app_path}/backup {app_path}/logs",
+              f"aws s3 cp s3://{bucket}/{jar_key} {app_path}/incoming/gamya-couture.jar.new",
+              f"aws s3 cp s3://{bucket}/{script_key} {app_path}/scripts/remote-deploy.sh",
+              f"chmod 755 {app_path}/scripts/remote-deploy.sh",
+              f"sudo APP_PATH={app_path} bash {app_path}/scripts/remote-deploy.sh",
+          ]
+          print(json.dumps({"commands": commands}))
+          PY
 
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${EC2_INSTANCE_ID}" \
@@ -141,10 +166,12 @@ jobs:
                 exit 0
                 ;;
               Failed|Cancelled|TimedOut)
+                echo "::group::SSM command output"
                 aws ssm get-command-invocation \
                   --command-id "${COMMAND_ID}" \
                   --instance-id "${EC2_INSTANCE_ID}" \
                   --output json
+                echo "::endgroup::"
                 exit 1
                 ;;
             esac
@@ -152,19 +179,25 @@ jobs:
           done
           echo "SSM deploy timed out" >&2
           exit 1
+        env:
+          DEPLOY_BUCKET: ${{ steps.deploy_cfg.outputs.deploy_bucket }}
+          APP_PATH: ${{ env.APP_PATH }}
+          DEPLOY_OBJECT_KEY: ${{ env.DEPLOY_OBJECT_KEY }}
+          DEPLOY_SCRIPT_KEY: ${{ env.DEPLOY_SCRIPT_KEY }}
 
       - name: Verify public health via nginx
         run: |
           EC2_HOST="${{ steps.deploy_cfg.outputs.ec2_host }}"
           HEALTH_URL="http://${EC2_HOST}/actuator/health"
           echo "Checking ${HEALTH_URL}"
-          for attempt in $(seq 1 12); do
-            if curl -sf "$HEALTH_URL" | grep -q '"status":"UP"'; then
+          for attempt in $(seq 1 24); do
+            RESPONSE="$(curl -sS "$HEALTH_URL" || true)"
+            if echo "$RESPONSE" | grep -q '"status":"UP"'; then
               echo "Public health check passed"
               exit 0
             fi
-            echo "Attempt ${attempt}/12 — waiting..."
+            echo "Attempt ${attempt}/24 — response: ${RESPONSE:-<empty>}"
             sleep 5
           done
-          echo "Public health check failed" >&2
+          echo "::error::Public health check failed. nginx returned 502 usually means Spring Boot is not running — verify /opt/gamya-couture/config/application.env and systemctl status gamya-couture-backend on EC2." >&2
           exit 1
