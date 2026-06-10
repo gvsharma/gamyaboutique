@@ -97,6 +97,82 @@ jobs:
           role-to-assume: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Prepare EC2 deploy target
+        id: ec2_target
+        env:
+          DEPLOY_BUCKET: ${{ steps.deploy_cfg.outputs.deploy_bucket }}
+          CONFIGURED_INSTANCE_ID: ${{ steps.deploy_cfg.outputs.ec2_instance_id }}
+        run: |
+          set -euo pipefail
+          EC2_INSTANCE_ID="${CONFIGURED_INSTANCE_ID//[[:space:]]/}"
+          NAME_PREFIX="${DEPLOY_BUCKET%-backend-deploy}"
+          EC2_NAME_TAG="${NAME_PREFIX}-api"
+
+          instance_state() {
+            aws ec2 describe-instances \
+              --region "${AWS_REGION}" \
+              --instance-ids "$1" \
+              --query 'Reservations[0].Instances[0].State.Name' \
+              --output text 2>/dev/null || echo "missing"
+          }
+
+          resolve_by_name_tag() {
+            aws ec2 describe-instances \
+              --region "${AWS_REGION}" \
+              --filters \
+                "Name=tag:Name,Values=${EC2_NAME_TAG}" \
+                "Name=instance-state-name,Values=pending,running,stopping,stopped" \
+              --query 'sort_by(Reservations[].Instances[], &LaunchTime)[-1].InstanceId' \
+              --output text
+          }
+
+          STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+          if [[ "${STATE}" == "missing" || "${STATE}" == "None" || "${STATE}" == "terminated" ]]; then
+            echo "Configured EC2_INSTANCE_ID ${EC2_INSTANCE_ID} is ${STATE}; resolving latest instance with tag Name=${EC2_NAME_TAG}"
+            RESOLVED="$(resolve_by_name_tag)"
+            if [[ -z "${RESOLVED}" || "${RESOLVED}" == "None" ]]; then
+              echo "::error::No running EC2 found with tag Name=${EC2_NAME_TAG}. Update GitHub variable EC2_INSTANCE_ID from: terraform output -json backend_deploy_github_setup (gamya-couture-infra/environments/dev)." >&2
+              exit 1
+            fi
+            EC2_INSTANCE_ID="${RESOLVED}"
+            STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+          fi
+
+          if [[ "${STATE}" == "stopped" ]]; then
+            echo "Starting stopped instance ${EC2_INSTANCE_ID} (cost scheduler may have stopped it overnight)..."
+            aws ec2 start-instances --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}" >/dev/null
+            aws ec2 wait instance-running --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+          fi
+
+          PING_STATUS="None"
+          for attempt in $(seq 1 36); do
+            PING_STATUS="$(aws ssm describe-instance-information \
+              --region "${AWS_REGION}" \
+              --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
+              --query 'InstanceInformationList[0].PingStatus' \
+              --output text 2>/dev/null || echo "Unknown")"
+            PING_STATUS="${PING_STATUS:-None}"
+            echo "SSM PingStatus for ${EC2_INSTANCE_ID}: ${PING_STATUS} (attempt ${attempt}/36)"
+            if [[ "${PING_STATUS}" == "Online" ]]; then
+              break
+            fi
+            sleep 10
+          done
+
+          if [[ "${PING_STATUS}" != "Online" ]]; then
+            echo "::error::EC2 instance is not Online in SSM (status=${PING_STATUS}, id=${EC2_INSTANCE_ID}). Sync GitHub vars from gamya-couture-infra: terraform output -json backend_deploy_github_setup" >&2
+            exit 1
+          fi
+
+          EC2_HOST="$(aws ec2 describe-instances \
+            --region "${AWS_REGION}" \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --query 'Reservations[0].Instances[0].PublicIpAddress' \
+            --output text)"
+          echo "Using EC2 instance ${EC2_INSTANCE_ID} (${EC2_HOST})"
+          echo "ec2_instance_id=${EC2_INSTANCE_ID}" >> "$GITHUB_OUTPUT"
+          echo "ec2_host=${EC2_HOST}" >> "$GITHUB_OUTPUT"
+
       - name: Upload deploy artifacts to S3
         run: |
           set -euo pipefail
@@ -110,17 +186,7 @@ jobs:
         run: |
           set -euo pipefail
           DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
-          EC2_INSTANCE_ID="${{ steps.deploy_cfg.outputs.ec2_instance_id }}"
-
-          PING_STATUS=$(aws ssm describe-instance-information \
-            --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
-            --query 'InstanceInformationList[0].PingStatus' \
-            --output text 2>/dev/null || echo "Unknown")
-          echo "SSM PingStatus for ${EC2_INSTANCE_ID}: ${PING_STATUS}"
-          if [[ "${PING_STATUS}" != "Online" ]]; then
-            echo "::error::EC2 instance is not Online in SSM (status=${PING_STATUS}). Start the instance and ensure SSM agent + instance profile are configured." >&2
-            exit 1
-          fi
+          EC2_INSTANCE_ID="${{ steps.ec2_target.outputs.ec2_instance_id }}"
 
           python3 <<'PY' > /tmp/ssm-deploy-params.json
           import json
@@ -143,6 +209,7 @@ jobs:
           PY
 
           COMMAND_ID=$(aws ssm send-command \
+            --region "${AWS_REGION}" \
             --instance-ids "${EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
             --comment "GitHub Actions backend deploy" \
@@ -152,6 +219,7 @@ jobs:
 
           for attempt in $(seq 1 60); do
             STATUS=$(aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
               --command-id "${COMMAND_ID}" \
               --instance-id "${EC2_INSTANCE_ID}" \
               --query 'Status' --output text 2>/dev/null || echo "Pending")
@@ -159,6 +227,7 @@ jobs:
             case "${STATUS}" in
               Success)
                 aws ssm get-command-invocation \
+                  --region "${AWS_REGION}" \
                   --command-id "${COMMAND_ID}" \
                   --instance-id "${EC2_INSTANCE_ID}" \
                   --query '[StandardOutputContent,StandardErrorContent]' \
@@ -168,6 +237,7 @@ jobs:
               Failed|Cancelled|TimedOut)
                 echo "::group::SSM command output"
                 aws ssm get-command-invocation \
+                  --region "${AWS_REGION}" \
                   --command-id "${COMMAND_ID}" \
                   --instance-id "${EC2_INSTANCE_ID}" \
                   --output json
@@ -187,7 +257,7 @@ jobs:
 
       - name: Verify public health via nginx
         run: |
-          EC2_HOST="${{ steps.deploy_cfg.outputs.ec2_host }}"
+          EC2_HOST="${{ steps.ec2_target.outputs.ec2_host }}"
           HEALTH_URL="http://${EC2_HOST}/actuator/health"
           echo "Checking ${HEALTH_URL}"
           for attempt in $(seq 1 24); do
