@@ -50,23 +50,45 @@ jobs:
           echo "path=${JAR_PATH}" >> "$GITHUB_OUTPUT"
           echo "Resolved JAR: ${JAR_PATH} ($(du -h "$JAR_PATH" | cut -f1))"
 
-      - name: Validate deploy configuration
+      - name: Resolve deploy configuration
+        id: deploy_cfg
         env:
           AWS_BACKEND_DEPLOY_ROLE_ARN: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
-          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
-          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
-          EC2_HOST: ${{ vars.EC2_HOST }}
+          DEPLOY_BUCKET_VAR: ${{ vars.DEPLOY_BUCKET }}
+          DEPLOY_BUCKET_SECRET: ${{ secrets.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID_VAR: ${{ vars.EC2_INSTANCE_ID }}
+          EC2_INSTANCE_ID_SECRET: ${{ secrets.EC2_INSTANCE_ID }}
+          EC2_HOST_VAR: ${{ vars.EC2_HOST }}
+          EC2_HOST_SECRET: ${{ secrets.EC2_HOST }}
         run: |
           set -euo pipefail
+          pick_non_empty() {
+            local a="$1"
+            local b="$2"
+            if [[ -n "${a//[[:space:]]/}" ]]; then
+              echo "$a"
+            else
+              echo "$b"
+            fi
+          }
+
+          DEPLOY_BUCKET="$(pick_non_empty "$DEPLOY_BUCKET_VAR" "$DEPLOY_BUCKET_SECRET")"
+          EC2_INSTANCE_ID="$(pick_non_empty "$EC2_INSTANCE_ID_VAR" "$EC2_INSTANCE_ID_SECRET")"
+          EC2_HOST="$(pick_non_empty "$EC2_HOST_VAR" "$EC2_HOST_SECRET")"
+
           missing=()
           [[ -z "${AWS_BACKEND_DEPLOY_ROLE_ARN//[[:space:]]/}" ]] && missing+=(AWS_BACKEND_DEPLOY_ROLE_ARN)
           [[ -z "${DEPLOY_BUCKET//[[:space:]]/}" ]] && missing+=(DEPLOY_BUCKET)
           [[ -z "${EC2_INSTANCE_ID//[[:space:]]/}" ]] && missing+=(EC2_INSTANCE_ID)
           [[ -z "${EC2_HOST//[[:space:]]/}" ]] && missing+=(EC2_HOST)
           if [[ ${#missing[@]} -gt 0 ]]; then
-            echo "::error title=Missing deploy config::Set GitHub secret AWS_BACKEND_DEPLOY_ROLE_ARN and variables DEPLOY_BUCKET, EC2_INSTANCE_ID, EC2_HOST (see gamya-couture-infra: terraform output backend_deploy_github_setup)." >&2
+            echo "::error title=Missing deploy config::In gvsharma/gamyaboutique → Settings → Secrets and variables → Actions, set secret AWS_BACKEND_DEPLOY_ROLE_ARN and either Variables or Secrets for DEPLOY_BUCKET, EC2_INSTANCE_ID, EC2_HOST. Values: terraform output backend_deploy_github_setup in gamya-couture-infra." >&2
             exit 1
           fi
+
+          echo "deploy_bucket=${DEPLOY_BUCKET}" >> "$GITHUB_OUTPUT"
+          echo "ec2_instance_id=${EC2_INSTANCE_ID}" >> "$GITHUB_OUTPUT"
+          echo "ec2_host=${EC2_HOST}" >> "$GITHUB_OUTPUT"
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -75,19 +97,17 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload JAR to S3
-        env:
-          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
         run: |
           set -euo pipefail
+          DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
           aws s3 cp "${{ steps.jar.outputs.path }}" "s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
           echo "Uploaded to s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
 
       - name: Deploy on EC2 via SSM
-        env:
-          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
-          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
         run: |
           set -euo pipefail
+          DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
+          EC2_INSTANCE_ID="${{ steps.deploy_cfg.outputs.ec2_instance_id }}"
           cat > /tmp/ssm-deploy-params.json <<EOF
           {
             "commands": [
@@ -134,9 +154,8 @@ jobs:
           exit 1
 
       - name: Verify public health via nginx
-        env:
-          EC2_HOST: ${{ vars.EC2_HOST }}
         run: |
+          EC2_HOST="${{ steps.deploy_cfg.outputs.ec2_host }}"
           HEALTH_URL="http://${EC2_HOST}/actuator/health"
           echo "Checking ${HEALTH_URL}"
           for attempt in $(seq 1 12); do
