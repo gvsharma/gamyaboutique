@@ -53,11 +53,7 @@ public class S3ImageStorageService implements ImageStorageService {
 
         String safeFolder = sanitizeFolder(folder);
         String extension = extensionFor(contentType);
-        String key = properties.keyPrefix()
-                + safeFolder
-                + "/"
-                + UUID.randomUUID()
-                + extension;
+        String key = objectKey(properties.keyPrefix(), safeFolder, UUID.randomUUID() + extension);
 
         try {
             PutObjectRequest request = PutObjectRequest.builder()
@@ -79,6 +75,21 @@ public class S3ImageStorageService implements ImageStorageService {
             return base + "/" + key;
         }
         return "https://" + properties.bucket() + ".s3." + properties.region() + ".amazonaws.com/" + key;
+    }
+
+    private static String objectKey(String keyPrefix, String folder, String fileName) {
+        String prefix = StringUtils.hasText(keyPrefix) ? keyPrefix : "";
+        if (!prefix.isEmpty() && !prefix.endsWith("/")) {
+            prefix = prefix + "/";
+        }
+        if (!StringUtils.hasText(folder)) {
+            return prefix + fileName;
+        }
+        String prefixStem = prefix.replaceAll("/$", "");
+        if (prefixStem.endsWith("/" + folder) || prefixStem.equals(folder)) {
+            return prefix + fileName;
+        }
+        return prefix + folder + "/" + fileName;
     }
 
     private static String sanitizeFolder(String folder) {

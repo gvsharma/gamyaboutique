@@ -5,7 +5,7 @@ import { API_V1_PREFIX } from "./src/lib/api/config";
 const VERCEL_API_DEFAULTS = {
   publicApiBase: API_V1_PREFIX,
   apiProxyTarget: "http://13.232.200.243",
-  imageCdnHost: "gamya-couture-dev-media.s3.ap-south-1.amazonaws.com",
+  imageCdnHost: "d2568bpd35bq6a.cloudfront.net",
 } as const;
 
 const isVercel = Boolean(process.env.VERCEL);
