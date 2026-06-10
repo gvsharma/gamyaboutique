@@ -16,7 +16,15 @@ function trimTrailingSlash(value: string): string {
 
 /** Browser + axios — use relative `/api/v1` when Vercel rewrites to EC2. */
 export function resolveBrowserApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL ?? LOCAL_API_BASE;
+  const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (configured && !configured.startsWith("http://localhost")) {
+    return configured;
+  }
+  // Built client bundle may omit NEXT_PUBLIC_*; on deployed hosts use same-origin proxy.
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
+    return API_V1_PREFIX;
+  }
+  return configured || LOCAL_API_BASE;
 }
 
 /** Server components — prefer direct EC2 when API_PROXY_TARGET is set. */
