@@ -11,6 +11,7 @@ public final class ImageUrlValidator {
 
     private static final List<String> ALLOWED_HOST_SUFFIXES = List.of(
             "amazonaws.com",
+            "cloudfront.net",
             "images.unsplash.com"
     );
 
