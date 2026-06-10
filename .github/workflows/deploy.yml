@@ -14,7 +14,7 @@ env:
   AWS_REGION: ap-south-1
   APP_PATH: /opt/gamya-couture
   DEPLOY_OBJECT_KEY: incoming/gamya-couture.jar
-  DEPLOY_SCRIPT_KEY: scripts/remote-deploy.sh
+  DEPLOY_SCRIPT_KEY: incoming/remote-deploy.sh
 
 jobs:
   build-and-deploy:
