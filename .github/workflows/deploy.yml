@@ -73,9 +73,9 @@ jobs:
             fi
           }
 
-          DEPLOY_BUCKET="$(pick_non_empty "$DEPLOY_BUCKET_VAR" "$DEPLOY_BUCKET_SECRET")"
-          EC2_INSTANCE_ID="$(pick_non_empty "$EC2_INSTANCE_ID_VAR" "$EC2_INSTANCE_ID_SECRET")"
-          EC2_HOST="$(pick_non_empty "$EC2_HOST_VAR" "$EC2_HOST_SECRET")"
+          DEPLOY_BUCKET="$(pick_non_empty "$DEPLOY_BUCKET_VAR" "$DEPLOY_BUCKET_SECRET" | tr -d '[:space:]')"
+          EC2_INSTANCE_ID="$(pick_non_empty "$EC2_INSTANCE_ID_VAR" "$EC2_INSTANCE_ID_SECRET" | tr -d '[:space:]')"
+          EC2_HOST="$(pick_non_empty "$EC2_HOST_VAR" "$EC2_HOST_SECRET" | tr -d '[:space:]')"
 
           missing=()
           [[ -z "${AWS_BACKEND_DEPLOY_ROLE_ARN//[[:space:]]/}" ]] && missing+=(AWS_BACKEND_DEPLOY_ROLE_ARN)
@@ -112,13 +112,29 @@ jobs:
           DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
           EC2_INSTANCE_ID="${{ steps.deploy_cfg.outputs.ec2_instance_id }}"
 
+          EC2_STATE=$(aws ec2 describe-instances \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --query 'Reservations[0].Instances[0].State.Name' \
+            --output text 2>/dev/null || echo "unknown")
+          echo "EC2 state for ${EC2_INSTANCE_ID}: ${EC2_STATE}"
+
           PING_STATUS=$(aws ssm describe-instance-information \
             --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
             --query 'InstanceInformationList[0].PingStatus' \
-            --output text 2>/dev/null || echo "Unknown")
+            --output text 2>/dev/null || true)
+          PING_STATUS="${PING_STATUS:-Unknown}"
           echo "SSM PingStatus for ${EC2_INSTANCE_ID}: ${PING_STATUS}"
+
+          if [[ "${EC2_STATE}" == "stopped" ]]; then
+            echo "::error::EC2 instance ${EC2_INSTANCE_ID} is stopped. Start it in AWS Console (ap-south-1) or wait for the cost scheduler (starts 09:00 IST), then re-run deploy." >&2
+            exit 1
+          fi
+          if [[ "${EC2_STATE}" == "unknown" || "${EC2_STATE}" == "None" ]]; then
+            echo "::error::EC2 instance ${EC2_INSTANCE_ID} not found in ap-south-1. Fix GitHub variable/secret EC2_INSTANCE_ID (expected e.g. i-0652a9c1b9bf2c7dd from terraform output ec2_instance_id)." >&2
+            exit 1
+          fi
           if [[ "${PING_STATUS}" != "Online" ]]; then
-            echo "::error::EC2 instance is not Online in SSM (status=${PING_STATUS}). Start the instance and ensure SSM agent + instance profile are configured." >&2
+            echo "::error::EC2 is ${EC2_STATE} but SSM status is ${PING_STATUS}. In AWS Console → Systems Manager → Fleet Manager, confirm the instance is Online. Ensure the instance profile includes AmazonSSMManagedInstanceCore and the SSM agent is running." >&2
             exit 1
           fi
 
