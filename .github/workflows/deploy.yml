@@ -197,9 +197,21 @@ jobs:
           jar_key = os.environ["DEPLOY_OBJECT_KEY"]
           script_key = os.environ["DEPLOY_SCRIPT_KEY"]
 
+          sync_db_password = (
+              "python3 -c \"import re, subprocess; "
+              "pwd=subprocess.check_output(['aws','ssm','get-parameter','--name','/gamya-couture/dev/db/password',"
+              "'--with-decryption','--query','Parameter.Value','--output','text','--region','ap-south-1'], text=True).strip(); "
+              f"path='{app_path}/config/application.env'; "
+              "content=open(path).read(); "
+              "content=re.sub(r'^DB_PASSWORD=.*$', f'DB_PASSWORD={pwd}', content, flags=re.M); "
+              "open(path,'w').write(content); "
+              "print('DB_PASSWORD synced from SSM')\""
+          )
+
           commands = [
               "set -euxo pipefail",
               f"mkdir -p {app_path}/incoming {app_path}/scripts {app_path}/app {app_path}/backup {app_path}/logs",
+              sync_db_password,
               f"aws s3 cp s3://{bucket}/{jar_key} {app_path}/incoming/gamya-couture.jar.new",
               f"aws s3 cp s3://{bucket}/{script_key} {app_path}/scripts/remote-deploy.sh",
               f"chmod 755 {app_path}/scripts/remote-deploy.sh",
@@ -216,14 +228,22 @@ jobs:
             --parameters file:///tmp/ssm-deploy-params.json \
             --query 'Command.CommandId' --output text)
           echo "SSM command id: ${COMMAND_ID}"
+          echo "Note: InProgress for 2-3 minutes is normal while remote-deploy.sh waits for Spring Boot health."
 
-          for attempt in $(seq 1 60); do
-            STATUS=$(aws ssm get-command-invocation \
+          for attempt in $(seq 1 36); do
+            INVOCATION=$(aws ssm get-command-invocation \
               --region "${AWS_REGION}" \
               --command-id "${COMMAND_ID}" \
               --instance-id "${EC2_INSTANCE_ID}" \
-              --query 'Status' --output text 2>/dev/null || echo "Pending")
-            echo "SSM status: ${STATUS} (attempt ${attempt}/60)"
+              --output json 2>/dev/null || echo '{}')
+            STATUS=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Status','Pending'))")
+            echo "SSM status: ${STATUS} (attempt ${attempt}/36)"
+            if [[ "${STATUS}" == "InProgress" && $((attempt % 3)) -eq 0 ]]; then
+              PARTIAL=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print((d.get('StandardOutputContent') or '')[-500:])")
+              if [[ -n "${PARTIAL//[[:space:]]/}" ]]; then
+                echo "Recent output: ${PARTIAL}"
+              fi
+            fi
             case "${STATUS}" in
               Success)
                 aws ssm get-command-invocation \
