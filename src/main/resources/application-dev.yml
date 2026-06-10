@@ -24,7 +24,7 @@ app:
       enabled: ${APP_STORAGE_S3_ENABLED:true}
       bucket: ${APP_STORAGE_S3_BUCKET:gamya-couture-dev-media}
       region: ${APP_STORAGE_S3_REGION:ap-south-1}
-      public-base-url: ${APP_STORAGE_S3_PUBLIC_BASE_URL:https://gamya-couture-dev-media.s3.ap-south-1.amazonaws.com}
+      public-base-url: ${APP_STORAGE_S3_PUBLIC_BASE_URL:https://d2568bpd35bq6a.cloudfront.net}
       key-prefix: ${APP_STORAGE_S3_KEY_PREFIX:products/}
 
 logging:
