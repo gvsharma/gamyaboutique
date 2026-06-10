@@ -34,6 +34,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBusiness(
             BusinessException ex,
             HttpServletRequest request) {
+        if (ex.getErrorCode() == ErrorCode.UNAUTHORIZED || ex.getErrorCode() == ErrorCode.FORBIDDEN) {
+            log.warn("Auth/business denial on {}: {}", request.getRequestURI(), ex.getMessage());
+        }
         return ResponseEntity
                 .status(ex.getErrorCode().getHttpStatus())
                 .body(ApiResponse.fail(ex.getMessage(), request.getRequestURI()));
@@ -52,6 +55,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAuthentication(
             AuthenticationException ex,
             HttpServletRequest request) {
+        log.warn("Authentication failed on {}: {}", request.getRequestURI(), ex.getMessage());
         return ResponseEntity
                 .status(ErrorCode.UNAUTHORIZED.getHttpStatus())
                 .body(ApiResponse.fail(ex.getMessage(), request.getRequestURI()));
@@ -61,6 +65,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request) {
+        log.warn("Access denied on {}: {}", request.getRequestURI(), ex.getMessage());
         return ResponseEntity
                 .status(ErrorCode.FORBIDDEN.getHttpStatus())
                 .body(ApiResponse.fail("Access denied", request.getRequestURI()));

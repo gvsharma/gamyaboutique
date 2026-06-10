@@ -8,6 +8,7 @@ import com.gamyacouture.customer.infrastructure.CustomerJpaRepository;
 import com.gamyacouture.shared.exception.BusinessException;
 import com.gamyacouture.shared.exception.ErrorCode;
 import com.gamyacouture.shared.exception.ResourceNotFoundException;
+import com.gamyacouture.shared.util.PhoneNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,25 +25,33 @@ public class CustomerRegistrationService implements CustomerRegistrationApi {
     @Override
     @Transactional
     public UUID registerForUser(UUID userId, String email, String firstName, String lastName, String phone) {
-        if (customerRepository.existsByEmailIgnoreCase(email)) {
+        String normalizedEmail = blankToNull(email);
+        String normalizedPhone = phone != null ? PhoneNormalizer.normalize(phone) : null;
+
+        if (normalizedEmail != null && customerRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new BusinessException(ErrorCode.CONFLICT, "Customer profile already exists for this email");
         }
+        if (normalizedPhone != null && customerRepository.existsByPhone(normalizedPhone)) {
+            throw new BusinessException(ErrorCode.CONFLICT, "Customer profile already exists for this phone");
+        }
+
         UserAccount user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+
         UUID customerId = UUID.randomUUID();
         Customer customer = Customer.builder()
                 .id(customerId)
                 .user(user)
-                .email(email.trim().toLowerCase())
+                .email(normalizedEmail)
                 .firstName(firstName.trim())
                 .lastName(lastName.trim())
-                .phone(blankToNull(phone))
+                .phone(normalizedPhone)
                 .build();
         customerRepository.save(customer);
         return customerId;
     }
 
     private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
+        return value == null || value.isBlank() ? null : value.trim().toLowerCase();
     }
 }

@@ -12,5 +12,9 @@ public interface UserAccountJpaRepository extends JpaRepository<UserAccount, UUI
 
     Optional<UserAccount> findByEmailIgnoreCase(String email);
 
+    Optional<UserAccount> findByPhone(String phone);
+
     boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByPhone(String phone);
 }

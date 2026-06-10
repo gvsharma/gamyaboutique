@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Button } from "@/components/ui/button";
+import { ProductGridSkeleton } from "@/components/ui/skeleton";
 import { fetchProducts } from "@/lib/api/services/product.service";
 import { queryKeys } from "@/lib/query/query-keys";
 
@@ -27,7 +28,7 @@ export function ShopClient() {
   return (
     <div>
       <form
-        className="mb-10 flex flex-col gap-3 sm:flex-row"
+        className="mb-12 flex flex-col gap-3 sm:flex-row sm:items-center"
         onSubmit={(e) => {
           e.preventDefault();
           setPage(0);
@@ -37,31 +38,29 @@ export function ShopClient() {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search sarees, fabrics, prints…"
-          className="flex-1 rounded-sm border border-burgundy/20 bg-white px-4 py-3 text-sm outline-none ring-burgundy/30 focus:ring-2"
+          placeholder="Search sarees, lehengas, fabrics…"
+          className="input-premium flex-1"
           autoFocus={searchParams.get("focus") === "search"}
         />
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" className="sm:min-w-[7rem]">
           Search
         </Button>
       </form>
 
-      {isLoading && (
-        <p className="py-16 text-center text-stone">Loading collection…</p>
-      )}
+      {isLoading && <ProductGridSkeleton count={8} />}
       {isError && (
-        <p className="py-16 text-center text-burgundy">
-          Could not load products. Is the API running on port 8080?
+        <p className="py-16 text-center text-maroon">
+          Could not load products. Please try again shortly.
         </p>
       )}
       {data && (
         <>
-          <p className="mb-6 text-sm text-stone">
+          <p className="mb-8 text-sm text-stone">
             {data.totalElements} piece{data.totalElements !== 1 ? "s" : ""}
             {q ? ` for “${q}”` : ""}
           </p>
           <ProductGrid products={data.content} />
-          <div className="mt-12 flex justify-center gap-4">
+          <div className="mt-16 flex justify-center gap-4">
             <Button
               variant="outline"
               disabled={data.first}
@@ -70,7 +69,7 @@ export function ShopClient() {
               Previous
             </Button>
             <span className="flex items-center text-sm text-stone">
-              Page {data.page + 1} of {data.totalPages || 1}
+              {data.page + 1} / {data.totalPages || 1}
             </span>
             <Button
               variant="outline"

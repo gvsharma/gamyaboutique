@@ -61,4 +61,7 @@ export interface ProductDetail extends ProductSummary {
   primaryCategoryId: string | null;
   categories: CategorySummaryDto[];
   images: ProductImageDto[];
+  stockQuantity?: number | null;
+  lowStockThreshold?: number | null;
+  lowStock?: boolean;
 }

@@ -7,6 +7,7 @@ import com.gamyacouture.product.api.dto.ProductInterestRequest;
 import com.gamyacouture.product.api.dto.ProductListFilter;
 import com.gamyacouture.product.api.dto.ProductSearchRequest;
 import com.gamyacouture.product.api.dto.ProductSummaryDto;
+import com.gamyacouture.product.application.ProductEngagementService;
 import com.gamyacouture.product.application.ProductInterestService;
 import com.gamyacouture.shared.web.ApiResponse;
 import com.gamyacouture.shared.web.PageResponse;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Products", description = "Catalog product browse, filter, and search APIs")
@@ -39,6 +41,7 @@ public class ProductController {
 
     private final ProductQueryApi productQueryApi;
     private final ProductInterestService productInterestService;
+    private final ProductEngagementService productEngagementService;
 
     @Operation(summary = "List products with pagination, sorting, filtering, and optional search")
     @GetMapping
@@ -75,5 +78,18 @@ public class ProductController {
             @PathVariable UUID id,
             @Valid @RequestBody ProductInterestRequest request) {
         return ApiResponse.ok(productInterestService.submitInterest(id, request));
+    }
+
+    @Operation(summary = "Get related products in the same category")
+    @GetMapping("/{id}/related")
+    public ApiResponse<List<ProductSummaryDto>> relatedProducts(@PathVariable UUID id) {
+        return ApiResponse.ok(productEngagementService.relatedProducts(id));
+    }
+
+    @Operation(summary = "Record product view for recently viewed (optional auth)")
+    @PostMapping("/{id}/view")
+    public ApiResponse<Void> recordView(@PathVariable UUID id) {
+        productEngagementService.recordView(id);
+        return ApiResponse.ok(null);
     }
 }

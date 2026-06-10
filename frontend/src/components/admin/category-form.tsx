@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { createCategory } from "@/lib/api/services/admin.service";
 import type { AdminCategory, UpsertCategoryPayload } from "@/types/admin";
 
-const inputClass =
-  "mt-1 w-full rounded-sm border border-burgundy/20 bg-white px-3 py-2.5 text-sm";
+const inputClass = "admin-input";
+const labelClass = "text-eyebrow text-stone";
 
 interface CategoryFormProps {
   categories: AdminCategory[];
@@ -50,23 +50,23 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-sm border border-burgundy/10 bg-cream p-4">
-      <h3 className="font-display text-lg text-burgundy">Add category</h3>
+    <form onSubmit={handleSubmit} className="admin-card space-y-4">
+      <h3 className="font-display text-lg text-charcoal">Add category</h3>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Name</label>
+          <label className={labelClass}>Name</label>
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Slug (optional)</label>
+          <label className={labelClass}>Slug (optional)</label>
           <input className={inputClass} value={slug} onChange={(e) => setSlug(e.target.value)} />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs uppercase tracking-wider text-stone">Description</label>
+          <label className={labelClass}>Description</label>
           <input className={inputClass} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Parent</label>
+          <label className={labelClass}>Parent</label>
           <select className={inputClass} value={parentId} onChange={(e) => setParentId(e.target.value)}>
             <option value="">— Root —</option>
             {categories.map((cat) => (
@@ -77,7 +77,7 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
           </select>
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Display order</label>
+          <label className={labelClass}>Display order</label>
           <input
             className={inputClass}
             type="number"
@@ -86,7 +86,7 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
           />
         </div>
       </div>
-      {error && <p className="text-sm text-burgundy">{error}</p>}
+      {error && <p className="text-sm text-maroon">{error}</p>}
       <Button type="submit" size="sm" disabled={saving}>
         {saving ? "Creating…" : "Create category"}
       </Button>

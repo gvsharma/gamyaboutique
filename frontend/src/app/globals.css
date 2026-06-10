@@ -7,20 +7,101 @@
     scroll-behavior: smooth;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   body {
-    @apply bg-cream text-charcoal font-sans antialiased;
+    @apply bg-pearl text-charcoal font-sans antialiased;
+    font-feature-settings: "kern" 1, "liga" 1;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display font-medium tracking-tight;
+    @apply font-display font-normal tracking-tight text-charcoal;
+  }
+
+  ::selection {
+    @apply bg-blush text-charcoal;
+  }
+}
+
+@layer components {
+  .container-premium {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .text-eyebrow {
+    @apply font-sans text-caption font-medium uppercase tracking-[0.2em] text-gold-muted;
+  }
+
+  .text-body {
+    @apply text-[0.9375rem] leading-relaxed text-stone sm:text-base;
+  }
+
+  .text-price {
+    @apply text-[0.9375rem] font-medium tracking-tight text-maroon;
+  }
+
+  .surface-card {
+    @apply rounded-xl bg-pearl shadow-soft;
+  }
+
+  .surface-muted {
+    @apply rounded-xl bg-ivory/80;
+  }
+
+  .link-subtle {
+    @apply text-stone transition-colors duration-300 ease-premium hover:text-maroon;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full bg-champagne/60 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-stone;
+  }
+
+  .admin-card {
+    @apply rounded-2xl bg-pearl p-6 shadow-soft;
+  }
+
+  .admin-input {
+    @apply mt-1 w-full rounded-xl border border-charcoal/10 bg-pearl px-3 py-2.5 text-sm outline-none transition-all duration-300 focus:border-maroon/30 focus:ring-2 focus:ring-maroon/10;
+  }
+
+  .input-premium {
+    @apply w-full rounded-xl border border-charcoal/10 bg-pearl px-4 py-3 text-sm text-charcoal outline-none transition-all duration-300 ease-premium placeholder:text-stone/60 focus:border-maroon/30 focus:ring-2 focus:ring-maroon/10;
+  }
+
+  .stagger-1 {
+    animation-delay: 0.05s;
+  }
+  .stagger-2 {
+    animation-delay: 0.1s;
+  }
+  .stagger-3 {
+    animation-delay: 0.15s;
+  }
+  .stagger-4 {
+    animation-delay: 0.2s;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .animate-in-view {
+    @apply opacity-0 animate-fade-up;
   }
 }

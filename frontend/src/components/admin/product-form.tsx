@@ -21,8 +21,8 @@ import type {
   UpsertProductPayload,
 } from "@/types/admin";
 
-const inputClass =
-  "mt-1 w-full rounded-sm border border-burgundy/20 bg-white px-3 py-2.5 text-sm";
+const inputClass = "admin-input";
+const labelClass = "text-eyebrow text-stone";
 
 interface ProductFormProps {
   product?: ProductDetail;
@@ -52,6 +52,12 @@ export function ProductForm({ product }: ProductFormProps) {
   );
   const [fabricId, setFabricId] = useState(product?.fabric?.id ?? "");
   const [printId, setPrintId] = useState(product?.print?.id ?? "");
+  const [stockQuantity, setStockQuantity] = useState(
+    product?.stockQuantity != null ? String(product.stockQuantity) : "",
+  );
+  const [lowStockThreshold, setLowStockThreshold] = useState(
+    product?.lowStockThreshold != null ? String(product.lowStockThreshold) : "5",
+  );
   const [images, setImages] = useState<ProductImageInput[]>(
     product?.images?.map((img, index) => ({
       url: img.url,
@@ -83,6 +89,8 @@ export function ProductForm({ product }: ProductFormProps) {
     printId: printId || null,
     categoryIds: primaryCategoryId ? [primaryCategoryId] : [],
     images,
+    stockQuantity: stockQuantity ? Number(stockQuantity) : null,
+    lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,14 +114,14 @@ export function ProductForm({ product }: ProductFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-sm border border-burgundy/10 bg-cream p-6">
+    <form onSubmit={handleSubmit} className="admin-card space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">SKU</label>
+          <label className={labelClass}>SKU</label>
           <input className={inputClass} value={sku} onChange={(e) => setSku(e.target.value)} required />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Status</label>
+          <label className={labelClass}>Status</label>
           <select className={inputClass} value={status} onChange={(e) => setStatus(e.target.value as ProductStatus)}>
             <option value="DRAFT">Draft</option>
             <option value="ACTIVE">Active</option>
@@ -121,11 +129,11 @@ export function ProductForm({ product }: ProductFormProps) {
           </select>
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs uppercase tracking-wider text-stone">Name</label>
+          <label className={labelClass}>Name</label>
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs uppercase tracking-wider text-stone">Description</label>
+          <label className={labelClass}>Description</label>
           <textarea
             className={`${inputClass} min-h-24`}
             value={description}
@@ -133,7 +141,7 @@ export function ProductForm({ product }: ProductFormProps) {
           />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Price (INR)</label>
+          <label className={labelClass}>Price (INR)</label>
           <input
             className={inputClass}
             type="number"
@@ -145,7 +153,7 @@ export function ProductForm({ product }: ProductFormProps) {
           />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Compare at price</label>
+          <label className={labelClass}>Compare at price</label>
           <input
             className={inputClass}
             type="number"
@@ -156,7 +164,28 @@ export function ProductForm({ product }: ProductFormProps) {
           />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Primary category</label>
+          <label className={labelClass}>Stock quantity</label>
+          <input
+            className={inputClass}
+            type="number"
+            min="0"
+            placeholder="Leave empty for made-to-order"
+            value={stockQuantity}
+            onChange={(e) => setStockQuantity(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Low stock threshold</label>
+          <input
+            className={inputClass}
+            type="number"
+            min="1"
+            value={lowStockThreshold}
+            onChange={(e) => setLowStockThreshold(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Primary category</label>
           <select
             className={inputClass}
             value={primaryCategoryId}
@@ -171,7 +200,7 @@ export function ProductForm({ product }: ProductFormProps) {
           </select>
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Fabric</label>
+          <label className={labelClass}>Fabric</label>
           <select className={inputClass} value={fabricId} onChange={(e) => setFabricId(e.target.value)}>
             <option value="">— Select —</option>
             {fabrics.map((f) => (
@@ -182,7 +211,7 @@ export function ProductForm({ product }: ProductFormProps) {
           </select>
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-stone">Print</label>
+          <label className={labelClass}>Print</label>
           <select className={inputClass} value={printId} onChange={(e) => setPrintId(e.target.value)}>
             <option value="">— Select —</option>
             {prints.map((p) => (
@@ -195,13 +224,13 @@ export function ProductForm({ product }: ProductFormProps) {
       </div>
 
       <div>
-        <label className="text-xs uppercase tracking-wider text-stone">Product images (S3)</label>
+        <label className={labelClass}>Product images (S3)</label>
         <div className="mt-2">
           <ImageUploader images={images} onChange={setImages} productName={name} />
         </div>
       </div>
 
-      {error && <p className="text-sm text-burgundy">{error}</p>}
+      {error && <p className="text-sm text-maroon">{error}</p>}
 
       <div className="flex gap-3">
         <Button type="submit" disabled={saving}>

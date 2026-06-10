@@ -50,6 +50,9 @@ public interface ProductMapper {
     @Mapping(target = "categories", source = "categories")
     @Mapping(target = "effectivePrice", source = "product", qualifiedByName = "effectivePrice")
     @Mapping(target = "onOffer", source = "product", qualifiedByName = "onOffer")
+    @Mapping(target = "stockQuantity", source = "product.stockQuantity")
+    @Mapping(target = "lowStockThreshold", source = "product.lowStockThreshold")
+    @Mapping(target = "lowStock", expression = "java(isLowStock(product))")
     ProductDetailDto toDetail(Product product, List<CategorySummaryDto> categories);
 
     default List<TagDto> mapTags(Set<Tag> tags) {
@@ -70,5 +73,13 @@ public interface ProductMapper {
                 .min(Comparator.comparingInt(ProductImage::getDisplayOrder))
                 .map(ProductImage::getUrl)
                 .orElse(null);
+    }
+
+    default boolean isLowStock(Product product) {
+        if (product.getStockQuantity() == null) {
+            return false;
+        }
+        int threshold = product.getLowStockThreshold() != null ? product.getLowStockThreshold() : 5;
+        return product.getStockQuantity() <= threshold;
     }
 }

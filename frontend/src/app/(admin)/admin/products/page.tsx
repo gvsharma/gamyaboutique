@@ -51,8 +51,9 @@ export default function AdminProductsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl text-burgundy">Products</h1>
-          <p className="text-sm text-stone">Stored in RDS PostgreSQL · images in S3</p>
+          <p className="text-eyebrow">Catalog</p>
+          <h1 className="mt-2 font-display text-section-title text-charcoal">Products</h1>
+          <p className="mt-1 text-sm text-stone">Stored in RDS · images in S3</p>
         </div>
         <Link href={ROUTES.admin.productNew}>
           <Button>Add product</Button>
@@ -61,13 +62,13 @@ export default function AdminProductsPage() {
 
       <div className="flex flex-wrap gap-3">
         <input
-          className="rounded-sm border border-burgundy/20 bg-white px-3 py-2 text-sm"
+          className="admin-input !mt-0 w-64"
           placeholder="Search SKU or name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="rounded-sm border border-burgundy/20 bg-white px-3 py-2 text-sm"
+          className="admin-input !mt-0"
           value={status}
           onChange={(e) => setStatus(e.target.value as ProductStatus | "")}
         >
@@ -78,27 +79,27 @@ export default function AdminProductsPage() {
         </select>
       </div>
 
-      {actionError && <p className="text-sm text-burgundy">{actionError}</p>}
+      {actionError && <p className="text-sm text-maroon">{actionError}</p>}
       {isLoading && <p className="text-sm text-stone">Loading products…</p>}
-      {isError && <p className="text-sm text-burgundy">Failed to load products from API.</p>}
+      {isError && <p className="text-sm text-maroon">Failed to load products from API.</p>}
 
-      <div className="overflow-x-auto rounded-sm border border-burgundy/10 bg-cream">
+      <div className="admin-card overflow-x-auto !p-0">
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-burgundy/10 text-xs uppercase tracking-wider text-stone">
+          <thead className="border-b border-charcoal/5 text-eyebrow text-stone">
             <tr>
-              <th className="px-4 py-3">Image</th>
-              <th className="px-4 py-3">SKU</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Price</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-5 py-3.5">Image</th>
+              <th className="px-5 py-3.5">SKU</th>
+              <th className="px-5 py-3.5">Name</th>
+              <th className="px-5 py-3.5">Status</th>
+              <th className="px-5 py-3.5">Price</th>
+              <th className="px-5 py-3.5">Actions</th>
             </tr>
           </thead>
           <tbody>
             {data?.content.map((product) => (
-              <tr key={product.id} className="border-b border-burgundy/5">
-                <td className="px-4 py-3">
-                  <div className="relative h-12 w-12 overflow-hidden rounded-sm bg-ivory">
+              <tr key={product.id} className="border-b border-charcoal/5 last:border-0">
+                <td className="px-5 py-3.5">
+                  <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-ivory">
                     {product.primaryImageUrl ? (
                       <Image
                         src={product.primaryImageUrl}
@@ -114,15 +115,13 @@ export default function AdminProductsPage() {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 font-mono text-xs">{product.sku}</td>
-                <td className="px-4 py-3">{product.name}</td>
-                <td className="px-4 py-3">
-                  <span className="rounded-sm bg-ivory px-2 py-0.5 text-xs uppercase">
-                    {product.status ?? "—"}
-                  </span>
+                <td className="px-5 py-3.5 font-mono text-xs text-stone">{product.sku}</td>
+                <td className="px-5 py-3.5 text-charcoal">{product.name}</td>
+                <td className="px-5 py-3.5">
+                  <span className="chip">{product.status ?? "—"}</span>
                 </td>
-                <td className="px-4 py-3">{formatPrice(product.effectivePrice, product.currency)}</td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5 text-maroon">{formatPrice(product.effectivePrice, product.currency)}</td>
+                <td className="px-5 py-3.5">
                   <div className="flex flex-wrap gap-2">
                     <Link href={ROUTES.admin.productEdit(product.id)}>
                       <Button size="sm" variant="outline">
@@ -146,7 +145,7 @@ export default function AdminProductsPage() {
           </tbody>
         </table>
         {!isLoading && data?.content.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-stone">No products found.</p>
+          <p className="px-5 py-10 text-center text-sm text-stone">No products found.</p>
         )}
       </div>
     </div>

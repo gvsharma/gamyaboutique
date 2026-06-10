@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, LogOut, Package, Tags } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
+import { SITE_NAME } from "@/constants/site";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -26,15 +27,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-ivory">
-      <header className="border-b border-burgundy/10 bg-cream">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+    <div className="min-h-screen bg-ivory/40">
+      <header className="sticky top-0 z-40 border-b border-charcoal/5 bg-pearl/90 backdrop-blur-xl">
+        <div className="container-premium flex items-center justify-between py-4">
           <div>
-            <p className="font-display text-xl text-burgundy">Gamya Admin</p>
-            <p className="text-xs text-stone">{user?.email}</p>
+            <p className="font-display text-xl text-charcoal">{SITE_NAME} Admin</p>
+            <p className="text-xs text-stone">{user?.email ?? user?.phone}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href={ROUTES.home} className="text-xs text-stone hover:text-burgundy">
+          <div className="flex items-center gap-3">
+            <Link href={ROUTES.home} className="link-subtle text-xs">
               View storefront
             </Link>
             <Button type="button" variant="outline" size="sm" onClick={handleLogout}>
@@ -45,8 +46,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[220px_1fr]">
-        <aside className="h-fit rounded-sm border border-burgundy/10 bg-cream p-3">
+      <div className="container-premium grid gap-6 py-8 lg:grid-cols-[240px_1fr] lg:gap-8">
+        <aside className="h-fit rounded-2xl bg-pearl p-3 shadow-soft">
           <nav className="space-y-1">
             {nav.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -56,20 +57,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors",
+                    "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 ease-premium",
                     active
-                      ? "bg-burgundy text-cream"
-                      : "text-charcoal hover:bg-burgundy/5",
+                      ? "bg-maroon text-pearl shadow-soft"
+                      : "text-charcoal hover:bg-ivory hover:text-maroon",
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" strokeWidth={1.5} />
                   {item.label}
                 </Link>
               );
             })}
           </nav>
         </aside>
-        <main>{children}</main>
+        <main className="min-w-0">{children}</main>
       </div>
     </div>
   );

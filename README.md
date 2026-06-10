@@ -1,116 +1,222 @@
-# Gamya Couture — Backend - Website(Next js)
+# Gamya Couture
 
-Production-grade modular monolith for Gamya Couture boutique CRM and ecommerce catalog.
+Customized women's wear boutique — ecommerce storefront + admin catalog + CRM leads.  
+**Frontend:** Next.js 15 on Vercel · **Backend:** Spring Boot 3.4 on EC2 · **DB:** PostgreSQL RDS
 
-## Stack
+---
 
-- Java 21, Spring Boot 3.4, Maven
-- PostgreSQL, Spring Data JPA, Flyway
-- JWT authentication, Spring Security
-- Lombok, MapStruct, OpenAPI (Swagger)
+## 5-minute overview
 
-## Modules
+Gamya Couture is a **modular monolith**: one Spring Boot JAR serves REST APIs; a Next.js App Router site is the customer-facing storefront and admin UI. Customers browse products, manage cart/wishlist, register/login, and submit styling inquiries. Admins manage products (with S3 images), categories, and view dashboard metrics.
 
-| Package | Responsibility |
-|---------|----------------|
-| `auth` | Login, register, user accounts |
-| `product` | Products, images, interest submission |
-| `catalog` | Categories, browse by category |
-| `crm` | Lead management |
-| `customer` | Customer profiles |
-| `notification` | Outbox / event listeners (skeleton) |
-| `admin` | Dashboard APIs (ADMIN only) |
-| `shared` | Security, API envelope, exceptions, audit |
+```mermaid
+flowchart LR
+  User[Browser / Mobile]
+  Vercel[Vercel Next.js]
+  EC2[EC2 Spring Boot]
+  RDS[(RDS PostgreSQL)]
+  S3[(S3 + CloudFront)]
 
-## Frontend
+  User --> Vercel
+  Vercel -->|"/api/v1 rewrite"| EC2
+  EC2 --> RDS
+  EC2 --> S3
+  User -->|images| S3
+```
 
-Next.js 15 App Router storefront scaffold lives in [`frontend/`](frontend/). See [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) and [frontend/FOLDER-STRUCTURE.md](frontend/FOLDER-STRUCTURE.md).
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js 15, React 19, TanStack Query, Zustand, Tailwind |
+| Backend | Java 21, Spring Boot 3.4, Spring Security, JWT |
+| Database | PostgreSQL 16, Flyway, JPA |
+| Storage | AWS S3 + CloudFront for product images |
+| Deploy | GitHub Actions → EC2 (SSM); Vercel auto-deploy |
+
+**Deep dives:** [Features](docs/FEATURES.md) · [Architecture](docs/ARCHITECTURE.md) · [API](docs/API_CONTRACT.md) · [Deploy](docs/DEPLOYMENT.md)
+
+---
+
+## Features (summary)
+
+**Customer:** Home, shop, categories, product detail (gallery, related items), guest + auth cart, wishlist, register/login, forgot/reset password, profile & addresses, express interest inquiry.
+
+**Admin:** Dashboard, product CRUD + S3 upload, category CRUD, role-based access (ADMIN).
+
+**Not implemented:** Checkout, payments, order fulfillment. Password reset email via SMTP when `MAIL_ENABLED=true` (Gmail/SendGrid free tier).
+
+---
+
+## Repository structure
+
+```
+gamya-boutique/
+├── frontend/                 # Next.js storefront + admin UI
+│   └── src/
+│       ├── app/              # App Router pages (route groups)
+│       ├── components/       # UI, catalog, cart, auth, admin
+│       ├── lib/api/          # Axios client, services, endpoints
+│       └── stores/           # Zustand (auth, wishlist)
+├── src/main/java/com/gamyacouture/
+│   ├── auth/                 # Login, register, sessions, password reset
+│   ├── cart/ wishlist/       # Commerce
+│   ├── product/ catalog/     # Catalog browse + admin products
+│   ├── customer/             # Profile, addresses
+│   ├── crm/ admin/           # Leads, dashboard, media upload
+│   └── shared/               # Security, exceptions, storage
+├── src/main/resources/db/migration/   # Flyway V1–V13
+├── deploy/                   # EC2 bootstrap, systemd, env templates
+├── scripts/                  # Smoke tests, deploy helpers
+├── docs/                     # Architecture, API, schema, QA
+└── .github/workflows/        # CI + deploy
+```
+
+---
 
 ## Prerequisites
 
-- Java 21+
-- Maven 3.9+
-- Docker (for local PostgreSQL)
+- **Backend:** Java 21+, Maven 3.9+, Docker (PostgreSQL)
+- **Frontend:** Node.js 22+, npm
 
-## Quick start
+---
+
+## Local setup
+
+### 1. Database
 
 ```bash
 docker compose up -d
+# Creates PostgreSQL on localhost:5432, database gamya_couture
+```
+
+Or: `./scripts/setup-local-db.sh`
+
+### 2. Backend
+
+```bash
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-- API base: `http://localhost:8080/api/v1`
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- Health: `http://localhost:8080/actuator/health`
+| URL | Purpose |
+|-----|---------|
+| http://localhost:8080/api/v1 | API base |
+| http://localhost:8080/swagger-ui.html | OpenAPI UI |
+| http://localhost:8080/actuator/health | Health |
 
-## Default admin (local dev)
+**Default admin** (after Flyway V8 seed): `admin@gamyacouture.com` / `Admin@123`
 
-After Flyway runs, seed user is available:
+### 3. Frontend
 
-- Email: `admin@gamyacouture.com`
-- Password: `Admin@123`
+```bash
+cd frontend
+cp .env.example .env.local
+npm ci && npm run dev
+```
+
+Open http://localhost:3000
+
+---
 
 ## Environment variables
 
-| Variable | Default |
-|----------|---------|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/gamya_couture` |
-| `DB_USER` | `gamya` |
-| `DB_PASSWORD` | `gamya_secret` |
-| `JWT_SECRET` | (see `application.yml` — change in production) |
-| `JWT_ACCESS_EXPIRATION_MS` | `3600000` |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` |
+### Backend (`application.yml` / env)
 
-## Dev EC2 + RDS + Vercel (paired setup)
+| Variable | Default (local) | Required prod |
+|----------|-----------------|---------------|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/gamya_couture` | ✅ RDS JDBC URL |
+| `DB_USER` / `DB_PASSWORD` | `gamya` / `gamya_secret` | ✅ |
+| `JWT_SECRET` | dev placeholder | ✅ ≥256 bits |
+| `JWT_ACCESS_EXPIRATION_MS` | 1800000 (30m) | ☐ |
+| `JWT_REFRESH_EXPIRATION_MS` | 604800000 (7d) | ☐ |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | ✅ Vercel URL |
+| `APP_STORAGE_S3_*` | disabled locally | ✅ on EC2 |
 
-Full step-by-step: **[docs/AWS-DEV-SETUP.md](docs/AWS-DEV-SETUP.md)**
+See [deploy/env/application.env.example](deploy/env/application.env.example).
 
-Backend and frontend env vars are designed to work together. See `frontend/.env.example` and `.env.prod.example`.
+### Frontend (`frontend/.env.local`)
 
-**Database:** Flyway migrations in `src/main/resources/db/migration/` create all tables and seed sample data on startup. RDS database name is `gamya` (local Docker uses `gamya_couture`).
+| Variable | Local | Vercel prod |
+|----------|-------|-------------|
+| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8080/api/v1` | `/api/v1` |
+| `API_PROXY_TARGET` | (empty) | `http://<EC2_IP>` |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | `https://gamyaboutique.vercel.app` |
+| `NEXT_PUBLIC_IMAGE_CDN_HOST` | CloudFront hostname | same |
 
-**Production deploy:** GitHub Actions deploys to EC2 on every merge to `main`. See [deploy/README.md](deploy/README.md) for EC2 bootstrap, secrets, and systemd setup.
+---
 
-| Layer | Variable | Dev value |
-|-------|----------|-----------|
-| **EC2** | `DB_URL` | `jdbc:postgresql://gamya-couture-dev-pg....amazonaws.com:5432/gamya` |
-| **EC2** | `DB_USER` / `DB_PASSWORD` | `gamya_admin` / `gamyaadmin` |
-| **EC2** | `APP_STORAGE_S3_BUCKET` | `gamya-couture-dev-media` |
-| **EC2** | `CORS_ALLOWED_ORIGINS` | `https://gamyaboutique.vercel.app,http://localhost:3000` |
-| **EC2** | `SPRING_PROFILES_ACTIVE` | `dev` |
-| **Vercel** | `NEXT_PUBLIC_API_BASE_URL` | `/api/v1` |
-| **Vercel** | `API_PROXY_TARGET` | `http://13.232.200.243` |
-| **Vercel** | `NEXT_PUBLIC_SITE_URL` | `https://gamyaboutique.vercel.app` |
-
-### Deploy backend on EC2 (RDS)
+## Common commands
 
 ```bash
-# On EC2 (Session Manager)
-git clone <repo> && cd gamya-boutique
-sudo bash deploy/scripts/ec2-bootstrap.sh
-sudo bash deploy/scripts/sync-rds-env-from-ssm.sh
-# Edit JWT_SECRET in /opt/gamya-couture/config/application.env
-sudo systemctl start gamya-couture-backend
-./scripts/verify-api-integration.sh http://13.232.200.243
+# Backend
+mvn verify                          # compile + test (Docker required)
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+
+# Frontend
+cd frontend && npm run dev
+cd frontend && npm run lint && npx tsc --noEmit && npm run build
+
+# Smoke test (after deploy)
+./scripts/smoke-test-api.sh http://<EC2_HOST>
+./scripts/verify-api-integration.sh http://<EC2_HOST>
+
+# EC2 service (on server)
+sudo systemctl status gamya-couture-backend
+sudo journalctl -u gamya-couture-backend -f
 ```
 
-nginx on the host proxies `:80` → Spring Boot `:8080`. Public API base: `http://13.232.200.243/api/v1`.
+---
 
-### Deploy frontend on Vercel
+## CI/CD
 
-Set the three Vercel variables above, redeploy, then open the storefront — products load from EC2 via same-origin rewrite (avoids HTTPS→HTTP mixed content).
+| Workflow | Trigger | Action |
+|----------|---------|--------|
+| [ci.yml](.github/workflows/ci.yml) | PR + push to `main` | Backend test, frontend lint/build, security scan |
+| [deploy.yml](.github/workflows/deploy.yml) | Push to `main` only | Validate → build JAR → S3 → SSM deploy → health + smoke |
 
-## Phase 1 APIs
+**Vercel:** Connect repo, root directory `frontend`, deploys on merge to `main`.
 
-- **Public (guest):** `GET /catalog/**`, `GET /products/**`, `POST /products/{id}/interest`
-- **Auth:** `POST /auth/login`, `POST /auth/register`, `GET /auth/me`
-- **CRM (STAFF/ADMIN):** `/crm/leads/**`
-- **Admin:** `GET /admin/dashboard/**`
+Details: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) · [docs/production/](docs/production/)
 
-## Out of scope
+---
 
-Payment, orders, refresh token rotation (TODO in README only), email/SMS delivery.
+## Deployment overview
 
-## Optional: Spring Modulith
+| Component | Target |
+|-----------|--------|
+| Backend JAR | EC2 Ubuntu, systemd `gamya-couture-backend`, nginx :80 → :8080 |
+| Frontend | Vercel (API proxied to EC2) |
+| Database | RDS PostgreSQL (private, EC2 SG access) |
+| Images | S3 `gamya-couture-dev-media` + CloudFront |
 
-Add `spring-modulith-starter` and `ApplicationModules.of(App.class).verify()` in tests to enforce package boundaries.
+Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| 502 on `/api/v1/*` | Spring Boot down | `systemctl status gamya-couture-backend`; check RDS password in `application.env` |
+| CORS errors | Origin not allowed | Add Vercel URL to `CORS_ALLOWED_ORIGINS` |
+| Mixed content on Vercel | HTTP API URL in browser | Use `/api/v1` + `API_PROXY_TARGET` |
+| Flyway migration fail | Schema drift | Check `flyway_schema_history`; restore RDS snapshot if needed |
+| S3 upload fail | IAM missing on EC2 role | Add `s3:PutObject` on media bucket |
+| Cart empty after login | Merge failed silently | Re-login; check guest cart header; see [AUTH_FLOW](docs/AUTH_FLOW.md) |
+| Tests fail locally | Docker not running | Start Docker for Testcontainers |
+
+---
+
+## Documentation index
+
+| Doc | Purpose |
+|-----|---------|
+| [docs/FEATURES.md](docs/FEATURES.md) | Business features (2 min read) |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Technical architecture (10 min) |
+| [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md) | Tables, ER diagram |
+| [docs/API_CONTRACT.md](docs/API_CONTRACT.md) | REST endpoints |
+| [docs/AUTH_FLOW.md](docs/AUTH_FLOW.md) | Security & auth flows |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production deploy |
+| [docs/TESTING.md](docs/TESTING.md) | QA & test strategy |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Engineering decisions |
+| [CHANGELOG.md](CHANGELOG.md) | Major changes |
+| [TODO.md](TODO.md) | Roadmap |
+| [GO_LIVE_CHECKLIST.md](GO_LIVE_CHECKLIST.md) | MVP launch checklist |

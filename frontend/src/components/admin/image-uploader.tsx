@@ -49,7 +49,7 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
         {images.map((image, index) => (
           <div
             key={`${image.url}-${index}`}
-            className="relative h-24 w-24 overflow-hidden rounded-sm border border-burgundy/20 bg-white"
+            className="relative h-24 w-24 overflow-hidden rounded-xl border border-charcoal/10 bg-pearl"
           >
             <Image src={image.url} alt={image.altText ?? "Product"} fill className="object-cover" unoptimized />
             <button
@@ -63,7 +63,7 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
         ))}
       </div>
 
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-burgundy/30 px-4 py-3 text-sm text-burgundy hover:bg-burgundy/5">
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-charcoal/15 px-4 py-3 text-sm text-maroon transition-colors hover:border-maroon/30 hover:bg-ivory/60">
         <Upload className="h-4 w-4" />
         {uploading ? "Uploading to S3…" : "Upload images"}
         <input
@@ -76,7 +76,7 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
         />
       </label>
 
-      {error && <p className="text-xs text-burgundy">{error}</p>}
+      {error && <p className="text-xs text-maroon">{error}</p>}
       <p className="text-xs text-stone">Images upload to S3 (`gamya-couture-dev-media`) and URLs are saved with the product.</p>
     </div>
   );

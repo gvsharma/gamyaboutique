@@ -18,7 +18,7 @@ export function CategoryPageClient({ slug }: { slug: string }) {
   if (isLoading) return <p className="mt-10 text-center text-stone">Loading…</p>;
   if (isError) {
     return (
-      <p className="mt-10 text-center text-burgundy">
+      <p className="mt-10 text-center text-maroon">
         Could not load this category. Check the API is running.
       </p>
     );
