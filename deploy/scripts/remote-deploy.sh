@@ -76,7 +76,25 @@ prune_backups() {
   done
 }
 
+# nginx default is 1m — product photos from phones are often 2–5MB.
+ensure_nginx_upload_limit() {
+  local conf="/etc/nginx/conf.d/gamya-api.conf"
+  if [[ ! -f "${conf}" ]]; then
+    log "WARN: nginx config ${conf} not found; skipping upload size check"
+    return 0
+  fi
+  if grep -q 'client_max_body_size' "${conf}"; then
+    return 0
+  fi
+  log "Setting nginx client_max_body_size 15M for admin image uploads"
+  sed -i '/server_name _;/a\    client_max_body_size 15M;' "${conf}"
+  nginx -t
+  systemctl reload nginx
+}
+
 require_root
+
+ensure_nginx_upload_limit
 
 mkdir -p "${APP_PATH}/incoming" "${APP_PATH}/app" "${BACKUP_DIR}" "${APP_PATH}/logs"
 chown -R gamya:gamya "${APP_PATH}/logs"
