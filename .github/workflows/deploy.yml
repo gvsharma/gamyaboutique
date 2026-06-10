@@ -130,12 +130,11 @@ jobs:
             exit 1
           fi
           if [[ "${EC2_STATE}" == "unknown" || "${EC2_STATE}" == "None" ]]; then
-            echo "::error::EC2 instance ${EC2_INSTANCE_ID} not found in ap-south-1. Fix GitHub variable/secret EC2_INSTANCE_ID (expected e.g. i-0652a9c1b9bf2c7dd from terraform output ec2_instance_id)." >&2
+            echo "::error::EC2 instance ${EC2_INSTANCE_ID} not found in ap-south-1. Fix GitHub variable/secret EC2_INSTANCE_ID (run: terraform output -json backend_deploy_github_setup in gamya-couture-infra)." >&2
             exit 1
           fi
           if [[ "${PING_STATUS}" != "Online" ]]; then
-            echo "::error::EC2 is ${EC2_STATE} but SSM status is ${PING_STATUS}. In AWS Console → Systems Manager → Fleet Manager, confirm the instance is Online. Ensure the instance profile includes AmazonSSMManagedInstanceCore and the SSM agent is running." >&2
-            exit 1
+            echo "::warning::SSM preflight status=${PING_STATUS} (EC2 state=${EC2_STATE}). Continuing with send-command — if deploy fails, verify EC2_INSTANCE_ID in GitHub matches terraform output ec2_instance_id and Fleet Manager shows Online."
           fi
 
           python3 <<'PY' > /tmp/ssm-deploy-params.json

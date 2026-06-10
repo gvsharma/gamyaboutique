@@ -49,15 +49,15 @@ Configure in **gvsharma/gamyaboutique** → Settings → Secrets and variables �
 
 | Name | Example (dev) | Source |
 |------|---------------|--------|
-| `DEPLOY_BUCKET` | `gamya-couture-dev-deploy` | `backend_deploy_bucket` output |
-| `EC2_INSTANCE_ID` | `i-0652a9c1b9bf2c7dd` | `ec2_instance_id` output |
+| `DEPLOY_BUCKET` | `gamya-couture-dev-backend-deploy` | `backend_deploy_bucket` output |
+| `EC2_INSTANCE_ID` | `i-0e40345b69331ddd2` | `ec2_instance_id` output |
 | `EC2_HOST` | `13.232.200.243` | `api_public_ip` output |
 
 No SSH keys required for CI. Port 22 can stay locked to your admin IP only.
 
 ## EC2 one-time setup
 
-Connect via **AWS Session Manager** (instance `i-0652a9c1b9bf2c7dd`, region `ap-south-1`).
+Connect via **AWS Session Manager** (instance `i-0e40345b69331ddd2`, region `ap-south-1`).
 
 ### 1. Clone repo and bootstrap
 
@@ -167,6 +167,6 @@ See `frontend/.env.example` in this repo.
 | Output | Value |
 |--------|-------|
 | `api_public_ip` | `13.232.200.243` |
-| `ec2_instance_id` | `i-0652a9c1b9bf2c7dd` |
+| `ec2_instance_id` | `i-0e40345b69331ddd2` |
 | `aws_region` | `ap-south-1` |
 | `health_url` | `http://13.232.200.243/health` (nginx static; app health is `/actuator/health`) |
