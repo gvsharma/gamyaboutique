@@ -34,6 +34,11 @@ wait_for_health() {
       log "${label}: health check passed (${HEALTH_URL})"
       return 0
     fi
+    if systemctl is-failed --quiet "${SERVICE_NAME}" 2>/dev/null; then
+      log "ERROR: ${SERVICE_NAME} failed during startup (sync DB_PASSWORD from SSM into ${APP_PATH}/config/application.env)"
+      journalctl -u "${SERVICE_NAME}" -n 25 --no-pager 2>/dev/null || true
+      return 1
+    fi
     log "${label}: attempt ${attempt}/${MAX_ATTEMPTS} — not healthy yet"
     sleep "${SLEEP_SECONDS}"
   done
