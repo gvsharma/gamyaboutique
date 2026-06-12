@@ -10,13 +10,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-maroon text-pearl hover:bg-maroon-hover shadow-soft active:scale-[0.98] disabled:opacity-50",
+    "bg-charcoal text-pearl hover:bg-maroon shadow-soft active:scale-[0.98] disabled:opacity-50",
   secondary:
     "bg-champagne text-charcoal hover:bg-gold-soft shadow-soft active:scale-[0.98] disabled:opacity-50",
   soft: "bg-blush/50 text-maroon hover:bg-blush active:scale-[0.98] disabled:opacity-50",
   ghost: "text-charcoal hover:bg-ivory disabled:opacity-50",
   outline:
-    "border border-charcoal/12 text-charcoal hover:border-maroon/30 hover:bg-maroon/5 disabled:opacity-50",
+    "border border-charcoal/15 text-charcoal hover:border-charcoal hover:bg-charcoal/5 disabled:opacity-50",
 };
 
 const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {

@@ -1,46 +1,115 @@
 import Link from "next/link";
+import { Instagram, MapPin, Phone } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { CONTACT, SITE_NAME, SITE_TAGLINE } from "@/constants/site";
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-charcoal/5 bg-ivory/50">
-      <div className="container-premium grid gap-12 py-16 md:grid-cols-3 lg:py-20">
-        <div>
-          <p className="font-display text-2xl text-charcoal">{SITE_NAME}</p>
-          <p className="mt-3 max-w-xs text-body">{SITE_TAGLINE}</p>
+    <footer className="mt-auto bg-charcoal text-pearl">
+      <div className="container-premium grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-20">
+        <div className="lg:col-span-1">
+          <p className="font-display text-2xl tracking-tight">{SITE_NAME}</p>
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-pearl/65">{SITE_TAGLINE}</p>
         </div>
+
         <div>
-          <p className="text-eyebrow text-maroon">Explore</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-pearl/50">
+            Collections
+          </p>
           <ul className="mt-5 space-y-3 text-sm">
-            <li><Link href={ROUTES.shop} className="link-subtle">All collections</Link></li>
-            <li><Link href={ROUTES.category("sarees")} className="link-subtle">Sarees</Link></li>
-            <li><Link href={ROUTES.category("lehengas")} className="link-subtle">Lehengas</Link></li>
-            <li><Link href={ROUTES.category("bridal")} className="link-subtle">Bridal</Link></li>
-            <li><Link href={ROUTES.about} className="link-subtle">Our story</Link></li>
+            <li>
+              <Link href={ROUTES.shop} className="text-pearl/75 transition-colors hover:text-pearl">
+                All collections
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.category("sarees")} className="text-pearl/75 transition-colors hover:text-pearl">
+                Sarees
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.category("lehengas")} className="text-pearl/75 transition-colors hover:text-pearl">
+                Lehengas
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.category("bridal")} className="text-pearl/75 transition-colors hover:text-pearl">
+                Bridal
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.about} className="text-pearl/75 transition-colors hover:text-pearl">
+                Our story
+              </Link>
+            </li>
           </ul>
         </div>
+
         <div>
-          <p className="text-eyebrow text-maroon">Visit us</p>
-          <div className="mt-5 space-y-3 text-sm text-stone">
-            <p>
-              <a href={CONTACT.mapsUrl} target="_blank" rel="noopener noreferrer" className="link-subtle">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-pearl/50">
+            Customer care
+          </p>
+          <ul className="mt-5 space-y-3 text-sm">
+            <li>
+              <Link href={ROUTES.contact} className="text-pearl/75 transition-colors hover:text-pearl">
+                Contact us
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.account} className="text-pearl/75 transition-colors hover:text-pearl">
+                My account
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.wishlist} className="text-pearl/75 transition-colors hover:text-pearl">
+                Wishlist
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-pearl/50">
+            Visit us
+          </p>
+          <div className="mt-5 space-y-4 text-sm text-pearl/75">
+            <p className="flex items-start gap-2.5">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-pearl/40" strokeWidth={1.5} />
+              <a
+                href={CONTACT.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-pearl"
+              >
                 {CONTACT.address}
               </a>
             </p>
-            <p>
-              <a href={CONTACT.phoneHref} className="link-subtle">{CONTACT.phoneDisplay}</a>
+            <p className="flex items-center gap-2.5">
+              <Phone className="h-4 w-4 shrink-0 text-pearl/40" strokeWidth={1.5} />
+              <a href={CONTACT.phoneHref} className="transition-colors hover:text-pearl">
+                {CONTACT.phoneDisplay}
+              </a>
             </p>
-            <p>
-              <a href={CONTACT.instagramUrl} target="_blank" rel="noopener noreferrer" className="link-subtle">
+            <p className="flex items-center gap-2.5">
+              <Instagram className="h-4 w-4 shrink-0 text-pearl/40" strokeWidth={1.5} />
+              <a
+                href={CONTACT.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-pearl"
+              >
                 {CONTACT.instagramHandle}
               </a>
             </p>
           </div>
         </div>
       </div>
-      <div className="border-t border-charcoal/5 py-6 text-center text-xs text-stone/80">
-        © {new Date().getFullYear()} {SITE_NAME}. Crafted with care in Hyderabad.
+
+      <div className="border-t border-pearl/10">
+        <div className="container-premium flex flex-col items-center justify-between gap-3 py-6 text-xs text-pearl/45 sm:flex-row">
+          <p>© {new Date().getFullYear()} {SITE_NAME}. Crafted with care in Hyderabad.</p>
+          <p className="tracking-wide">Luxury Indian couture</p>
+        </div>
       </div>
     </footer>
   );
