@@ -1,0 +1,12 @@
+ALTER TABLE carts
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS updated_by VARCHAR(255);
+
+ALTER TABLE wishlist_items
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS updated_by VARCHAR(255);
+
+CREATE TRIGGER trg_wishlist_items_updated_at
+    BEFORE UPDATE ON wishlist_items
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();

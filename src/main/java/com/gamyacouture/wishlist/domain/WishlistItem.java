@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -31,8 +30,4 @@ public class WishlistItem extends BaseSoftDeletableEntity {
 
     @Column(name = "product_id", nullable = false)
     private UUID productId;
-
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
 }
