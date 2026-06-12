@@ -84,11 +84,16 @@ jobs:
           missing=()
           [[ -z "${AWS_BACKEND_DEPLOY_ROLE_ARN//[[:space:]]/}" ]] && missing+=(AWS_BACKEND_DEPLOY_ROLE_ARN)
           [[ -z "${DEPLOY_BUCKET//[[:space:]]/}" ]] && missing+=(DEPLOY_BUCKET)
-          [[ -z "${EC2_INSTANCE_ID//[[:space:]]/}" ]] && missing+=(EC2_INSTANCE_ID)
-          [[ -z "${EC2_HOST//[[:space:]]/}" ]] && missing+=(EC2_HOST)
           if [[ ${#missing[@]} -gt 0 ]]; then
-            echo "::error title=Missing deploy config::Set AWS_BACKEND_DEPLOY_ROLE_ARN, DEPLOY_BUCKET, EC2_INSTANCE_ID, EC2_HOST in GitHub Actions secrets/variables." >&2
+            echo "::error title=Missing deploy config::Set AWS_BACKEND_DEPLOY_ROLE_ARN and DEPLOY_BUCKET in GitHub Actions secrets/variables." >&2
             exit 1
+          fi
+
+          if [[ -z "${EC2_INSTANCE_ID//[[:space:]]/}" ]]; then
+            echo "EC2_INSTANCE_ID not set — will resolve from AWS by instance Name tag during deploy."
+          fi
+          if [[ -z "${EC2_HOST//[[:space:]]/}" ]]; then
+            echo "EC2_HOST not set — will resolve current public IP from AWS during deploy."
           fi
 
           echo "deploy_bucket=${DEPLOY_BUCKET}" >> "$GITHUB_OUTPUT"
@@ -130,12 +135,21 @@ jobs:
               --output text
           }
 
+          if [[ -z "${EC2_INSTANCE_ID}" ]]; then
+            echo "Resolving EC2 instance by tag Name=${EC2_NAME_TAG}"
+            EC2_INSTANCE_ID="$(resolve_by_name_tag)"
+            if [[ -z "${EC2_INSTANCE_ID}" || "${EC2_INSTANCE_ID}" == "None" ]]; then
+              echo "::error::No EC2 instance found with tag Name=${EC2_NAME_TAG}." >&2
+              exit 1
+            fi
+          fi
+
           STATE="$(instance_state "${EC2_INSTANCE_ID}")"
           if [[ "${STATE}" == "missing" || "${STATE}" == "None" || "${STATE}" == "terminated" ]]; then
             echo "Configured EC2_INSTANCE_ID ${EC2_INSTANCE_ID} is ${STATE}; resolving latest instance with tag Name=${EC2_NAME_TAG}"
             RESOLVED="$(resolve_by_name_tag)"
             if [[ -z "${RESOLVED}" || "${RESOLVED}" == "None" ]]; then
-              echo "::error::No running EC2 found with tag Name=${EC2_NAME_TAG}." >&2
+              echo "::error::No EC2 instance found with tag Name=${EC2_NAME_TAG}." >&2
               exit 1
             fi
             EC2_INSTANCE_ID="${RESOLVED}"

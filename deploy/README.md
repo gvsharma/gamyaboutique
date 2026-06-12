@@ -47,11 +47,13 @@ Configure in **gvsharma/gamyaboutique** → Settings → Secrets and variables �
 
 **Variables or secrets** (Actions → **Variables** tab preferred; **Secrets** also works):
 
-| Name | Example (dev) | Source |
-|------|---------------|--------|
-| `DEPLOY_BUCKET` | `gamya-couture-dev-deploy` | `backend_deploy_bucket` output |
-| `EC2_INSTANCE_ID` | `i-0652a9c1b9bf2c7dd` | `ec2_instance_id` output |
-| `EC2_HOST` | `13.232.200.243` | `api_public_ip` output |
+| Name | Required | Example (dev) | Source |
+|------|----------|---------------|--------|
+| `DEPLOY_BUCKET` | Yes | `gamya-couture-dev-deploy` | `backend_deploy_bucket` output |
+| `EC2_INSTANCE_ID` | No | `i-0652a9c1b9bf2c7dd` | `ec2_instance_id` output; auto-resolved by tag `gamya-couture-dev-api` if missing/stale |
+| `EC2_HOST` | No | `13.232.200.243` | `api_public_ip` output (Elastic IP); auto-resolved at deploy time if missing |
+
+Terraform in [gamya-couture-infra](https://github.com/gvsharma/gamya-couture-infra) can manage these automatically when `GAMYABOUTIQUE_GH_TOKEN` is set on the infra repo (see `modules/github-backend-deploy-config`).
 
 No SSH keys required for CI. Port 22 can stay locked to your admin IP only.
 

@@ -112,7 +112,7 @@ Workflow: `.github/workflows/deploy.yml`
 3. SSM runs `deploy/scripts/remote-deploy.sh` on EC2
 4. Health check + `scripts/smoke-test-api.sh`
 
-**GitHub secrets/variables:** `AWS_BACKEND_DEPLOY_ROLE_ARN`, `DEPLOY_BUCKET`, `EC2_INSTANCE_ID`, `EC2_HOST`
+**GitHub secrets/variables:** `AWS_BACKEND_DEPLOY_ROLE_ARN`, `DEPLOY_BUCKET` (required). `EC2_INSTANCE_ID` and `EC2_HOST` are optional — deploy resolves the live EC2 by tag `gamya-couture-dev-api`. Infra Terraform can auto-sync all four when `GAMYABOUTIQUE_GH_TOKEN` is configured on `gamya-couture-infra`.
 
 Optional: `SMOKE_TEST_EMAIL`, `SMOKE_TEST_PASSWORD` for authenticated smoke tests.
 
