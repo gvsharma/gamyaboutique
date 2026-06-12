@@ -59,7 +59,8 @@
   }
 
   .surface-muted {
-    @apply rounded-xl bg-warm/80;
+    @apply rounded-xl bg-warm;
+    --tw-bg-opacity: 0.8;
   }
 
   .link-subtle {
@@ -67,11 +68,18 @@
   }
 
   .chip {
-    @apply inline-flex items-center rounded-full bg-linen/80 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-stone;
+    @apply inline-flex items-center rounded-full bg-linen px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-stone;
+    --tw-bg-opacity: 0.8;
   }
 
   .category-pill {
-    @apply inline-flex shrink-0 items-center rounded-full border border-charcoal/8 bg-pearl px-5 py-2 text-sm text-charcoal transition-all duration-300 ease-premium hover:border-maroon/25 hover:bg-ivory hover:text-maroon;
+    @apply inline-flex shrink-0 items-center rounded-full border border-charcoal bg-pearl px-5 py-2 text-sm text-charcoal transition-all duration-300 ease-premium hover:bg-ivory hover:text-maroon;
+    --tw-border-opacity: 0.08;
+  }
+
+  .category-pill:hover {
+    --tw-border-opacity: 0.25;
+    @apply border-maroon;
   }
 
   .category-pill-active {
@@ -83,11 +91,27 @@
   }
 
   .admin-input {
-    @apply mt-1 w-full rounded-xl border border-charcoal/10 bg-pearl px-3 py-2.5 text-sm outline-none transition-all duration-300 focus:border-maroon/30 focus:ring-2 focus:ring-maroon/10;
+    @apply mt-1 w-full rounded-xl border border-charcoal bg-pearl px-3 py-2.5 text-sm outline-none transition-all duration-300 focus:border-maroon focus:ring-2 focus:ring-maroon;
+    --tw-border-opacity: 0.1;
+  }
+
+  .admin-input:focus {
+    --tw-border-opacity: 0.3;
+    --tw-ring-opacity: 0.1;
   }
 
   .input-premium {
-    @apply w-full rounded-full border border-charcoal/10 bg-pearl px-5 py-3 text-sm text-charcoal outline-none transition-all duration-300 ease-premium placeholder:text-stone/60 focus:border-maroon/30 focus:ring-2 focus:ring-maroon/10;
+    @apply w-full rounded-full border border-charcoal bg-pearl px-5 py-3 text-sm text-charcoal outline-none transition-all duration-300 ease-premium placeholder:text-stone focus:border-maroon focus:ring-2 focus:ring-maroon;
+    --tw-border-opacity: 0.1;
+  }
+
+  .input-premium::placeholder {
+    --tw-text-opacity: 0.6;
+  }
+
+  .input-premium:focus {
+    --tw-border-opacity: 0.3;
+    --tw-ring-opacity: 0.1;
   }
 
   .promo-strip {

@@ -5,12 +5,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        /* Legacy aliases — map to new tokens */
+        /* Legacy aliases — map to new tokens (<alpha-value> enables /opacity in @apply) */
         cream: "#FAF7F2",
-        ivory: "#F3EEE7",
-        linen: "#EDE8E0",
+        ivory: "rgb(243 238 231 / <alpha-value>)",
+        linen: "rgb(237 232 224 / <alpha-value>)",
         sand: "#D9D0C5",
-        warm: "#F5F0E8",
+        warm: "rgb(245 240 232 / <alpha-value>)",
         burgundy: {
           DEFAULT: "#7A3E48",
           dark: "#5C2E36",
@@ -22,10 +22,10 @@ const config: Config = {
           muted: "#B89B5E",
           soft: "#E8DFC8",
         },
-        charcoal: "#1A1A1A",
-        stone: "#6B6560",
+        charcoal: "rgb(26 26 26 / <alpha-value>)",
+        stone: "rgb(107 101 96 / <alpha-value>)",
         /* Premium palette */
-        pearl: "#FFFCF9",
+        pearl: "rgb(255 252 249 / <alpha-value>)",
         champagne: "#E8DFD0",
         blush: "#E8D5D0",
         rose: {
@@ -33,7 +33,7 @@ const config: Config = {
           soft: "#F0E4E2",
         },
         maroon: {
-          DEFAULT: "#7A3E48",
+          DEFAULT: "rgb(122 62 72 / <alpha-value>)",
           hover: "#6A3540",
         },
         success: "#4A7C59",
