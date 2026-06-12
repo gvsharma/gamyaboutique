@@ -82,8 +82,8 @@ jobs:
           npm ci --ignore-scripts
           npm audit --audit-level=high
 
-      - name: Trivy filesystem scan
+      - name: Trivy filesystem scan (frontend)
         run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.58.2
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.69.3
           trivy --version
-          trivy fs --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 --scanners vuln .
+          trivy fs --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 --scanners vuln frontend
