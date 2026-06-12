@@ -36,7 +36,7 @@ export function Navbar() {
   });
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -54,51 +54,74 @@ export function Navbar() {
 
   return (
     <>
+      {/* Announcement strip */}
+      <div className="hidden border-b border-charcoal/5 bg-warm py-2 text-center sm:block">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone">
+          Free styling consultation ·{" "}
+          <Link href={ROUTES.contact} className="text-maroon transition-colors hover:text-maroon-hover">
+            Book now
+          </Link>
+        </p>
+      </div>
+
       <header
         className={cn(
-          "sticky top-0 z-50 transition-all duration-500 ease-premium",
+          "relative sticky top-0 z-50 transition-all duration-500 ease-premium",
           scrolled
-            ? "border-b border-charcoal/5 bg-pearl/90 py-0 shadow-soft backdrop-blur-xl"
-            : "border-b border-transparent bg-pearl/70 py-1 backdrop-blur-md",
+            ? "border-b border-charcoal/5 bg-pearl/95 shadow-soft backdrop-blur-xl"
+            : "border-b border-charcoal/5 bg-pearl/80 backdrop-blur-md",
         )}
       >
-        <div
-          className={cn(
-            "container-premium flex items-center justify-between transition-all duration-500 ease-premium",
-            scrolled ? "h-14" : "h-16",
-          )}
-        >
-          <Link
-            href={ROUTES.home}
-            className="font-display text-[1.35rem] tracking-tight text-charcoal transition-colors hover:text-maroon sm:text-2xl"
-          >
-            {SITE_NAME}
-          </Link>
-
-          <nav className="hidden items-center gap-8 lg:flex">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="link-subtle text-sm">
+        <div className="container-premium flex h-14 items-center justify-between lg:h-16">
+          {/* Left nav — desktop */}
+          <nav className="hidden flex-1 items-center gap-7 lg:flex">
+            {navLinks.slice(0, 3).map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="link-subtle text-[13px] tracking-wide"
+              >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <Link
+            href={ROUTES.home}
+            className="font-display text-xl tracking-tight text-charcoal transition-colors hover:text-maroon sm:text-[1.65rem] lg:absolute lg:left-1/2 lg:-translate-x-1/2"
+          >
+            {SITE_NAME}
+          </Link>
+
+          {/* Right nav — desktop + icons */}
+          <div className="flex flex-1 items-center justify-end gap-0.5 sm:gap-1">
+            <nav className="mr-4 hidden items-center gap-7 lg:flex">
+              {navLinks.slice(3).map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="link-subtle text-[13px] tracking-wide"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
             <Link
               href={`${ROUTES.shop}?focus=search`}
-              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory hover:text-maroon"
+              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal"
               aria-label="Search"
             >
-              <Search className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.5} />
+              <Search className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
             </Link>
             <Link
               href={ROUTES.wishlist}
-              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory hover:text-maroon"
+              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal"
               aria-label="Wishlist"
             >
-              <Heart className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.5} />
+              <Heart className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
               {wishlistCount > 0 && (
-                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-maroon px-1 text-[9px] font-medium text-pearl">
+                <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-charcoal px-0.5 text-[8px] font-medium text-pearl">
                   {wishlistCount}
                 </span>
               )}
@@ -106,26 +129,26 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory hover:text-maroon"
+              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal"
               aria-label="Cart"
             >
-              <ShoppingBag className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.5} />
+              <ShoppingBag className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-maroon px-1 text-[9px] font-medium text-pearl">
+                <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-charcoal px-0.5 text-[8px] font-medium text-pearl">
                   {cartCount}
                 </span>
               )}
             </button>
             <Link
               href={accountHref}
-              className="hidden rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory hover:text-maroon sm:block"
+              className="hidden rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal sm:block"
               aria-label="Account"
             >
-              <User className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.5} />
+              <User className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
             </Link>
             <button
               type="button"
-              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory lg:hidden"
+              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal lg:hidden"
               onClick={() => setOpen(true)}
               aria-label="Menu"
             >
@@ -144,7 +167,7 @@ export function Navbar() {
       >
         <div
           className={cn(
-            "absolute inset-0 bg-charcoal/25 backdrop-blur-sm transition-opacity duration-400 ease-premium",
+            "absolute inset-0 bg-charcoal/30 backdrop-blur-sm transition-opacity duration-400 ease-premium",
             open ? "opacity-100" : "opacity-0",
           )}
           onClick={() => setOpen(false)}

@@ -21,7 +21,7 @@
   }
 
   body {
-    @apply bg-pearl text-charcoal font-sans antialiased;
+    @apply bg-cream text-charcoal font-sans antialiased;
     font-feature-settings: "kern" 1, "liga" 1;
   }
 
@@ -51,7 +51,7 @@
   }
 
   .text-price {
-    @apply text-[0.9375rem] font-medium tracking-tight text-maroon;
+    @apply text-[0.9375rem] font-medium tracking-tight text-charcoal;
   }
 
   .surface-card {
@@ -59,7 +59,7 @@
   }
 
   .surface-muted {
-    @apply rounded-xl bg-ivory/80;
+    @apply rounded-xl bg-warm/80;
   }
 
   .link-subtle {
@@ -67,7 +67,15 @@
   }
 
   .chip {
-    @apply inline-flex items-center rounded-full bg-champagne/60 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-stone;
+    @apply inline-flex items-center rounded-full bg-linen/80 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-stone;
+  }
+
+  .category-pill {
+    @apply inline-flex shrink-0 items-center rounded-full border border-charcoal/8 bg-pearl px-5 py-2 text-sm text-charcoal transition-all duration-300 ease-premium hover:border-maroon/25 hover:bg-ivory hover:text-maroon;
+  }
+
+  .category-pill-active {
+    @apply border-charcoal bg-charcoal text-pearl hover:border-charcoal hover:bg-charcoal hover:text-pearl;
   }
 
   .admin-card {
@@ -79,7 +87,15 @@
   }
 
   .input-premium {
-    @apply w-full rounded-xl border border-charcoal/10 bg-pearl px-4 py-3 text-sm text-charcoal outline-none transition-all duration-300 ease-premium placeholder:text-stone/60 focus:border-maroon/30 focus:ring-2 focus:ring-maroon/10;
+    @apply w-full rounded-full border border-charcoal/10 bg-pearl px-5 py-3 text-sm text-charcoal outline-none transition-all duration-300 ease-premium placeholder:text-stone/60 focus:border-maroon/30 focus:ring-2 focus:ring-maroon/10;
+  }
+
+  .promo-strip {
+    @apply relative overflow-hidden bg-charcoal text-pearl;
+  }
+
+  .product-image-wrap {
+    @apply relative aspect-[3/4] overflow-hidden bg-linen;
   }
 
   .stagger-1 {
@@ -103,5 +119,13 @@
 
   .animate-in-view {
     @apply opacity-0 animate-fade-up;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
