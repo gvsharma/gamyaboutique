@@ -17,11 +17,15 @@ export default function EditProductPage({
   });
 
   if (isLoading) return <p className="text-sm text-stone">Loading product…</p>;
-  if (isError || !data) return <p className="text-sm text-burgundy">Product not found.</p>;
+  if (isError || !data) return <p className="text-sm text-maroon">Product not found.</p>;
 
   return (
-    <div className="space-y-4">
-      <h1 className="font-display text-3xl text-burgundy">Edit product</h1>
+    <div className="space-y-6">
+      <div>
+        <p className="text-eyebrow">Catalog</p>
+        <h1 className="mt-2 font-display text-section-title text-charcoal">Edit product</h1>
+        <p className="mt-1 text-sm text-stone">{data.name}</p>
+      </div>
       <ProductForm product={data} />
     </div>
   );

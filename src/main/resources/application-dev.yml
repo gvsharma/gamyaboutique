@@ -6,7 +6,7 @@ spring:
   jpa:
     show-sql: false
   flyway:
-    # Core schema V1–V9 + admin seed V8; dev synthetic data V11 in migration-dev only.
+    # Core schema V1–V12; dev synthetic data V13 in migration-dev only.
     locations: classpath:db/migration,classpath:db/migration-dev
     baseline-on-migrate: true
 

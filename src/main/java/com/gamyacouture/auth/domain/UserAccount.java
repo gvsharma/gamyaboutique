@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -31,8 +32,24 @@ public class UserAccount extends BaseSoftDeletableEntity {
     @Id
     private UUID id;
 
-    @Column(nullable = false)
+    @Column
     private String email;
+
+    @Column(length = 20)
+    private String phone;
+
+    @Column(name = "phone_verified_at")
+    private Instant phoneVerifiedAt;
+
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
+
+    @Column(name = "failed_login_attempts", nullable = false)
+    @Builder.Default
+    private int failedLoginAttempts = 0;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;

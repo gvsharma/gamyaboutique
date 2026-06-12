@@ -16,7 +16,7 @@ export default function AdminDashboardPage() {
   }
 
   if (isError || !data) {
-    return <p className="text-sm text-burgundy">Could not load dashboard. Is the backend running?</p>;
+    return <p className="text-sm text-maroon">Could not load dashboard. Is the backend running?</p>;
   }
 
   const cards = [
@@ -27,12 +27,11 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl text-burgundy">Dashboard</h1>
-        <p className="mt-1 text-sm text-stone">
-          Manage products, categories, and images connected to RDS and S3.
-        </p>
+        <p className="text-eyebrow">Overview</p>
+        <h1 className="mt-2 font-display text-section-title text-charcoal">Dashboard</h1>
+        <p className="mt-2 text-body">Manage products, categories, and customer interest.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -40,25 +39,27 @@ export default function AdminDashboardPage() {
           <Link
             key={card.label}
             href={card.href}
-            className="rounded-sm border border-burgundy/10 bg-cream p-5 transition-shadow hover:shadow-sm"
+            className="admin-card group transition-shadow duration-300 hover:shadow-card"
           >
-            <p className="text-xs uppercase tracking-wider text-stone">{card.label}</p>
-            <p className="mt-2 font-display text-3xl text-burgundy">{card.value}</p>
+            <p className="text-eyebrow text-stone">{card.label}</p>
+            <p className="mt-3 font-display text-4xl text-maroon transition-colors group-hover:text-charcoal">
+              {card.value}
+            </p>
           </Link>
         ))}
       </div>
 
-      <div className="rounded-sm border border-burgundy/10 bg-cream p-5 text-sm text-stone">
+      <div className="admin-card">
         <p className="font-medium text-charcoal">Quick actions</p>
-        <ul className="mt-2 list-inside list-disc space-y-1">
+        <ul className="mt-4 space-y-2 text-sm text-stone">
           <li>
-            <Link href={ROUTES.admin.productNew} className="text-burgundy hover:underline">
-              Add a new product with S3 images
+            <Link href={ROUTES.admin.productNew} className="link-subtle text-maroon">
+              Add a new product with images
             </Link>
           </li>
           <li>
-            <Link href={ROUTES.admin.categories} className="text-burgundy hover:underline">
-              Manage categories in RDS
+            <Link href={ROUTES.admin.categories} className="link-subtle text-maroon">
+              Manage categories
             </Link>
           </li>
         </ul>

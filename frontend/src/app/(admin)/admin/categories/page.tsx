@@ -13,34 +13,35 @@ export default function AdminCategoriesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl text-burgundy">Categories</h1>
-        <p className="text-sm text-stone">Catalog taxonomy stored in RDS</p>
+        <p className="text-eyebrow">Catalog</p>
+        <h1 className="mt-2 font-display text-section-title text-charcoal">Categories</h1>
+        <p className="mt-1 text-sm text-stone">Catalog taxonomy stored in RDS</p>
       </div>
 
       <CategoryForm categories={data ?? []} onCreated={() => refetch()} />
 
       {isLoading && <p className="text-sm text-stone">Loading categories…</p>}
-      {isError && <p className="text-sm text-burgundy">Failed to load categories.</p>}
+      {isError && <p className="text-sm text-maroon">Failed to load categories.</p>}
 
-      <div className="overflow-x-auto rounded-sm border border-burgundy/10 bg-cream">
+      <div className="admin-card overflow-x-auto !p-0">
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-burgundy/10 text-xs uppercase tracking-wider text-stone">
+          <thead className="border-b border-charcoal/5 text-eyebrow text-stone">
             <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Slug</th>
-              <th className="px-4 py-3">Parent</th>
-              <th className="px-4 py-3">Order</th>
+              <th className="px-5 py-3.5">Name</th>
+              <th className="px-5 py-3.5">Slug</th>
+              <th className="px-5 py-3.5">Parent</th>
+              <th className="px-5 py-3.5">Order</th>
             </tr>
           </thead>
           <tbody>
             {data?.map((cat) => {
               const parent = data.find((p) => p.id === cat.parentId);
               return (
-                <tr key={cat.id} className="border-b border-burgundy/5">
-                  <td className="px-4 py-3">{cat.name}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{cat.slug}</td>
-                  <td className="px-4 py-3">{parent?.name ?? "—"}</td>
-                  <td className="px-4 py-3">{cat.displayOrder}</td>
+                <tr key={cat.id} className="border-b border-charcoal/5 last:border-0">
+                  <td className="px-5 py-3.5 text-charcoal">{cat.name}</td>
+                  <td className="px-5 py-3.5 font-mono text-xs text-stone">{cat.slug}</td>
+                  <td className="px-5 py-3.5 text-stone">{parent?.name ?? "—"}</td>
+                  <td className="px-5 py-3.5 text-stone">{cat.displayOrder}</td>
                 </tr>
               );
             })}

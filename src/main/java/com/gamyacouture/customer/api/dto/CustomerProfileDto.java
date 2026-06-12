@@ -1,5 +1,6 @@
 package com.gamyacouture.customer.api.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 public record CustomerProfileDto(
@@ -8,6 +9,7 @@ public record CustomerProfileDto(
         String email,
         String phone,
         String firstName,
-        String lastName
+        String lastName,
+        List<AddressDto> addresses
 ) {
 }

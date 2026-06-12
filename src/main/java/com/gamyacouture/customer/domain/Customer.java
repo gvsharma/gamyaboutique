@@ -37,7 +37,7 @@ public class Customer extends BaseSoftDeletableEntity {
     @JoinColumn(name = "user_id", unique = true)
     private UserAccount user;
 
-    @Column(nullable = false)
+    @Column
     private String email;
 
     @Column(length = 30)

@@ -70,6 +70,13 @@ public class Product extends BaseSoftDeletableEntity {
     @Builder.Default
     private ProductStatus status = ProductStatus.DRAFT;
 
+    @Column(name = "stock_quantity")
+    private Integer stockQuantity;
+
+    @Column(name = "low_stock_threshold")
+    @Builder.Default
+    private Integer lowStockThreshold = 5;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category primaryCategory;

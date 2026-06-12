@@ -23,6 +23,9 @@ public record ProductDetailDto(
         OfferSummaryDto offer,
         List<TagDto> tags,
         List<CategorySummaryDto> categories,
-        List<ProductImageDto> images
+        List<ProductImageDto> images,
+        Integer stockQuantity,
+        Integer lowStockThreshold,
+        boolean lowStock
 ) {
 }

@@ -40,6 +40,8 @@ export interface UpsertProductPayload {
   printId?: string | null;
   categoryIds?: string[];
   images?: ProductImageInput[];
+  stockQuantity?: number | null;
+  lowStockThreshold?: number | null;
 }
 
 export interface UpsertCategoryPayload {

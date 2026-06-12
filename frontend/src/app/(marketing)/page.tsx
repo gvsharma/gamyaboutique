@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { HeroBanner } from "@/components/home/hero-banner";
 import { FeaturedCategories } from "@/components/home/featured-categories";
+import { ProductCarousel } from "@/components/home/product-carousel";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Button } from "@/components/ui/button";
+import { SectionHeader } from "@/components/ui/section-header";
 import { ROUTES } from "@/constants/routes";
 import { serverFetch } from "@/lib/api/server-fetch";
 import { API } from "@/lib/api/endpoints";
@@ -13,13 +15,13 @@ import type { ProductSummary } from "@/types/product";
 export default async function HomePage() {
   let categories: CategoryTreeNode[] = [];
   let featured: ProductSummary[] = [];
+  let trending: ProductSummary[] = [];
 
   try {
-    [categories, featured] = await Promise.all([
+    [categories, featured, trending] = await Promise.all([
       serverFetch<CategoryTreeNode[]>(API.categoriesTree),
-      serverFetch<PageResponse<ProductSummary>>("/products?page=0&size=8").then(
-        (p) => p.content,
-      ),
+      serverFetch<PageResponse<ProductSummary>>("/products?page=0&size=8").then((p) => p.content),
+      serverFetch<PageResponse<ProductSummary>>("/products?page=0&size=12").then((p) => p.content),
     ]);
   } catch {
     // API offline — page still renders
@@ -29,19 +31,22 @@ export default async function HomePage() {
     <>
       <HeroBanner />
       {categories.length > 0 && <FeaturedCategories categories={categories} />}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-gold-muted">Curated</p>
-            <h2 className="mt-2 font-display text-3xl text-burgundy sm:text-4xl">
-              Featured pieces
-            </h2>
-          </div>
-          <Link href={ROUTES.shop} className="hidden sm:block">
+      {trending.length > 0 && (
+        <ProductCarousel
+          products={trending}
+          eyebrow="Trending"
+          title="Most loved right now"
+          description="Pieces our customers are saving and inquiring about this season."
+        />
+      )}
+      <section className="container-premium py-16 sm:py-20">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <SectionHeader align="left" eyebrow="Curated" title="Featured pieces" className="mb-0" />
+          <Link href={ROUTES.shop} className="hidden shrink-0 sm:block">
             <Button variant="outline">View all</Button>
           </Link>
         </div>
-        <div className="mt-10">
+        <div className="mt-12">
           <ProductGrid products={featured} />
         </div>
         <div className="mt-10 text-center sm:hidden">
@@ -50,15 +55,21 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-      <section className="bg-burgundy px-4 py-16 text-center text-cream sm:px-6">
-        <p className="font-display text-2xl sm:text-3xl">Bespoke consultations by appointment</p>
-        <p className="mx-auto mt-4 max-w-lg text-sm text-cream/80">
-          From bridal trousseaus to festive sarees — our team guides you through fabric, drape, and
-          embellishment.
-        </p>
-        <Link href={ROUTES.contact} className="mt-8 inline-block">
-          <Button variant="secondary">Get in touch</Button>
-        </Link>
+      <section className="relative overflow-hidden bg-charcoal px-4 py-20 text-center sm:px-6 sm:py-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-maroon/30 to-transparent" />
+        <div className="relative mx-auto max-w-2xl">
+          <p className="text-eyebrow text-pearl/70">Personal styling</p>
+          <p className="mt-4 font-display text-3xl text-pearl sm:text-4xl">
+            Bespoke consultations by appointment
+          </p>
+          <p className="mx-auto mt-5 max-w-lg text-body text-pearl/75">
+            From bridal trousseaus to festive sarees — our team guides you through fabric, drape, and
+            embellishment.
+          </p>
+          <Link href={ROUTES.contact} className="mt-8 inline-block">
+            <Button variant="secondary">Get in touch</Button>
+          </Link>
+        </div>
       </section>
     </>
   );

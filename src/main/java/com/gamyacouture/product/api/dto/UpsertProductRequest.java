@@ -23,6 +23,8 @@ public record UpsertProductRequest(
         UUID fabricId,
         UUID printId,
         List<UUID> categoryIds,
-        @Valid List<ProductImageInput> images
+        @Valid List<ProductImageInput> images,
+        Integer stockQuantity,
+        Integer lowStockThreshold
 ) {
 }

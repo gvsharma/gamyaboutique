@@ -4,7 +4,13 @@ export const ROUTES = {
   about: "/about",
   contact: "/contact",
   login: "/login",
+  register: "/register",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
   wishlist: "/wishlist",
+  cart: "/cart",
+  account: "/account",
+  accountAddresses: "/account/addresses",
   category: (slug: string) => `/category/${slug}`,
   product: (id: string) => `/products/${id}`,
   admin: {

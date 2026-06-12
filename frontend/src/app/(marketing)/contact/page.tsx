@@ -1,59 +1,53 @@
 import { CONTACT, SITE_NAME } from "@/constants/site";
+import { SectionHeader } from "@/components/ui/section-header";
 
 export const metadata = { title: "Contact" };
 
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
-      <p className="text-xs uppercase tracking-[0.25em] text-gold-muted">Connect</p>
-      <h1 className="mt-2 font-display text-4xl text-burgundy">Contact us</h1>
+    <div className="container-premium py-16 sm:py-20 lg:py-24">
+      <SectionHeader
+        align="left"
+        eyebrow="Connect"
+        title="Contact us"
+        description={`Visit ${SITE_NAME} in Hyderabad for customized women's wear, designer blouses, and personalized stitching.`}
+        className="mb-12"
+      />
 
-      <div className="mt-8 space-y-6 text-stone">
-        <p>
-          Visit {SITE_NAME} in Hyderabad for customized women&apos;s wear, designer blouses, kids
-          wear, and personalized stitching. Walk in or call ahead — we&apos;d love to help you find
-          the perfect fit.
-        </p>
-
-        <ul className="space-y-4 text-charcoal">
-          <li>
-            <span className="block text-xs font-medium uppercase tracking-wider text-burgundy">
-              Phone
-            </span>
-            <a href={CONTACT.phoneHref} className="text-burgundy hover:underline">
+      <div className="mx-auto max-w-2xl space-y-8">
+        <ul className="space-y-6">
+          <li className="admin-card !p-5">
+            <p className="text-eyebrow text-maroon">Phone</p>
+            <a href={CONTACT.phoneHref} className="mt-2 block text-lg text-charcoal link-subtle">
               {CONTACT.phoneDisplay}
             </a>
           </li>
-          <li>
-            <span className="block text-xs font-medium uppercase tracking-wider text-burgundy">
-              Address
-            </span>
+          <li className="admin-card !p-5">
+            <p className="text-eyebrow text-maroon">Address</p>
             <a
               href={CONTACT.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-burgundy hover:underline"
+              className="mt-2 block text-body link-subtle"
             >
               {CONTACT.address}
             </a>
           </li>
-          <li>
-            <span className="block text-xs font-medium uppercase tracking-wider text-burgundy">
-              Instagram
-            </span>
+          <li className="admin-card !p-5">
+            <p className="text-eyebrow text-maroon">Instagram</p>
             <a
               href={CONTACT.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-burgundy hover:underline"
+              className="mt-2 block text-body link-subtle"
             >
               {CONTACT.instagramHandle}
             </a>
           </li>
         </ul>
 
-        <p className="text-sm">
-          For a specific piece on our website, use <strong>Express your interest</strong> on the
+        <p className="text-body">
+          For a specific piece on our website, use <strong className="font-medium text-charcoal">Express your interest</strong> on the
           product page — our team responds within one business day.
         </p>
       </div>

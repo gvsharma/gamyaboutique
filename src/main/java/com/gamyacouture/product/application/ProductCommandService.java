@@ -104,6 +104,8 @@ public class ProductCommandService {
         product.setFabric(resolveFabric(request.fabricId()));
         product.setPrint(resolvePrint(request.printId()));
         product.setPrimaryCategory(resolveCategory(request.primaryCategoryId()));
+        product.setStockQuantity(request.stockQuantity());
+        product.setLowStockThreshold(request.lowStockThreshold() != null ? request.lowStockThreshold() : 5);
         applyImages(product, request.images());
     }
 

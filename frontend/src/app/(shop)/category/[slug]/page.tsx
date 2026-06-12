@@ -1,4 +1,5 @@
 import { CategoryPageClient } from "@/components/shop/category-page-client";
+import { SectionHeader } from "@/components/ui/section-header";
 import { serverFetch } from "@/lib/api/server-fetch";
 import { API } from "@/lib/api/endpoints";
 import type { CategoryDto } from "@/types/catalog";
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  let categoryName = slug;
+  let categoryName = slug.replace(/-/g, " ");
 
   try {
     const categories = await serverFetch<CategoryDto[]>(API.catalogCategories);
@@ -25,9 +26,13 @@ export default async function CategoryPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <p className="text-xs uppercase tracking-[0.25em] text-gold-muted">Collection</p>
-      <h1 className="mt-2 font-display text-3xl text-burgundy sm:text-4xl">{categoryName}</h1>
+    <div className="container-premium py-12 sm:py-16 lg:py-20">
+      <SectionHeader
+        align="left"
+        eyebrow="Collection"
+        title={categoryName}
+        className="mb-10 capitalize"
+      />
       <CategoryPageClient slug={slug} />
     </div>
   );

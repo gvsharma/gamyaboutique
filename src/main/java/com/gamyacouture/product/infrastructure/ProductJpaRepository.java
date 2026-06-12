@@ -45,4 +45,18 @@ public interface ProductJpaRepository extends JpaRepository<Product, UUID>, JpaS
 
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Product p WHERE p.sku = :sku AND p.id <> :id")
     boolean existsBySkuAndIdNot(@Param("sku") String sku, @Param("id") UUID id);
+
+    @EntityGraph(attributePaths = {"images", "fabric", "print", "offer", "tags"})
+    @Query("""
+            SELECT p FROM Product p
+            WHERE p.primaryCategory.id = :categoryId
+              AND p.id <> :excludeId
+              AND p.status = :status
+              AND p.deletedAt IS NULL
+            """)
+    java.util.List<Product> findActiveByCategoryExcluding(
+            @Param("categoryId") UUID categoryId,
+            @Param("excludeId") UUID excludeId,
+            @Param("status") ProductStatus status,
+            Pageable pageable);
 }

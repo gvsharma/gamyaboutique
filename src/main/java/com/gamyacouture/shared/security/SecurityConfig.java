@@ -36,7 +36,12 @@ public class SecurityConfig {
     private static final String[] PUBLIC_GET = {
             "/api/v1/catalog/**",
             "/api/v1/products/**",
-            "/api/v1/categories/**"
+            "/api/v1/categories/**",
+            "/api/v1/cart/**"
+    };
+
+    private static final String[] PUBLIC_MUTATING = {
+            "/api/v1/cart/**"
     };
 
     private static final String[] PUBLIC_POST = {
@@ -83,7 +88,12 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_MISC).permitAll()
                         .requestMatchers(ACTUATOR).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/cart/merge").authenticated()
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/products/*/view").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, PUBLIC_MUTATING).permitAll()
+                        .requestMatchers(HttpMethod.DELETE, PUBLIC_MUTATING).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_MUTATING).permitAll()
                         .requestMatchers("/api/v1/crm/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

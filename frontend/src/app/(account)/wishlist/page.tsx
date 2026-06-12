@@ -1,32 +1,72 @@
 "use client";
 
 import Link from "next/link";
-import { ProductGrid } from "@/components/catalog/product-grid";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { ProductGridSkeleton } from "@/components/ui/skeleton";
+import { SectionHeader } from "@/components/ui/section-header";
+import { WishlistGrid } from "@/components/wishlist/wishlist-grid";
 import { ROUTES } from "@/constants/routes";
+import { fetchWishlist } from "@/lib/api/services/wishlist.service";
+import { tokenStorage } from "@/lib/auth/token-storage";
+import { queryKeys } from "@/lib/query/query-keys";
 import { useWishlistStore } from "@/stores/wishlist-store";
 
 export default function WishlistPage() {
+  const setItems = useWishlistStore((s) => s.setItems);
   const items = useWishlistStore((s) => s.items);
+  const isLoggedIn = typeof window !== "undefined" && Boolean(tokenStorage.get());
+
+  const { isLoading, isError } = useQuery({
+    queryKey: queryKeys.wishlist,
+    queryFn: fetchWishlist,
+    enabled: isLoggedIn,
+  });
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchWishlist().then(setItems).catch(() => undefined);
+    }
+  }, [isLoggedIn, setItems]);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="container-premium flex min-h-[50vh] flex-col items-center justify-center py-20 text-center">
+        <SectionHeader
+          eyebrow="Saved pieces"
+          title="Your wishlist"
+          description="Sign in to save favourites across all your devices."
+        />
+        <Link href={`${ROUTES.login}?returnUrl=${encodeURIComponent(ROUTES.wishlist)}`} className="mt-8">
+          <Button size="lg">Sign in</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="font-display text-3xl text-burgundy">Wishlist</h1>
-      <p className="mt-2 text-stone">
-        Saved on this device — {items.length} piece{items.length !== 1 ? "s" : ""}.
-      </p>
-      <div className="mt-10">
-        {items.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-stone">Your wishlist is empty.</p>
-            <Link href={ROUTES.shop} className="mt-6 inline-block">
-              <Button>Browse shop</Button>
-            </Link>
-          </div>
-        ) : (
-          <ProductGrid products={items} />
-        )}
-      </div>
+    <div className="container-premium py-12 sm:py-16 lg:py-20">
+      <SectionHeader
+        align="left"
+        eyebrow="Saved pieces"
+        title="Your wishlist"
+        description={`${items.length} piece${items.length !== 1 ? "s" : ""} curated just for you.`}
+        className="mb-10"
+      />
+
+      {isLoading && <ProductGridSkeleton count={6} />}
+      {isError && <p className="text-maroon">Could not load wishlist.</p>}
+      {!isLoading && !isError && items.length === 0 && (
+        <div className="flex flex-col items-center py-20 text-center">
+          <p className="font-display text-xl text-charcoal">Nothing saved yet</p>
+          <p className="mt-2 text-body">Tap the heart on any piece you love.</p>
+          <Link href={ROUTES.shop} className="mt-8">
+            <Button>Explore collection</Button>
+          </Link>
+        </div>
+      )}
+      {!isLoading && items.length > 0 && <WishlistGrid products={items} />}
     </div>
   );
 }
