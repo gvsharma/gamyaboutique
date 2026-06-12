@@ -55,7 +55,7 @@ export function ShopClient() {
       )}
       {data && (
         <>
-          <p className="mb-8 text-sm text-stone">
+          <p className="mb-8 text-sm uppercase tracking-wider text-stone">
             {data.totalElements} piece{data.totalElements !== 1 ? "s" : ""}
             {q ? ` for “${q}”` : ""}
           </p>
