@@ -1,8 +1,6 @@
 spring:
-  jpa:
-    show-sql: true
-
-logging:
-  level:
-    com.gamyacouture: DEBUG
-    org.hibernate.SQL: DEBUG
+  config:
+    activate:
+      on-profile: local
+  flyway:
+    locations: classpath:db/migration,classpath:db/migration-dev

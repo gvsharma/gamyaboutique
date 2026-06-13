@@ -6,8 +6,8 @@ spring:
   jpa:
     show-sql: false
   flyway:
-    # Core schema V1–V12; dev synthetic data V13 in migration-dev only.
-    locations: classpath:db/migration,classpath:db/migration-dev
+    # Deployed dev (EC2): core migrations only. Local synthetic seed uses profile `local`.
+    locations: classpath:db/migration
     baseline-on-migrate: true
 
 server:
