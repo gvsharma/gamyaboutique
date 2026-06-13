@@ -58,6 +58,10 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+  health:
+    # EC2 dev runs with MAIL_ENABLED=false but spring.mail.host set — don't fail deploy health.
+    mail:
+      enabled: ${MAIL_ENABLED:false}
 
 app:
   cors:
