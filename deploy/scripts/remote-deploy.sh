@@ -11,12 +11,23 @@ INCOMING_JAR="${APP_PATH}/incoming/${JAR_NAME}.new"
 ACTIVE_JAR="${APP_PATH}/app/${JAR_NAME}"
 BACKUP_DIR="${APP_PATH}/backup"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8080/actuator/health}"
-MAX_ATTEMPTS="${MAX_ATTEMPTS:-30}"
+MAX_ATTEMPTS="${MAX_ATTEMPTS:-72}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-5}"
 KEEP_BACKUPS="${KEEP_BACKUPS:-5}"
 
 log() {
   echo "[$(date -Iseconds)] $*"
+}
+
+dump_service_diagnostics() {
+  log "=== systemctl status ${SERVICE_NAME} ==="
+  systemctl status "${SERVICE_NAME}" --no-pager -l 2>/dev/null || true
+  log "=== journalctl (last 40 lines) ==="
+  journalctl -u "${SERVICE_NAME}" -n 40 --no-pager 2>/dev/null || true
+  if [[ -f "${APP_PATH}/logs/application.log" ]]; then
+    log "=== application.log (last 40 lines) ==="
+    tail -n 40 "${APP_PATH}/logs/application.log" 2>/dev/null || true
+  fi
 }
 
 require_root() {
@@ -35,8 +46,8 @@ wait_for_health() {
       return 0
     fi
     if systemctl is-failed --quiet "${SERVICE_NAME}" 2>/dev/null; then
-      log "ERROR: ${SERVICE_NAME} failed during startup (sync DB_PASSWORD from SSM into ${APP_PATH}/config/application.env)"
-      journalctl -u "${SERVICE_NAME}" -n 25 --no-pager 2>/dev/null || true
+      log "ERROR: ${SERVICE_NAME} failed during startup (check DB creds in ${APP_PATH}/config/application.env)"
+      dump_service_diagnostics
       return 1
     fi
     log "${label}: attempt ${attempt}/${MAX_ATTEMPTS} — not healthy yet"
@@ -131,6 +142,7 @@ if wait_for_health "deploy"; then
 fi
 
 log "ERROR: New version failed health check"
+dump_service_diagnostics
 if [[ -n "${BACKUP_FILE}" ]]; then
   rollback "${BACKUP_FILE}" || true
 fi

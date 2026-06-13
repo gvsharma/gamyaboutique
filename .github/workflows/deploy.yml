@@ -15,6 +15,7 @@ env:
   APP_PATH: /opt/gamya-couture
   DEPLOY_OBJECT_KEY: incoming/gamya-couture.jar
   DEPLOY_SCRIPT_KEY: incoming/remote-deploy.sh
+  DEPLOY_SYNC_SCRIPT_KEY: incoming/sync-rds-env-from-ssm.sh
 
 jobs:
   validate:
@@ -197,6 +198,7 @@ jobs:
           DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
           aws s3 cp "${{ steps.jar.outputs.path }}" "s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
           aws s3 cp deploy/scripts/remote-deploy.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_SCRIPT_KEY}"
+          aws s3 cp deploy/scripts/sync-rds-env-from-ssm.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_SYNC_SCRIPT_KEY}"
 
       - name: Deploy on EC2 via SSM
         run: |
@@ -213,25 +215,17 @@ jobs:
           jar_key = os.environ["DEPLOY_OBJECT_KEY"]
           script_key = os.environ["DEPLOY_SCRIPT_KEY"]
 
-          sync_db_password = (
-              "python3 -c \"import re, subprocess; "
-              "pwd=subprocess.check_output(['aws','ssm','get-parameter','--name','/gamya-couture/dev/db/password',"
-              "'--with-decryption','--query','Parameter.Value','--output','text','--region','ap-south-1'], text=True).strip(); "
-              f"path='{app_path}/config/application.env'; "
-              "content=open(path).read(); "
-              "content=re.sub(r'^DB_PASSWORD=.*$', f'DB_PASSWORD={pwd}', content, flags=re.M); "
-              "open(path,'w').write(content); "
-              "print('DB_PASSWORD synced from SSM')\""
-          )
+          sync_script_key = os.environ["DEPLOY_SYNC_SCRIPT_KEY"]
 
           commands = [
               "set -euxo pipefail",
-              f"mkdir -p {app_path}/incoming {app_path}/scripts {app_path}/app {app_path}/backup {app_path}/logs",
-              sync_db_password,
-              f"aws s3 cp s3://{bucket}/{jar_key} {app_path}/incoming/gamya-couture.jar.new",
+              f"mkdir -p {app_path}/incoming {app_path}/scripts {app_path}/app {app_path}/backup {app_path}/logs {app_path}/config",
+              f"aws s3 cp s3://{bucket}/{sync_script_key} {app_path}/scripts/sync-rds-env-from-ssm.sh",
               f"aws s3 cp s3://{bucket}/{script_key} {app_path}/scripts/remote-deploy.sh",
-              f"chmod 755 {app_path}/scripts/remote-deploy.sh",
-              f"sudo APP_PATH={app_path} bash {app_path}/scripts/remote-deploy.sh",
+              f"aws s3 cp s3://{bucket}/{jar_key} {app_path}/incoming/gamya-couture.jar.new",
+              f"chmod 755 {app_path}/scripts/sync-rds-env-from-ssm.sh {app_path}/scripts/remote-deploy.sh",
+              f"bash {app_path}/scripts/sync-rds-env-from-ssm.sh {app_path}/config/application.env",
+              f"APP_PATH={app_path} bash {app_path}/scripts/remote-deploy.sh",
           ]
           print(json.dumps({"commands": commands}))
           PY
@@ -263,10 +257,12 @@ jobs:
                 exit 0
                 ;;
               Failed|Cancelled|TimedOut)
+                echo "::error::SSM deploy command ${STATUS}" >&2
                 aws ssm get-command-invocation \
                   --region "${AWS_REGION}" \
                   --command-id "${COMMAND_ID}" \
                   --instance-id "${EC2_INSTANCE_ID}" \
+                  --query '{Status:Status,ResponseCode:ResponseCode,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
                   --output json
                 exit 1
                 ;;
@@ -280,6 +276,7 @@ jobs:
           APP_PATH: ${{ env.APP_PATH }}
           DEPLOY_OBJECT_KEY: ${{ env.DEPLOY_OBJECT_KEY }}
           DEPLOY_SCRIPT_KEY: ${{ env.DEPLOY_SCRIPT_KEY }}
+          DEPLOY_SYNC_SCRIPT_KEY: ${{ env.DEPLOY_SYNC_SCRIPT_KEY }}
 
       - name: Verify public health via nginx
         run: |

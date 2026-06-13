@@ -131,6 +131,15 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <!-- Local-only Flyway seed; never ship in EC2/production JAR (avoids version clashes). -->
+                    <exclude>db/migration-dev/**</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
