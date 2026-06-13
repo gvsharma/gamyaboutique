@@ -9,6 +9,8 @@ spring:
     # Deployed dev (EC2): core migrations only. Local synthetic seed uses profile `local`.
     locations: classpath:db/migration
     baseline-on-migrate: true
+    # Dev RDS may have checksum drift after migration edits; still apply pending versions.
+    validate-on-migrate: false
 
 server:
   forward-headers-strategy: framework
