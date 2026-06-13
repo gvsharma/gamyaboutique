@@ -40,3 +40,6 @@ management:
   endpoint:
     health:
       show-details: never
+  health:
+    mail:
+      enabled: ${MAIL_ENABLED:false}

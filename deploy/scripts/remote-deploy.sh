@@ -11,6 +11,7 @@ INCOMING_JAR="${APP_PATH}/incoming/${JAR_NAME}.new"
 ACTIVE_JAR="${APP_PATH}/app/${JAR_NAME}"
 BACKUP_DIR="${APP_PATH}/backup"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8080/actuator/health}"
+HEALTH_FALLBACK_URL="${HEALTH_FALLBACK_URL:-http://127.0.0.1:8080/health}"
 MAX_ATTEMPTS="${MAX_ATTEMPTS:-72}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-5}"
 KEEP_BACKUPS="${KEEP_BACKUPS:-5}"
@@ -37,12 +38,50 @@ require_root() {
   fi
 }
 
+is_healthy() {
+  curl -sf "${HEALTH_URL}" 2>/dev/null | grep -q '"status":"UP"' && return 0
+  curl -sf "${HEALTH_FALLBACK_URL}" 2>/dev/null | grep -q '"status":"UP"'
+}
+
+sync_db_password_from_ssm() {
+  local env_file="${APP_PATH}/config/application.env"
+  local region="${AWS_REGION:-ap-south-1}"
+  local password_path="${SSM_DB_PASSWORD_PATH:-/gamya-couture/dev/db/password}"
+  if [[ ! -f "${env_file}" ]]; then
+    log "WARN: ${env_file} missing — skip SSM DB password sync"
+    return 0
+  fi
+  if ! command -v aws >/dev/null 2>&1; then
+    log "WARN: aws CLI not found — skip SSM DB password sync"
+    return 0
+  fi
+  local pwd
+  pwd="$(aws ssm get-parameter \
+    --name "${password_path}" \
+    --with-decryption \
+    --region "${region}" \
+    --query 'Parameter.Value' \
+    --output text 2>/dev/null || true)"
+  if [[ -z "${pwd}" || "${pwd}" == "None" ]]; then
+    log "WARN: Could not read ${password_path} from SSM"
+    return 0
+  fi
+  if grep -q '^DB_PASSWORD=' "${env_file}"; then
+    sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${pwd}|" "${env_file}"
+  else
+    echo "DB_PASSWORD=${pwd}" >> "${env_file}"
+  fi
+  chmod 640 "${env_file}"
+  chown root:gamya "${env_file}"
+  log "DB_PASSWORD synced from SSM (${password_path})"
+}
+
 wait_for_health() {
   local label="$1"
   local attempt
   for attempt in $(seq 1 "${MAX_ATTEMPTS}"); do
-    if curl -sf "${HEALTH_URL}" | grep -q '"status":"UP"'; then
-      log "${label}: health check passed (${HEALTH_URL})"
+    if is_healthy; then
+      log "${label}: health check passed"
       return 0
     fi
     if systemctl is-failed --quiet "${SERVICE_NAME}" 2>/dev/null; then
@@ -104,6 +143,8 @@ ensure_nginx_upload_limit() {
 }
 
 require_root
+
+sync_db_password_from_ssm
 
 ensure_nginx_upload_limit
 

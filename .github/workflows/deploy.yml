@@ -116,6 +116,9 @@ jobs:
           set -euo pipefail
           EC2_INSTANCE_ID="${CONFIGURED_INSTANCE_ID//[[:space:]]/}"
           NAME_PREFIX="${DEPLOY_BUCKET%-backend-deploy}"
+          if [[ "${NAME_PREFIX}" == "${DEPLOY_BUCKET}" ]]; then
+            NAME_PREFIX="${DEPLOY_BUCKET%-deploy}"
+          fi
           EC2_NAME_TAG="${NAME_PREFIX}-api"
 
           instance_state() {
@@ -224,8 +227,8 @@ jobs:
               f"aws s3 cp s3://{bucket}/{script_key} {app_path}/scripts/remote-deploy.sh",
               f"aws s3 cp s3://{bucket}/{jar_key} {app_path}/incoming/gamya-couture.jar.new",
               f"chmod 755 {app_path}/scripts/sync-rds-env-from-ssm.sh {app_path}/scripts/remote-deploy.sh",
-              f"bash {app_path}/scripts/sync-rds-env-from-ssm.sh {app_path}/config/application.env",
-              f"APP_PATH={app_path} bash {app_path}/scripts/remote-deploy.sh",
+              f"sudo bash {app_path}/scripts/sync-rds-env-from-ssm.sh {app_path}/config/application.env",
+              f"sudo APP_PATH={app_path} bash {app_path}/scripts/remote-deploy.sh",
           ]
           print(json.dumps({"commands": commands}))
           PY
