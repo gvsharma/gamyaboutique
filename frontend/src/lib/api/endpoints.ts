@@ -57,4 +57,7 @@ export const API = {
   adminInterests: "/admin/interests",
   adminInterestStatus: (id: string) => `/admin/interests/${id}/status`,
   crmLeads: "/crm/leads",
+  policy: (key: string) => `/policies/${key}`,
+  adminPolicies: "/admin/policies",
+  adminPolicy: (key: string) => `/admin/policies/${key}`,
 } as const;

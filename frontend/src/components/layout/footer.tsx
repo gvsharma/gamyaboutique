@@ -7,7 +7,7 @@ import { CONTACT, SITE_NAME, SITE_TAGLINE } from "@/constants/site";
 export function Footer() {
   return (
     <footer className="relative z-10 mt-auto border-t border-rose/25 bg-gradient-to-b from-pink-soft via-rose-soft/80 to-pink-mist text-charcoal">
-      <div className="container-premium grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-20">
+      <div className="container-premium grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-5 lg:gap-8 lg:py-20">
         <div className="lg:col-span-1">
           <p className="font-display text-2xl tracking-tight text-maroon">{SITE_NAME}</p>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-charcoal/70">{SITE_TAGLINE}</p>
@@ -67,11 +67,6 @@ export function Footer() {
               </SupportDialogLink>
             </li>
             <li>
-              <Link href={ROUTES.privacy} className="text-charcoal/75 transition-colors hover:text-maroon">
-                Privacy policy
-              </Link>
-            </li>
-            <li>
               <Link href={ROUTES.account} className="text-charcoal/75 transition-colors hover:text-maroon">
                 My account
               </Link>
@@ -79,6 +74,39 @@ export function Footer() {
             <li>
               <Link href={ROUTES.wishlist} className="text-charcoal/75 transition-colors hover:text-maroon">
                 Wishlist
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-charcoal/45">
+            Policies
+          </p>
+          <ul className="mt-5 space-y-3 text-sm">
+            <li>
+              <Link href={ROUTES.privacy} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Privacy policy
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.contact} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Contact information
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.returns} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Refund policy
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.terms} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Terms of service
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.shipping} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Shipping policy
               </Link>
             </li>
           </ul>

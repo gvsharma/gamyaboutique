@@ -30,6 +30,7 @@ import type {
   UpsertProductPayload,
   UpsertTagPayload,
 } from "@/types/admin";
+import type { PolicyKey, SitePolicy, UpdateSitePolicyPayload } from "@/types/site-policy";
 
 function unwrap<T>(response: { data: ApiResponse<T> }): T {
   if (!response.data.success) {
@@ -300,4 +301,22 @@ export async function updateOffer(id: string, payload: UpsertOfferPayload): Prom
 
 export async function deleteOffer(id: string): Promise<void> {
   await apiClient.delete(API.adminTaxonomyOffer(id));
+}
+
+export async function fetchAdminPolicies(): Promise<SitePolicy[]> {
+  const res = await apiClient.get<ApiResponse<SitePolicy[]>>(API.adminPolicies);
+  return unwrap(res);
+}
+
+export async function fetchAdminPolicy(key: PolicyKey): Promise<SitePolicy> {
+  const res = await apiClient.get<ApiResponse<SitePolicy>>(API.adminPolicy(key));
+  return unwrap(res);
+}
+
+export async function updateAdminPolicy(
+  key: PolicyKey,
+  payload: UpdateSitePolicyPayload,
+): Promise<SitePolicy> {
+  const res = await apiClient.put<ApiResponse<SitePolicy>>(API.adminPolicy(key), payload);
+  return unwrap(res);
 }

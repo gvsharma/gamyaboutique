@@ -4,6 +4,9 @@ export const ROUTES = {
   about: "/about",
   contact: "/contact",
   privacy: "/privacy",
+  shipping: "/shipping",
+  returns: "/returns",
+  terms: "/terms",
   login: "/login",
   register: "/register",
   forgotPassword: "/forgot-password",
@@ -33,5 +36,6 @@ export const ROUTES = {
     interests: "/admin/interests",
     leads: "/admin/leads",
     taxonomy: "/admin/taxonomy",
+    policies: "/admin/policies",
   },
 } as const;

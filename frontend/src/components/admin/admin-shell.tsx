@@ -14,6 +14,7 @@ import {
   Sparkles,
   Inbox,
   Layers,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
@@ -32,6 +33,7 @@ const nav = [
   { href: ROUTES.admin.interests, label: "Interests", icon: Sparkles },
   { href: ROUTES.admin.leads, label: "Leads", icon: Inbox },
   { href: ROUTES.admin.taxonomy, label: "Taxonomy", icon: Layers },
+  { href: ROUTES.admin.policies, label: "Policies", icon: FileText },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
