@@ -11,7 +11,7 @@ const STORY_IMAGES = {
   hero: "/brand/hero-saree.jpg",
   atelier: "/brand/story-atelier.jpg",
   celebration: "/brand/story-celebration.jpg",
-  craft: "/brand/story-craft.jpg",
+  craft: "/brand/story-celebration.jpg",
 } as const;
 
 const VALUES = [
@@ -115,7 +115,7 @@ export default function AboutPage() {
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
           <StoryImage
             src={STORY_IMAGES.craft}
-            alt="Indian woman in traditional saree — Gamya Couture"
+            alt="Festive ethnic wear for family celebrations — Gamya Couture"
             className="aspect-[4/5] sm:aspect-[5/4]"
           />
           <div id="our-story" className="scroll-mt-40">
