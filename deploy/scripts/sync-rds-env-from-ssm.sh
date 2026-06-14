@@ -29,6 +29,7 @@ fi
 log "Fetching DB username from $USERNAME_PATH"
 DB_USER="$(aws ssm get-parameter \
   --name "$USERNAME_PATH" \
+  --with-decryption \
   --region "$REGION" \
   --query 'Parameter.Value' \
   --output text)"
@@ -64,5 +65,5 @@ upsert "DB_PASSWORD" "$DB_PASSWORD"
 chmod 640 "$ENV_FILE"
 chown root:gamya "$ENV_FILE"
 
-log "Updated $ENV_FILE with RDS connection (user=$DB_USER, db=$DB_NAME)."
+log "Updated $ENV_FILE with RDS connection (user=${DB_USER}, db=${DB_NAME})."
 log "Restart backend: sudo systemctl restart gamya-couture-backend"
