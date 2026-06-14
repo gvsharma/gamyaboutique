@@ -4,7 +4,7 @@ import { guestRecentlyViewedStorage } from "@/lib/auth/guest-recently-viewed-sto
 import { filterWomenGirlsProducts } from "@/lib/catalog-filters";
 import { fetchProduct } from "@/lib/api/services/product.service";
 import type { ApiResponse } from "@/types/api";
-import type { ProductSummary } from "@/types/product";
+import type { ProductDetail, ProductSummary } from "@/types/product";
 
 export async function fetchRecentlyViewedFromApi(): Promise<ProductSummary[]> {
   const { data } = await apiClient.get<ApiResponse<ProductSummary[]>>(
@@ -28,7 +28,7 @@ export async function fetchRecentlyViewedFromGuestStorage(): Promise<ProductSumm
   );
 
   return filterWomenGirlsProducts(
-    products.filter((product): product is ProductSummary => product != null),
+    products.filter((product): product is ProductDetail => product != null),
   );
 }
 
