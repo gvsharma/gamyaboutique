@@ -17,6 +17,7 @@ export const CONTACT = {
   instagramHandle: "@gamya_couture",
   whatsappMessage:
     "Hello Gamya Couture! I'd like to enquire about your collections and custom stitching.",
+  supportEmail: "gamyacouture9@gmail.com",
 } as const;
 
 export function whatsappHref(message = CONTACT.whatsappMessage) {

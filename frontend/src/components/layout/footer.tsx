@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Instagram, MapPin, Phone } from "lucide-react";
+import { SupportDialogLink } from "@/components/layout/contact-support-dialog";
 import { ROUTES } from "@/constants/routes";
 import { CONTACT, SITE_NAME, SITE_TAGLINE } from "@/constants/site";
 
@@ -58,6 +59,16 @@ export function Footer() {
             <li>
               <Link href={ROUTES.contact} className="text-charcoal/75 transition-colors hover:text-maroon">
                 Contact us
+              </Link>
+            </li>
+            <li>
+              <SupportDialogLink className="text-charcoal/75 transition-colors hover:text-maroon">
+                Contact &amp; support
+              </SupportDialogLink>
+            </li>
+            <li>
+              <Link href={ROUTES.privacy} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Privacy policy
               </Link>
             </li>
             <li>
