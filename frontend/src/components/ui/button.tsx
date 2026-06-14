@@ -16,7 +16,7 @@ const variants: Record<Variant, string> = {
   soft: "bg-blush/50 text-maroon hover:bg-blush active:scale-[0.98] disabled:opacity-50",
   ghost: "text-charcoal hover:bg-ivory disabled:opacity-50",
   outline:
-    "border border-charcoal/15 text-charcoal hover:border-charcoal hover:bg-charcoal/5 disabled:opacity-50",
+    "border border-charcoal/20 text-charcoal hover:border-charcoal/40 hover:bg-warm disabled:opacity-50",
 };
 
 const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {

@@ -41,7 +41,7 @@ export default function AboutPage() {
           {SITE_NAME} brings together creativity, craftsmanship, and attention to detail.
         </p>
 
-        <div id="our-story" className="scroll-mt-28 pt-8">
+        <div id="our-story" className="scroll-mt-40 pt-8">
           <p className="text-eyebrow text-maroon">Our story</p>
           <h2 className="mt-3 font-display text-2xl text-charcoal sm:text-3xl">
             Where every drape tells a story

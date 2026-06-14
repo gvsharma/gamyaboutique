@@ -31,8 +31,8 @@ function DesktopNavItem({ item }: { item: NavItem }) {
       <Link
         href={item.href ?? ROUTES.shop}
         className={cn(
-          "nav-link-premium group relative inline-flex items-center whitespace-nowrap",
-          item.highlight && "font-medium text-maroon",
+          "nav-link-premium group relative inline-flex shrink-0 items-center whitespace-nowrap",
+          item.highlight && "font-semibold text-maroon",
         )}
       >
         {item.label}
@@ -50,7 +50,7 @@ function DesktopNavItem({ item }: { item: NavItem }) {
 
   return (
     <div
-      className="relative"
+      className={cn("relative shrink-0", open && "z-[60]")}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
@@ -58,7 +58,7 @@ function DesktopNavItem({ item }: { item: NavItem }) {
         href={item.href ?? "#"}
         className={cn(
           "nav-link-premium group inline-flex items-center gap-1 whitespace-nowrap",
-          item.highlight && "font-medium text-maroon",
+          item.highlight && "font-semibold text-maroon",
           open && "text-maroon",
         )}
         aria-expanded={open}
@@ -79,25 +79,20 @@ function DesktopNavItem({ item }: { item: NavItem }) {
       <div
         id={panelId}
         className={cn(
-          "absolute left-1/2 top-[calc(100%+0.75rem)] z-50 min-w-[15rem] -translate-x-1/2 pt-1 transition-all duration-300 ease-premium",
+          "absolute left-1/2 top-full z-[60] min-w-[15rem] -translate-x-1/2 pt-2 transition-all duration-300 ease-premium",
           open
             ? "pointer-events-auto translate-y-0 opacity-100"
             : "pointer-events-none -translate-y-1 opacity-0",
         )}
       >
-        <div className="overflow-hidden rounded-xl border border-charcoal/5 bg-pearl/98 shadow-elevated backdrop-blur-xl">
-          <ul className="py-2">
+        <div className="nav-dropdown-panel">
+          <ul className="py-1.5">
             {item.children.map((child) => (
               <li key={child.href}>
-                <Link
-                  href={child.href}
-                  className="group/item block px-4 py-2.5 transition-colors duration-200 hover:bg-ivory/80"
-                >
-                  <span className="block text-[13px] tracking-wide text-charcoal transition-colors group-hover/item:text-maroon">
-                    {child.label}
-                  </span>
+                <Link href={child.href} className="nav-dropdown-link group/item">
+                  <span className="nav-dropdown-label">{child.label}</span>
                   {child.description && (
-                    <span className="mt-0.5 block text-[11px] text-stone">{child.description}</span>
+                    <span className="nav-dropdown-desc">{child.description}</span>
                   )}
                 </Link>
               </li>
@@ -126,7 +121,7 @@ function MobileNavItem({
         <Link
           href={item.href ?? ROUTES.shop}
           className={cn(
-            "flex items-center rounded-xl px-3 py-3 font-display text-lg text-charcoal transition-colors hover:bg-ivory hover:text-maroon",
+            "flex items-center rounded-xl px-3 py-3 font-display text-lg text-charcoal transition-colors hover:bg-warm hover:text-maroon",
             item.highlight && "text-maroon",
           )}
           onClick={onNavigate}
@@ -143,9 +138,9 @@ function MobileNavItem({
       <button
         type="button"
         className={cn(
-          "flex w-full items-center justify-between rounded-xl px-3 py-3 text-left font-display text-lg text-charcoal transition-colors hover:bg-ivory",
+          "flex w-full items-center justify-between rounded-xl px-3 py-3 text-left font-display text-lg text-charcoal transition-colors hover:bg-warm",
           item.highlight && "text-maroon",
-          expanded && "bg-ivory/60 text-maroon",
+          expanded && "bg-warm text-maroon",
         )}
         onClick={onToggle}
         aria-expanded={expanded}
@@ -163,15 +158,15 @@ function MobileNavItem({
       </button>
       <ul
         className={cn(
-          "overflow-hidden transition-all duration-300 ease-premium",
-          expanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
+          "overflow-hidden border-l-2 border-maroon/15 pl-3 transition-all duration-300 ease-premium",
+          expanded ? "mb-2 max-h-96 opacity-100" : "max-h-0 opacity-0",
         )}
       >
         {item.children.map((child) => (
           <li key={child.href}>
             <Link
               href={child.href}
-              className="block py-2.5 pl-6 pr-3 text-sm text-stone transition-colors hover:text-maroon"
+              className="block rounded-lg py-2.5 pl-3 pr-3 text-sm text-charcoal/80 transition-colors hover:bg-warm hover:text-maroon"
               onClick={onNavigate}
             >
               {child.label}
@@ -225,53 +220,56 @@ export function Navbar() {
   const cartCount = cart?.itemCount ?? 0;
   const accountHref = user || tokenStorage.get() ? ROUTES.account : ROUTES.login;
 
+  const desktopNavItems = MAIN_NAV.filter((item) => item.label !== "Home");
+
   return (
     <>
-      <div className="hidden border-b border-pearl/10 bg-charcoal py-2.5 text-center sm:block">
-        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-pearl/80">
-          Bespoke stitching for women &amp; girls ·{" "}
-          <Link href={ROUTES.contact} className="text-pearl transition-colors hover:text-mustard">
-            Book a consultation
-          </Link>
-        </p>
-      </div>
+      <div className="sticky top-0 z-50">
+        <div className="hidden border-b border-pearl/10 bg-charcoal py-2.5 text-center sm:block">
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-pearl/80">
+            Bespoke stitching for women &amp; girls ·{" "}
+            <Link href={ROUTES.contact} className="text-pearl transition-colors hover:text-mustard">
+              Book a consultation
+            </Link>
+          </p>
+        </div>
 
-      <header
-        className={cn(
-          "sticky top-0 z-50 transition-all duration-500 ease-premium",
-          scrolled
-            ? "border-b border-charcoal/5 bg-pearl/98 shadow-soft backdrop-blur-xl"
-            : "border-b border-charcoal/5 bg-pearl",
-        )}
-      >
-        <div className="container-premium flex h-14 items-center gap-4 lg:h-[4.25rem]">
-          <Link
-            href={ROUTES.home}
-            className="shrink-0 font-sans text-sm font-bold uppercase tracking-[0.18em] text-charcoal transition-colors hover:text-maroon sm:text-[15px] lg:mr-2"
-          >
-            {SITE_NAME}
-          </Link>
+        <header
+          className={cn(
+            "border-b border-charcoal/5 transition-all duration-500 ease-premium",
+            scrolled
+              ? "bg-pearl/98 shadow-soft backdrop-blur-xl"
+              : "bg-pearl",
+          )}
+        >
+          <div className="container-premium flex h-14 items-center gap-3 lg:h-[4.25rem] lg:gap-4">
+            <Link
+              href={ROUTES.home}
+              className="relative z-10 shrink-0 font-sans text-sm font-bold uppercase tracking-[0.18em] text-charcoal transition-colors hover:text-maroon sm:text-[15px] lg:mr-1"
+            >
+              {SITE_NAME}
+            </Link>
 
-          <nav
-            className="hidden min-w-0 flex-1 items-center justify-center gap-x-5 gap-y-1 xl:flex xl:gap-x-6"
-            aria-label="Main navigation"
-          >
-            {MAIN_NAV.map((item) => (
-              <DesktopNavItem key={item.label} item={item} />
-            ))}
-          </nav>
+            <nav
+              className="hidden min-w-0 flex-1 items-center justify-center gap-x-3 overflow-x-auto scrollbar-none 2xl:flex 2xl:gap-x-4"
+              aria-label="Main navigation"
+            >
+              {desktopNavItems.map((item) => (
+                <DesktopNavItem key={item.label} item={item} />
+              ))}
+            </nav>
 
-          <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
+            <div className="relative z-10 ml-auto flex shrink-0 items-center gap-0.5 bg-inherit pl-2 sm:gap-1">
             <Link
               href={`${ROUTES.shop}?focus=search`}
-              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal"
+              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-warm hover:text-charcoal"
               aria-label="Search"
             >
               <Search className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
             </Link>
             <Link
               href={ROUTES.wishlist}
-              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal"
+              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-warm hover:text-charcoal"
               aria-label="Wishlist"
             >
               <Heart className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
@@ -284,7 +282,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal"
+              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-warm hover:text-charcoal"
               aria-label="Cart"
             >
               <ShoppingBag className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
@@ -296,14 +294,14 @@ export function Navbar() {
             </button>
             <Link
               href={accountHref}
-              className="hidden rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal sm:block"
+              className="hidden rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-warm hover:text-charcoal sm:block"
               aria-label="Account"
             >
               <User className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
             </Link>
             <button
               type="button"
-              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal xl:hidden"
+              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-warm hover:text-charcoal 2xl:hidden"
               onClick={() => setOpen(true)}
               aria-label="Menu"
             >
@@ -312,19 +310,19 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Tablet: compact secondary row */}
+        {/* Tablet: compact secondary row with dropdown links */}
         <nav
-          className="hidden border-t border-charcoal/5 lg:flex xl:hidden"
+          className="hidden border-t border-charcoal/5 lg:flex 2xl:hidden"
           aria-label="Main navigation tablet"
         >
-          <div className="container-premium flex items-center justify-center gap-5 overflow-x-auto py-2.5 scrollbar-none">
-            {MAIN_NAV.map((item) => (
+          <div className="container-premium flex items-center justify-center gap-4 overflow-x-auto py-2.5 scrollbar-none">
+            {desktopNavItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href ?? item.children?.[0]?.href ?? ROUTES.shop}
                 className={cn(
-                  "nav-link-premium shrink-0 whitespace-nowrap text-[12px]",
-                  item.highlight && "font-medium text-maroon",
+                  "nav-link-premium shrink-0 whitespace-nowrap text-[11px]",
+                  item.highlight && "font-semibold text-maroon",
                 )}
               >
                 {item.label}
@@ -334,10 +332,11 @@ export function Navbar() {
           </div>
         </nav>
       </header>
+      </div>
 
       <div
         className={cn(
-          "fixed inset-0 z-[80] xl:hidden",
+          "fixed inset-0 z-[80] 2xl:hidden",
           open ? "pointer-events-auto" : "pointer-events-none",
         )}
       >
@@ -360,7 +359,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-full p-2 text-stone hover:bg-ivory"
+              className="rounded-full p-2 text-stone hover:bg-warm hover:text-charcoal"
               aria-label="Close menu"
             >
               <X className="h-5 w-5" />
