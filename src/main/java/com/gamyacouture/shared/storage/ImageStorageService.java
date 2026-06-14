@@ -6,5 +6,9 @@ public interface ImageStorageService {
 
     boolean isEnabled();
 
-    String upload(MultipartFile file, String folder);
+    default String upload(MultipartFile file, String folder) {
+        return upload(file, folder, MediaUploadType.IMAGE);
+    }
+
+    String upload(MultipartFile file, String folder, MediaUploadType type);
 }

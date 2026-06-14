@@ -16,8 +16,8 @@ public class DisabledImageStorageService implements ImageStorageService {
     }
 
     @Override
-    public String upload(MultipartFile file, String folder) {
+    public String upload(MultipartFile file, String folder, MediaUploadType type) {
         throw new BusinessException(ErrorCode.VALIDATION_ERROR,
-                "Image upload is disabled. Set APP_STORAGE_S3_ENABLED=true and configure the S3 bucket.");
+                "Media upload is disabled. Set APP_STORAGE_S3_ENABLED=true and configure the S3 bucket.");
     }
 }

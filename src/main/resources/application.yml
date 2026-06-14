@@ -3,8 +3,8 @@ spring:
     name: gamya-couture
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 50MB
+      max-request-size: 55MB
   mvc:
     contentnegotiation:
       # Browsers send Accept: text/html; APIs only serve JSON.

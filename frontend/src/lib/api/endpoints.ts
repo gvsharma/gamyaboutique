@@ -34,6 +34,7 @@ export const API = {
   adminCategories: "/admin/categories",
   adminCategory: (id: string) => `/admin/categories/${id}`,
   adminMediaUpload: "/admin/media/upload",
+  adminMediaUploadVideo: "/admin/media/upload-video",
   adminTaxonomyFabrics: "/admin/taxonomy/fabrics",
   adminTaxonomyPrints: "/admin/taxonomy/prints",
 } as const;

@@ -71,6 +71,14 @@ export async function uploadProductImage(file: File): Promise<MediaUploadRespons
   return unwrap(res);
 }
 
+export async function uploadProductVideo(file: File): Promise<MediaUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("folder", "videos");
+  const res = await apiClient.post<ApiResponse<MediaUploadResponse>>(API.adminMediaUploadVideo, formData);
+  return unwrap(res);
+}
+
 export async function fetchAdminCategories(): Promise<AdminCategory[]> {
   const res = await apiClient.get<ApiResponse<AdminCategory[]>>(API.adminCategories);
   return unwrap(res);

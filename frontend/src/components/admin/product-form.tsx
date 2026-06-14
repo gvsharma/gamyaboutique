@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/admin/image-uploader";
+import { VideoUploader } from "@/components/admin/video-uploader";
 import { ROUTES } from "@/constants/routes";
 import {
   createProduct,
@@ -65,6 +66,7 @@ export function ProductForm({ product }: ProductFormProps) {
       displayOrder: img.displayOrder ?? index,
     })) ?? [],
   );
+  const [videoUrl, setVideoUrl] = useState<string | null>(product?.videoUrl ?? null);
 
   useEffect(() => {
     Promise.all([fetchAdminCategories(), fetchFabrics(), fetchPrints()])
@@ -89,6 +91,7 @@ export function ProductForm({ product }: ProductFormProps) {
     printId: printId || null,
     categoryIds: primaryCategoryId ? [primaryCategoryId] : [],
     images,
+    videoUrl: videoUrl || null,
     stockQuantity: stockQuantity ? Number(stockQuantity) : null,
     lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : null,
   });
@@ -227,6 +230,13 @@ export function ProductForm({ product }: ProductFormProps) {
         <label className={labelClass}>Product images (S3)</label>
         <div className="mt-2">
           <ImageUploader images={images} onChange={setImages} productName={name} />
+        </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Product video (S3)</label>
+        <div className="mt-2">
+          <VideoUploader videoUrl={videoUrl} onChange={setVideoUrl} />
         </div>
       </div>
 

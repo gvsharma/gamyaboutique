@@ -24,6 +24,7 @@ public record ProductDetailDto(
         List<TagDto> tags,
         List<CategorySummaryDto> categories,
         List<ProductImageDto> images,
+        String videoUrl,
         Integer stockQuantity,
         Integer lowStockThreshold,
         boolean lowStock

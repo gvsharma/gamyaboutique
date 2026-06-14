@@ -1,9 +1,8 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { Upload, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { uploadProductImage } from "@/lib/api/services/admin.service";
 import type { ProductImageInput } from "@/types/admin";
 
@@ -11,6 +10,10 @@ interface ImageUploaderProps {
   images: ProductImageInput[];
   onChange: (images: ProductImageInput[]) => void;
   productName?: string;
+}
+
+function reorderImages(images: ProductImageInput[]): ProductImageInput[] {
+  return images.map((img, index) => ({ ...img, displayOrder: index }));
 }
 
 export function ImageUploader({ images, onChange, productName }: ImageUploaderProps) {
@@ -31,16 +34,25 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
           displayOrder: images.length + uploaded.length,
         });
       }
-      onChange([...images, ...uploaded]);
-    } catch {
-      setError("Image upload failed. Check S3 config on the backend.");
+      onChange(reorderImages([...images, ...uploaded]));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Image upload failed.";
+      setError(message.includes("S3") ? message : `${message} Check S3 config on the backend.`);
     } finally {
       setUploading(false);
     }
   };
 
   const removeImage = (index: number) => {
-    onChange(images.filter((_, i) => i !== index).map((img, i) => ({ ...img, displayOrder: i })));
+    onChange(reorderImages(images.filter((_, i) => i !== index)));
+  };
+
+  const moveImage = (index: number, delta: number) => {
+    const next = index + delta;
+    if (next < 0 || next >= images.length) return;
+    const updated = [...images];
+    [updated[index], updated[next]] = [updated[next], updated[index]];
+    onChange(reorderImages(updated));
   };
 
   return (
@@ -52,6 +64,26 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
             className="relative h-24 w-24 overflow-hidden rounded-xl border border-charcoal/10 bg-pearl"
           >
             <Image src={image.url} alt={image.altText ?? "Product"} fill className="object-cover" unoptimized />
+            <div className="absolute left-1 top-1 flex flex-col gap-0.5">
+              <button
+                type="button"
+                onClick={() => moveImage(index, -1)}
+                disabled={index === 0}
+                className="rounded bg-charcoal/70 p-0.5 text-cream disabled:opacity-30"
+                aria-label="Move earlier"
+              >
+                <ChevronLeft className="h-3 w-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveImage(index, 1)}
+                disabled={index === images.length - 1}
+                className="rounded bg-charcoal/70 p-0.5 text-cream disabled:opacity-30"
+                aria-label="Move later"
+              >
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => removeImage(index)}
@@ -77,7 +109,9 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
       </label>
 
       {error && <p className="text-xs text-maroon">{error}</p>}
-      <p className="text-xs text-stone">Images upload to S3 (`gamya-couture-dev-media`) and URLs are saved with the product.</p>
+      <p className="text-xs text-stone">
+        First image is the primary. Use arrows to reorder. Uploads go to S3 via CloudFront.
+      </p>
     </div>
   );
 }

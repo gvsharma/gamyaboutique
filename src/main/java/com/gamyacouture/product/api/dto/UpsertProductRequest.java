@@ -24,6 +24,7 @@ public record UpsertProductRequest(
         UUID printId,
         List<UUID> categoryIds,
         @Valid List<ProductImageInput> images,
+        String videoUrl,
         Integer stockQuantity,
         Integer lowStockThreshold
 ) {

@@ -56,7 +56,20 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
         </nav>
 
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-          <ProductImageGallery images={images} productName={product.name} placeholder={PLACEHOLDER} />
+          <div className="space-y-6">
+            <ProductImageGallery images={images} productName={product.name} placeholder={PLACEHOLDER} />
+            {product.videoUrl && (
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone">Product video</p>
+                <video
+                  src={product.videoUrl}
+                  controls
+                  playsInline
+                  className="w-full rounded-2xl border border-charcoal/10 bg-charcoal"
+                />
+              </div>
+            )}
+          </div>
 
           <div className="lg:py-4">
             {product.fabric && (
