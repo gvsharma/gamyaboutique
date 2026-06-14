@@ -17,6 +17,7 @@ public record ProductSummaryDto(
         boolean onOffer,
         String currency,
         String primaryImageUrl,
+        String primaryCategorySlug,
         FabricDto fabric,
         PrintDto print,
         OfferSummaryDto offer,

@@ -39,6 +39,7 @@ public interface ProductMapper {
     ProductImageDto toImageDto(ProductImage image);
 
     @Mapping(target = "primaryImageUrl", expression = "java(primaryImageUrl(product))")
+    @Mapping(target = "primaryCategorySlug", expression = "java(primaryCategorySlug(product))")
     @Mapping(target = "tags", expression = "java(mapTags(product.getTags()))")
     @Mapping(target = "effectivePrice", source = "product", qualifiedByName = "effectivePrice")
     @Mapping(target = "onOffer", source = "product", qualifiedByName = "onOffer")
@@ -73,6 +74,13 @@ public interface ProductMapper {
                 .min(Comparator.comparingInt(ProductImage::getDisplayOrder))
                 .map(ProductImage::getUrl)
                 .orElse(null);
+    }
+
+    default String primaryCategorySlug(Product product) {
+        if (product.getPrimaryCategory() == null) {
+            return null;
+        }
+        return product.getPrimaryCategory().getSlug();
     }
 
     default boolean isLowStock(Product product) {

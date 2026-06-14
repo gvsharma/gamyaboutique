@@ -10,6 +10,7 @@ public record CategoryTreeNodeDto(
         String description,
         int displayOrder,
         int depth,
+        String imageUrl,
         List<CategoryTreeNodeDto> children
 ) {
 }

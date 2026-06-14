@@ -50,6 +50,7 @@ public class CategoryCommandService {
                 .depth(parent == null ? 0 : parent.getDepth() + 1)
                 .displayOrder(request.displayOrder() != null ? request.displayOrder() : 0)
                 .active(request.active() == null || request.active())
+                .imageUrl(resolveImageUrl(request.imageUrl(), slug))
                 .build();
         return toDto(categoryRepository.save(category));
     }
@@ -77,6 +78,9 @@ public class CategoryCommandService {
         }
         if (request.active() != null) {
             category.setActive(request.active());
+        }
+        if (request.imageUrl() != null) {
+            category.setImageUrl(request.imageUrl().isBlank() ? CategoryImages.coverForSlug(slug) : request.imageUrl().trim());
         }
         categoryRepository.save(category);
         refreshDescendantPaths(category);
@@ -169,7 +173,15 @@ public class CategoryCommandService {
                 category.getSlug(),
                 category.getDescription(),
                 category.getDisplayOrder(),
-                category.getParent() != null ? category.getParent().getId() : null
+                category.getParent() != null ? category.getParent().getId() : null,
+                category.getImageUrl()
         );
+    }
+
+    private static String resolveImageUrl(String requested, String slug) {
+        if (requested != null && !requested.isBlank()) {
+            return requested.trim();
+        }
+        return CategoryImages.coverForSlug(slug);
     }
 }

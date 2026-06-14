@@ -17,7 +17,7 @@ export default function AboutPage() {
     <div className="container-premium py-16 sm:py-20 lg:py-24">
       <SectionHeader
         align="left"
-        eyebrow="Our story"
+        eyebrow="About us"
         title={`About ${SITE_NAME}`}
         className="mb-12"
       />
@@ -40,6 +40,22 @@ export default function AboutPage() {
           <strong className="font-medium text-charcoal">finding the right fit with the right design</strong> —{" "}
           {SITE_NAME} brings together creativity, craftsmanship, and attention to detail.
         </p>
+
+        <div id="our-story" className="scroll-mt-28 pt-8">
+          <p className="text-eyebrow text-maroon">Our story</p>
+          <h2 className="mt-3 font-display text-2xl text-charcoal sm:text-3xl">
+            Where every drape tells a story
+          </h2>
+          <p className="mt-6">
+            From a small stitching studio in Hyderabad to a boutique loved by women and little
+            ones alike, {SITE_NAME} was built on one promise:{" "}
+            <strong className="font-medium text-charcoal">
+              couture-quality fit, without compromising on comfort or individuality
+            </strong>
+            . Every saree, lehenga, and girls&apos; ensemble is chosen and crafted with the same
+            care we&apos;d offer our own family.
+          </p>
+        </div>
 
         <div className="pt-4">
           <h2 className="font-display text-2xl text-charcoal">Why choose us?</h2>

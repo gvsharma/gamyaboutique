@@ -47,15 +47,18 @@ public class CategoryTreeBuilder {
         private final String description;
         private final int displayOrder;
         private final int depth;
+        private final String imageUrl;
         private final List<MutableNode> children = new ArrayList<>();
 
-        private MutableNode(UUID id, String name, String slug, String description, int displayOrder, int depth) {
+        private MutableNode(UUID id, String name, String slug, String description, int displayOrder, int depth,
+                            String imageUrl) {
             this.id = id;
             this.name = name;
             this.slug = slug;
             this.description = description;
             this.displayOrder = displayOrder;
             this.depth = depth;
+            this.imageUrl = imageUrl;
         }
 
         static MutableNode from(Category category) {
@@ -65,14 +68,15 @@ public class CategoryTreeBuilder {
                     category.getSlug(),
                     category.getDescription(),
                     category.getDisplayOrder(),
-                    category.getDepth());
+                    category.getDepth(),
+                    category.getImageUrl());
         }
 
         CategoryTreeNodeDto toDto() {
             children.sort(Comparator.comparingInt((MutableNode n) -> n.displayOrder)
                     .thenComparing((MutableNode n) -> n.name));
             List<CategoryTreeNodeDto> childDtos = children.stream().map(MutableNode::toDto).toList();
-            return new CategoryTreeNodeDto(id, name, slug, description, displayOrder, depth, childDtos);
+            return new CategoryTreeNodeDto(id, name, slug, description, displayOrder, depth, imageUrl, childDtos);
         }
     }
 }

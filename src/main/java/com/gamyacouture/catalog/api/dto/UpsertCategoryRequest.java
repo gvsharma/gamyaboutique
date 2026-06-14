@@ -12,6 +12,7 @@ public record UpsertCategoryRequest(
         String description,
         UUID parentId,
         @Min(0) Integer displayOrder,
-        Boolean active
+        Boolean active,
+        @Size(max = 500) String imageUrl
 ) {
 }

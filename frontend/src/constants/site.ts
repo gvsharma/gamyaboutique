@@ -13,4 +13,10 @@ export const CONTACT = {
   mapsUrl: "https://maps.app.goo.gl/f5HByf4yZHmEihf79",
   instagramUrl: "https://www.instagram.com/gamya_couture?utm_source=qr",
   instagramHandle: "@gamya_couture",
+  whatsappMessage:
+    "Hello Gamya Couture! I'd like to enquire about your collections and custom stitching.",
 } as const;
+
+export function whatsappHref(message = CONTACT.whatsappMessage) {
+  return `https://wa.me/91${CONTACT.phone}?text=${encodeURIComponent(message)}`;
+}

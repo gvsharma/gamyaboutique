@@ -12,6 +12,10 @@ export const ROUTES = {
   account: "/account",
   accountAddresses: "/account/addresses",
   category: (slug: string) => `/category/${slug}`,
+  shopNewArrivals: "/shop?sort=new",
+  aboutStory: "/about#our-story",
+  customStitching: (service?: string) =>
+    service ? `/contact?service=${encodeURIComponent(service)}` : "/contact",
   product: (id: string) => `/products/${id}`,
   admin: {
     home: "/admin",
