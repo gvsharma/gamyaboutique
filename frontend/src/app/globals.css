@@ -67,6 +67,47 @@
     @apply text-stone transition-colors duration-300 ease-premium hover:text-maroon;
   }
 
+  .nav-link-premium {
+    @apply font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-charcoal/85 transition-colors duration-300 ease-premium hover:text-maroon xl:text-[11px];
+  }
+
+  .btn-editorial {
+    @apply inline-flex items-center justify-center rounded-none px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] transition-all duration-300 ease-premium;
+  }
+
+  .btn-editorial-primary {
+    @apply btn-editorial bg-mustard text-charcoal hover:bg-gold;
+  }
+
+  .btn-editorial-outline {
+    @apply btn-editorial border border-pearl/40 bg-transparent text-pearl hover:border-pearl hover:bg-pearl/10;
+  }
+
+  .trust-ticker {
+    @apply border-y border-charcoal/5 bg-pearl py-3.5 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-stone;
+  }
+
+  .badge-editorial {
+    @apply inline-flex items-center bg-mustard px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-charcoal;
+  }
+
+  .editorial-panel {
+    @apply bg-olive text-pearl;
+  }
+
+  .editorial-number {
+    @apply font-display text-5xl leading-none text-pearl/20 sm:text-6xl;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
   .chip {
     @apply inline-flex items-center rounded-full bg-linen px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-stone;
     --tw-bg-opacity: 0.8;

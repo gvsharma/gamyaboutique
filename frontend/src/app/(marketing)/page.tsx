@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HeroBanner } from "@/components/home/hero-banner";
-import { CategoryPills } from "@/components/home/category-pills";
-import { FeaturedCategories } from "@/components/home/featured-categories";
+import { EditorialFeatures } from "@/components/home/editorial-features";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ROUTES } from "@/constants/routes";
+import { whatsappHref } from "@/constants/site";
 import { serverFetch } from "@/lib/api/server-fetch";
 import { API } from "@/lib/api/endpoints";
 import type { PageResponse } from "@/types/api";
@@ -29,52 +29,50 @@ export default async function HomePage() {
     // API offline — page still renders
   }
 
+  const spotlightCategories = categories.slice(0, 3);
+
   return (
     <>
       <HeroBanner />
 
-      {/* Category pills strip */}
-      {categories.length > 0 && (
-        <section className="border-b border-charcoal/5 bg-pearl py-6">
-          <div className="container-premium">
-            <CategoryPills categories={categories} />
+      {spotlightCategories.length > 0 && (
+        <section className="container-premium py-20 sm:py-24">
+          <SectionHeader
+            eyebrow="Collections"
+            title="Discover our bestsellers this month"
+            description="Handpicked sarees, lehengas, and girls wear — styled for celebrations and everyday elegance."
+          />
+          <div className="mt-12 grid gap-4 sm:grid-cols-3">
+            {spotlightCategories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={ROUTES.category(cat.slug)}
+                className="group relative aspect-[3/4] overflow-hidden bg-linen"
+              >
+                <Image
+                  src={
+                    cat.slug === "lehengas"
+                      ? "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80"
+                      : cat.slug === "sarees"
+                        ? "https://images.unsplash.com/photo-1610030469983-98e550b19538?w=800&q=80"
+                        : "https://images.unsplash.com/photo-1515488042361-ee00e8170dc8?w=800&q=80"
+                  }
+                  alt={cat.name}
+                  fill
+                  className="object-cover transition-transform duration-700 ease-premium group-hover:scale-[1.03]"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/70 to-transparent p-5">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-pearl/70">
+                    Shop
+                  </p>
+                  <h3 className="mt-1 font-display text-xl text-pearl">{cat.name}</h3>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}
-
-      {categories.length > 0 && <FeaturedCategories categories={categories} />}
-
-      {/* Promotional split banner */}
-      <section className="overflow-hidden bg-ivory">
-        <div className="container-premium">
-          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-0">
-            <div className="relative aspect-[4/3] overflow-hidden lg:aspect-auto lg:min-h-[28rem]">
-              <Image
-                src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1200&q=80"
-                alt="Bridal lehenga collection"
-                fill
-                className="object-cover transition-transform duration-700 hover:scale-105"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
-            <div className="flex flex-col justify-center px-0 py-12 lg:px-16 lg:py-20">
-              <p className="text-eyebrow">Limited edition</p>
-              <h2 className="mt-4 font-display text-section-title text-charcoal">
-                Bridal season essentials
-              </h2>
-              <p className="mt-4 max-w-md text-body">
-                Hand-embroidered lehengas and heirloom sarees — curated for the bride who values
-                craftsmanship and timeless elegance.
-              </p>
-              <Link href={ROUTES.category("bridal")} className="mt-8 w-fit">
-                <Button variant="primary" size="lg">
-                  Shop bridal
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {trending.length > 0 && (
         <ProductCarousel
@@ -82,49 +80,54 @@ export default async function HomePage() {
           eyebrow="Trending"
           title="Most loved right now"
           description="Pieces our customers are saving and inquiring about this season."
+          className="bg-cream"
         />
       )}
 
-      <section className="container-premium py-16 sm:py-24">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <SectionHeader align="left" eyebrow="Curated" title="Featured pieces" className="mb-0" />
-          <Link href={ROUTES.shop} className="hidden shrink-0 sm:block">
-            <Button variant="outline">View all</Button>
-          </Link>
-        </div>
-        <div className="mt-12">
-          <ProductGrid products={featured} />
-        </div>
-        <div className="mt-10 text-center sm:hidden">
-          <Link href={ROUTES.shop}>
-            <Button variant="outline">View all</Button>
-          </Link>
-        </div>
-      </section>
+      <EditorialFeatures />
 
-      {/* CTA promo strip */}
-      <section className="promo-strip">
+      {featured.length > 0 && (
+        <section className="container-premium py-16 sm:py-24">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <SectionHeader align="left" eyebrow="Curated" title="Featured pieces" className="mb-0" />
+            <Link href={ROUTES.shop} className="hidden shrink-0 sm:block">
+              <Button variant="outline" className="rounded-none uppercase tracking-[0.12em]">
+                View all
+              </Button>
+            </Link>
+          </div>
+          <div className="mt-12">
+            <ProductGrid products={featured} />
+          </div>
+        </section>
+      )}
+
+      <section className="editorial-panel">
         <div className="container-premium grid items-center gap-8 py-20 sm:py-24 lg:grid-cols-2">
           <div>
-            <p className="text-eyebrow text-pearl/60">Personal styling</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-pearl/55">
+              Personal styling
+            </p>
             <h2 className="mt-4 font-display text-section-title text-pearl">
               Bespoke consultations by appointment
             </h2>
-          </div>
-          <div className="lg:text-right">
-            <p className="text-body text-pearl/70 lg:ml-auto lg:max-w-md">
-              From bridal trousseaus to festive sarees — our team guides you through fabric, drape,
-              and embellishment.
+            <p className="mt-4 max-w-md text-body text-pearl/70">
+              From bridal trousseaus to festive sarees — our Hyderabad team guides you through
+              fabric, drape, and embellishment.
             </p>
-            <Link href={ROUTES.contact} className="mt-8 inline-block lg:mt-6">
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-pearl/30 text-pearl hover:border-pearl hover:bg-pearl/10"
-              >
-                Get in touch
-              </Button>
+          </div>
+          <div className="flex flex-wrap gap-3 lg:justify-end">
+            <Link href={ROUTES.contact} className="btn-editorial-primary">
+              Book appointment
             </Link>
+            <a
+              href={whatsappHref()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-editorial-outline"
+            >
+              WhatsApp enquiry
+            </a>
           </div>
         </div>
       </section>

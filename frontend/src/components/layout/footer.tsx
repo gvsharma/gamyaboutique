@@ -18,8 +18,8 @@ export function Footer() {
           </p>
           <ul className="mt-5 space-y-3 text-sm">
             <li>
-              <Link href={ROUTES.shop} className="text-pearl/75 transition-colors hover:text-pearl">
-                All collections
+              <Link href={ROUTES.shopNewArrivals} className="text-pearl/75 transition-colors hover:text-pearl">
+                New arrivals
               </Link>
             </li>
             <li>
@@ -33,12 +33,17 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.category("bridal")} className="text-pearl/75 transition-colors hover:text-pearl">
-                Bridal
+              <Link href={ROUTES.category("girls-collection")} className="text-pearl/75 transition-colors hover:text-pearl">
+                Girls collection
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.about} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.customStitching()} className="text-pearl/75 transition-colors hover:text-pearl">
+                Custom stitching
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.aboutStory} className="text-pearl/75 transition-colors hover:text-pearl">
                 Our story
               </Link>
             </li>

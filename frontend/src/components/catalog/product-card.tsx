@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Eye, Heart, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { useWishlistActions } from "@/hooks/use-wishlist";
 import { addToCart } from "@/lib/api/services/cart.service";
@@ -41,68 +41,59 @@ export function ProductCard({ product, className, index = 0 }: ProductCardProps)
         className,
       )}
     >
-      <Link href={ROUTES.product(product.id)} className="product-image-wrap block rounded-none">
+      <Link href={ROUTES.product(product.id)} className="product-image-wrap block">
         <Image
           src={imageUrl}
           alt={product.name}
           fill
-          className="object-cover transition-transform duration-700 ease-premium group-hover:scale-105"
+          className="object-cover transition-transform duration-700 ease-premium group-hover:scale-[1.03]"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           loading="lazy"
         />
 
         {product.onOffer && (
-          <span className="absolute left-3 top-3 bg-charcoal px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-pearl">
-            Sale
-          </span>
+          <span className="badge-editorial absolute bottom-3 left-3">Sale</span>
         )}
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 flex items-end justify-center bg-charcoal/0 pb-6 transition-all duration-500 ease-premium group-hover:bg-charcoal/25">
-          <div className="flex translate-y-4 gap-2 opacity-0 transition-all duration-400 ease-premium group-hover:translate-y-0 group-hover:opacity-100">
-            <span className="inline-flex items-center gap-1.5 bg-pearl px-4 py-2 text-xs font-medium uppercase tracking-wider text-charcoal">
-              <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
-              View
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                addCartMutation.mutate();
-              }}
-              className="inline-flex items-center gap-1.5 bg-charcoal px-4 py-2 text-xs font-medium uppercase tracking-wider text-pearl transition-colors hover:bg-maroon"
-              aria-label="Add to bag"
-            >
-              <ShoppingBag className="h-3.5 w-3.5" strokeWidth={1.5} />
-              Add
-            </button>
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-charcoal/0 transition-colors duration-500 group-hover:bg-charcoal/10" />
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            addCartMutation.mutate();
+          }}
+          className="absolute bottom-3 right-3 translate-y-2 bg-charcoal p-2.5 text-pearl opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon"
+          aria-label="Add to bag"
+        >
+          <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
+        </button>
       </Link>
 
       <button
         type="button"
         onClick={() => toggle(product, ROUTES.product(product.id))}
         className={cn(
-          "absolute right-3 top-3 z-10 rounded-full bg-pearl/90 p-2 shadow-soft backdrop-blur-sm transition-all duration-300",
-          inWishlist ? "text-maroon" : "text-stone opacity-0 group-hover:opacity-100 hover:text-maroon",
+          "absolute right-3 top-3 z-10 p-1.5 transition-all duration-300",
+          inWishlist ? "text-maroon" : "text-charcoal/40 opacity-0 group-hover:opacity-100 hover:text-maroon",
         )}
         aria-label={inWishlist ? "Remove from wishlist" : "Save to wishlist"}
       >
         <Heart className={cn("h-4 w-4", inWishlist && "fill-current opacity-100")} strokeWidth={1.5} />
       </button>
 
-      <div className="flex flex-1 flex-col gap-1 px-0.5 pt-4">
-        {product.fabric && <span className="chip w-fit">{product.fabric.name}</span>}
+      <div className="flex flex-1 flex-col gap-0.5 pt-3">
         <Link href={ROUTES.product(product.id)}>
-          <h3 className="font-display text-product-title text-charcoal transition-colors hover:text-maroon line-clamp-2">
+          <h3 className="text-[13px] font-medium uppercase tracking-[0.06em] text-charcoal transition-colors hover:text-maroon line-clamp-2">
             {product.name}
           </h3>
         </Link>
-        <div className="mt-auto flex items-baseline gap-2 pt-1">
-          <span className="text-price">{formatPrice(product.effectivePrice, product.currency)}</span>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="text-sm font-medium tracking-tight text-charcoal">
+            {formatPrice(product.effectivePrice, product.currency)}
+          </span>
           {product.onOffer && product.compareAtPrice && (
-            <span className="text-xs text-stone/70 line-through">
+            <span className="text-xs text-stone/60 line-through">
               {formatPrice(product.compareAtPrice, product.currency)}
             </span>
           )}

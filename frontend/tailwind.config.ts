@@ -35,6 +35,16 @@ const config: Config = {
         maroon: {
           DEFAULT: "rgb(122 62 72 / <alpha-value>)",
           hover: "#6A3540",
+          deep: "#5C2E36",
+        },
+        olive: {
+          DEFAULT: "#3D4A3A",
+          dark: "#2F3A2E",
+          muted: "#3D4A3A14",
+        },
+        mustard: {
+          DEFAULT: "#C4A962",
+          soft: "#E8DFC8",
         },
         success: "#4A7C59",
         warning: "#B8956A",
@@ -96,6 +106,10 @@ const config: Config = {
         slowZoom: {
           "0%": { transform: "scale(1)" },
           "100%": { transform: "scale(1.06)" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
     },

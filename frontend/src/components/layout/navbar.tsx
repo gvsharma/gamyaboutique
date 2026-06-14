@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { ChevronDown, Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { MAIN_NAV, type NavItem } from "@/constants/nav-links";
 import { ROUTES } from "@/constants/routes";
 import { SITE_NAME } from "@/constants/site";
 import { fetchCart } from "@/lib/api/services/cart.service";
@@ -14,18 +15,190 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useWishlistStore } from "@/stores/wishlist-store";
 
-const navLinks = [
-  { href: ROUTES.shop, label: "Shop" },
-  { href: ROUTES.category("sarees"), label: "Sarees" },
-  { href: ROUTES.category("lehengas"), label: "Lehengas" },
-  { href: ROUTES.category("bridal"), label: "Bridal" },
-  { href: ROUTES.about, label: "Story" },
-];
+function NavBadge({ type }: { type: "new" }) {
+  if (type === "new") {
+    return <span className="badge-editorial ml-1.5">New</span>;
+  }
+  return null;
+}
+
+function DesktopNavItem({ item }: { item: NavItem }) {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+
+  if (!item.children?.length) {
+    return (
+      <Link
+        href={item.href ?? ROUTES.shop}
+        className={cn(
+          "nav-link-premium group relative inline-flex items-center whitespace-nowrap",
+          item.highlight && "font-medium text-maroon",
+        )}
+      >
+        {item.label}
+        {item.badge && <NavBadge type={item.badge} />}
+        <span
+          className={cn(
+            "absolute -bottom-1 left-0 h-px w-0 bg-maroon transition-all duration-300 ease-premium group-hover:w-full",
+            item.highlight && "w-full bg-maroon/40 group-hover:w-full group-hover:bg-maroon",
+          )}
+          aria-hidden
+        />
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href={item.href ?? "#"}
+        className={cn(
+          "nav-link-premium group inline-flex items-center gap-1 whitespace-nowrap",
+          item.highlight && "font-medium text-maroon",
+          open && "text-maroon",
+        )}
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-controls={panelId}
+      >
+        {item.label}
+        {item.badge && <NavBadge type={item.badge} />}
+        <ChevronDown
+          className={cn(
+            "h-3.5 w-3.5 opacity-50 transition-transform duration-300 ease-premium",
+            open && "rotate-180 opacity-100",
+          )}
+          strokeWidth={1.75}
+        />
+      </Link>
+
+      <div
+        id={panelId}
+        className={cn(
+          "absolute left-1/2 top-[calc(100%+0.75rem)] z-50 min-w-[15rem] -translate-x-1/2 pt-1 transition-all duration-300 ease-premium",
+          open
+            ? "pointer-events-auto translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-1 opacity-0",
+        )}
+      >
+        <div className="overflow-hidden rounded-xl border border-charcoal/5 bg-pearl/98 shadow-elevated backdrop-blur-xl">
+          <ul className="py-2">
+            {item.children.map((child) => (
+              <li key={child.href}>
+                <Link
+                  href={child.href}
+                  className="group/item block px-4 py-2.5 transition-colors duration-200 hover:bg-ivory/80"
+                >
+                  <span className="block text-[13px] tracking-wide text-charcoal transition-colors group-hover/item:text-maroon">
+                    {child.label}
+                  </span>
+                  {child.description && (
+                    <span className="mt-0.5 block text-[11px] text-stone">{child.description}</span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileNavItem({
+  item,
+  expanded,
+  onToggle,
+  onNavigate,
+}: {
+  item: NavItem;
+  expanded: boolean;
+  onToggle: () => void;
+  onNavigate: () => void;
+}) {
+  if (!item.children?.length) {
+    return (
+      <li>
+        <Link
+          href={item.href ?? ROUTES.shop}
+          className={cn(
+            "flex items-center rounded-xl px-3 py-3 font-display text-lg text-charcoal transition-colors hover:bg-ivory hover:text-maroon",
+            item.highlight && "text-maroon",
+          )}
+          onClick={onNavigate}
+        >
+          {item.label}
+          {item.badge && <NavBadge type={item.badge} />}
+        </Link>
+      </li>
+    );
+  }
+
+  return (
+    <li className="border-b border-charcoal/5 last:border-0">
+      <button
+        type="button"
+        className={cn(
+          "flex w-full items-center justify-between rounded-xl px-3 py-3 text-left font-display text-lg text-charcoal transition-colors hover:bg-ivory",
+          item.highlight && "text-maroon",
+          expanded && "bg-ivory/60 text-maroon",
+        )}
+        onClick={onToggle}
+        aria-expanded={expanded}
+      >
+        <span className="inline-flex items-center">
+          {item.label}
+          {item.badge && <NavBadge type={item.badge} />}
+        </span>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 text-stone transition-transform duration-300",
+            expanded && "rotate-180 text-maroon",
+          )}
+        />
+      </button>
+      <ul
+        className={cn(
+          "overflow-hidden transition-all duration-300 ease-premium",
+          expanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
+        {item.children.map((child) => (
+          <li key={child.href}>
+            <Link
+              href={child.href}
+              className="block py-2.5 pl-6 pr-3 text-sm text-stone transition-colors hover:text-maroon"
+              onClick={onNavigate}
+            >
+              {child.label}
+            </Link>
+          </li>
+        ))}
+        {item.href && (
+          <li>
+            <Link
+              href={item.href}
+              className="block py-2.5 pl-6 pr-3 text-xs font-medium uppercase tracking-wider text-maroon"
+              onClick={onNavigate}
+            >
+              View all {item.label}
+            </Link>
+          </li>
+        )}
+      </ul>
+    </li>
+  );
+}
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const wishlistCount = useWishlistStore((s) => s.items.length);
   const user = useAuthStore((s) => s.user);
 
@@ -54,69 +227,51 @@ export function Navbar() {
 
   return (
     <>
-      {/* Announcement strip */}
-      <div className="hidden border-b border-charcoal/5 bg-warm py-2 text-center sm:block">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone">
-          Free styling consultation ·{" "}
-          <Link href={ROUTES.contact} className="text-maroon transition-colors hover:text-maroon-hover">
-            Book now
+      <div className="hidden border-b border-pearl/10 bg-charcoal py-2.5 text-center sm:block">
+        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-pearl/80">
+          Bespoke stitching for women &amp; girls ·{" "}
+          <Link href={ROUTES.contact} className="text-pearl transition-colors hover:text-mustard">
+            Book a consultation
           </Link>
         </p>
       </div>
 
       <header
         className={cn(
-          "relative sticky top-0 z-50 transition-all duration-500 ease-premium",
+          "sticky top-0 z-50 transition-all duration-500 ease-premium",
           scrolled
-            ? "border-b border-charcoal/5 bg-pearl/95 shadow-soft backdrop-blur-xl"
-            : "border-b border-charcoal/5 bg-pearl/80 backdrop-blur-md",
+            ? "border-b border-charcoal/5 bg-pearl/98 shadow-soft backdrop-blur-xl"
+            : "border-b border-charcoal/5 bg-pearl",
         )}
       >
-        <div className="container-premium flex h-14 items-center justify-between lg:h-16">
-          {/* Left nav — desktop */}
-          <nav className="hidden flex-1 items-center gap-7 lg:flex">
-            {navLinks.slice(0, 3).map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="link-subtle text-[13px] tracking-wide"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
+        <div className="container-premium flex h-14 items-center gap-4 lg:h-[4.25rem]">
           <Link
             href={ROUTES.home}
-            className="font-display text-xl tracking-tight text-charcoal transition-colors hover:text-maroon sm:text-[1.65rem] lg:absolute lg:left-1/2 lg:-translate-x-1/2"
+            className="shrink-0 font-sans text-sm font-bold uppercase tracking-[0.18em] text-charcoal transition-colors hover:text-maroon sm:text-[15px] lg:mr-2"
           >
             {SITE_NAME}
           </Link>
 
-          {/* Right nav — desktop + icons */}
-          <div className="flex flex-1 items-center justify-end gap-0.5 sm:gap-1">
-            <nav className="mr-4 hidden items-center gap-7 lg:flex">
-              {navLinks.slice(3).map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="link-subtle text-[13px] tracking-wide"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
+          <nav
+            className="hidden min-w-0 flex-1 items-center justify-center gap-x-5 gap-y-1 xl:flex xl:gap-x-6"
+            aria-label="Main navigation"
+          >
+            {MAIN_NAV.map((item) => (
+              <DesktopNavItem key={item.label} item={item} />
+            ))}
+          </nav>
 
+          <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
             <Link
               href={`${ROUTES.shop}?focus=search`}
-              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal"
+              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal"
               aria-label="Search"
             >
               <Search className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
             </Link>
             <Link
               href={ROUTES.wishlist}
-              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal"
+              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal"
               aria-label="Wishlist"
             >
               <Heart className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
@@ -129,7 +284,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal"
+              className="relative rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal"
               aria-label="Cart"
             >
               <ShoppingBag className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
@@ -141,14 +296,14 @@ export function Navbar() {
             </button>
             <Link
               href={accountHref}
-              className="hidden rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal sm:block"
+              className="hidden rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal sm:block"
               aria-label="Account"
             >
               <User className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
             </Link>
             <button
               type="button"
-              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:text-charcoal lg:hidden"
+              className="rounded-full p-2.5 text-stone transition-all duration-300 hover:bg-ivory/80 hover:text-charcoal xl:hidden"
               onClick={() => setOpen(true)}
               aria-label="Menu"
             >
@@ -156,12 +311,33 @@ export function Navbar() {
             </button>
           </div>
         </div>
+
+        {/* Tablet: compact secondary row */}
+        <nav
+          className="hidden border-t border-charcoal/5 lg:flex xl:hidden"
+          aria-label="Main navigation tablet"
+        >
+          <div className="container-premium flex items-center justify-center gap-5 overflow-x-auto py-2.5 scrollbar-none">
+            {MAIN_NAV.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href ?? item.children?.[0]?.href ?? ROUTES.shop}
+                className={cn(
+                  "nav-link-premium shrink-0 whitespace-nowrap text-[12px]",
+                  item.highlight && "font-medium text-maroon",
+                )}
+              >
+                {item.label}
+                {item.badge && <NavBadge type={item.badge} />}
+              </Link>
+            ))}
+          </div>
+        </nav>
       </header>
 
-      {/* Mobile drawer */}
       <div
         className={cn(
-          "fixed inset-0 z-[80] lg:hidden",
+          "fixed inset-0 z-[80] xl:hidden",
           open ? "pointer-events-auto" : "pointer-events-none",
         )}
       >
@@ -174,11 +350,12 @@ export function Navbar() {
         />
         <nav
           className={cn(
-            "absolute inset-y-0 right-0 flex w-[min(100%,20rem)] flex-col bg-pearl px-6 py-8 shadow-elevated transition-transform duration-500 ease-premium",
+            "absolute inset-y-0 right-0 flex w-[min(100%,22rem)] flex-col bg-pearl shadow-elevated transition-transform duration-500 ease-premium",
             open ? "translate-x-0" : "translate-x-full",
           )}
+          aria-label="Mobile navigation"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-charcoal/5 px-6 py-5">
             <span className="font-display text-xl text-charcoal">Menu</span>
             <button
               type="button"
@@ -189,22 +366,25 @@ export function Navbar() {
               <X className="h-5 w-5" />
             </button>
           </div>
-          <ul className="mt-10 flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="block rounded-xl px-3 py-3 font-display text-lg text-charcoal transition-colors hover:bg-ivory hover:text-maroon"
-                  onClick={() => setOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              </li>
+          <ul className="flex-1 overflow-y-auto px-4 py-4">
+            {MAIN_NAV.map((item) => (
+              <MobileNavItem
+                key={item.label}
+                item={item}
+                expanded={mobileExpanded === item.label}
+                onToggle={() =>
+                  setMobileExpanded((prev) => (prev === item.label ? null : item.label))
+                }
+                onNavigate={() => {
+                  setOpen(false);
+                  setMobileExpanded(null);
+                }}
+              />
             ))}
             <li className="mt-4 border-t border-charcoal/5 pt-4">
               <Link
                 href={accountHref}
-                className="block rounded-xl px-3 py-3 text-sm text-maroon"
+                className="block rounded-xl px-3 py-3 text-sm font-medium text-maroon"
                 onClick={() => setOpen(false)}
               >
                 Account
