@@ -44,7 +44,7 @@ export default function ContactPage() {
               href={CONTACT.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 block text-sm text-stone hover:text-maroon"
+              className="mt-2 block text-sm text-charcoal/75 hover:text-maroon"
             >
               {CONTACT.addressShort}
             </a>
@@ -56,7 +56,7 @@ export default function ContactPage() {
               href={CONTACT.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 block text-sm text-stone hover:text-maroon"
+              className="mt-2 block text-sm text-charcoal/75 hover:text-maroon"
             >
               {CONTACT.instagramHandle}
             </a>

@@ -64,11 +64,31 @@
   }
 
   .link-subtle {
-    @apply text-stone transition-colors duration-300 ease-premium hover:text-maroon;
+    @apply text-charcoal/70 transition-colors duration-300 ease-premium hover:text-maroon;
   }
 
   .nav-link-premium {
-    @apply font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-charcoal/85 transition-colors duration-300 ease-premium hover:text-maroon xl:text-[11px];
+    @apply font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-charcoal transition-colors duration-300 ease-premium hover:text-maroon;
+  }
+
+  .nav-dropdown-panel {
+    @apply overflow-hidden rounded-xl border border-charcoal/10 bg-pearl shadow-elevated;
+  }
+
+  .nav-dropdown-link {
+    @apply block px-4 py-2.5 transition-colors duration-200 hover:bg-warm;
+  }
+
+  .nav-dropdown-label {
+    @apply block text-[13px] font-medium tracking-wide text-charcoal transition-colors;
+  }
+
+  .nav-dropdown-desc {
+    @apply mt-0.5 block text-[11px] leading-snug text-stone;
+  }
+
+  .nav-dropdown-link:hover .nav-dropdown-label {
+    @apply text-maroon;
   }
 
   .btn-editorial {
@@ -84,7 +104,7 @@
   }
 
   .trust-ticker {
-    @apply border-y border-charcoal/5 bg-pearl py-3.5 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-stone;
+    @apply border-y border-charcoal/5 bg-pearl py-3.5 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-charcoal/55;
   }
 
   .badge-editorial {

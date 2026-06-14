@@ -18,32 +18,32 @@ export function Footer() {
           </p>
           <ul className="mt-5 space-y-3 text-sm">
             <li>
-              <Link href={ROUTES.shopNewArrivals} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.shopNewArrivals} className="text-pearl/75 transition-colors hover:text-mustard">
                 New arrivals
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.category("sarees")} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.category("sarees")} className="text-pearl/75 transition-colors hover:text-mustard">
                 Sarees
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.category("lehengas")} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.category("lehengas")} className="text-pearl/75 transition-colors hover:text-mustard">
                 Lehengas
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.category("girls-collection")} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.category("girls-collection")} className="text-pearl/75 transition-colors hover:text-mustard">
                 Girls collection
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.customStitching()} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.customStitching()} className="text-pearl/75 transition-colors hover:text-mustard">
                 Custom stitching
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.aboutStory} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.aboutStory} className="text-pearl/75 transition-colors hover:text-mustard">
                 Our story
               </Link>
             </li>
@@ -56,17 +56,17 @@ export function Footer() {
           </p>
           <ul className="mt-5 space-y-3 text-sm">
             <li>
-              <Link href={ROUTES.contact} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.contact} className="text-pearl/75 transition-colors hover:text-mustard">
                 Contact us
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.account} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.account} className="text-pearl/75 transition-colors hover:text-mustard">
                 My account
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.wishlist} className="text-pearl/75 transition-colors hover:text-pearl">
+              <Link href={ROUTES.wishlist} className="text-pearl/75 transition-colors hover:text-mustard">
                 Wishlist
               </Link>
             </li>
@@ -84,7 +84,7 @@ export function Footer() {
                 href={CONTACT.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-pearl"
+                className="transition-colors hover:text-mustard"
               >
                 {CONTACT.address}
               </a>
@@ -101,7 +101,7 @@ export function Footer() {
                 href={CONTACT.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-pearl"
+                className="transition-colors hover:text-mustard"
               >
                 {CONTACT.instagramHandle}
               </a>
