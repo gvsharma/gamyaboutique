@@ -16,7 +16,9 @@ export function PolicyPageContent({ policy }: { policy: SitePolicy }) {
   return (
     <div className="container-premium py-16 sm:py-20 lg:py-24">
       <SectionHeader align="left" eyebrow="Legal" title={policy.title} className="mb-4" />
-      <p className="mb-12 text-sm text-stone">Last updated on {formatUpdatedAt(policy.updatedAt)}</p>
+      {policy.updatedAt ? (
+        <p className="mb-12 text-sm text-stone">Last updated on {formatUpdatedAt(policy.updatedAt)}</p>
+      ) : null}
 
       <div className="mx-auto max-w-3xl whitespace-pre-wrap text-body">{policy.content}</div>
 
