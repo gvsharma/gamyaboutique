@@ -261,13 +261,18 @@ jobs:
               --output json
           }
 
+          SSM_DEPLOY_TIMEOUT_SECONDS=600
+          SSM_DEPLOY_POLL_INTERVAL=10
+          # Match poll window to SSM command timeout (remote-deploy health checks can take ~6 min)
+          SSM_DEPLOY_POLL_ATTEMPTS=60
+
           send_ssm_deploy_command() {
             aws ssm send-command \
               --region "${AWS_REGION}" \
               --instance-ids "${EC2_INSTANCE_ID}" \
               --document-name "AWS-RunShellScript" \
               --comment "GitHub Actions backend deploy" \
-              --timeout-seconds 600 \
+              --timeout-seconds "${SSM_DEPLOY_TIMEOUT_SECONDS}" \
               --cloud-watch-output-config 'CloudWatchOutputEnabled=true,CloudWatchLogGroupName=/aws/ssm/gamya-couture-deploy' \
               --parameters file:///tmp/ssm-deploy-params.json \
               --query 'Command.CommandId' \
@@ -276,14 +281,14 @@ jobs:
 
           poll_ssm_deploy_command() {
             local command_id="$1"
-            for attempt in $(seq 1 36); do
+            for attempt in $(seq 1 "${SSM_DEPLOY_POLL_ATTEMPTS}"); do
               INVOCATION=$(aws ssm get-command-invocation \
                 --region "${AWS_REGION}" \
                 --command-id "${command_id}" \
                 --instance-id "${EC2_INSTANCE_ID}" \
                 --output json 2>/dev/null || echo '{}')
               STATUS=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Status','Pending'))")
-              echo "SSM status: ${STATUS} (attempt ${attempt}/36)"
+              echo "SSM status: ${STATUS} (attempt ${attempt}/${SSM_DEPLOY_POLL_ATTEMPTS})"
               case "${STATUS}" in
                 Success)
                   aws ssm get-command-invocation \
@@ -306,9 +311,9 @@ jobs:
                   return 1
                   ;;
               esac
-              sleep 10
+              sleep "${SSM_DEPLOY_POLL_INTERVAL}"
             done
-            log_ssm_invocation "${command_id}" "SSM deploy timed out waiting for terminal status"
+            log_ssm_invocation "${command_id}" "SSM deploy timed out waiting for terminal status after ${SSM_DEPLOY_POLL_ATTEMPTS} attempts (~$((SSM_DEPLOY_POLL_ATTEMPTS * SSM_DEPLOY_POLL_INTERVAL / 60)) min)"
             return 1
           }
 
