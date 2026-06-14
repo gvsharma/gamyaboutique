@@ -8,4 +8,5 @@ export const queryKeys = {
   me: ["me"] as const,
   cart: ["cart"] as const,
   wishlist: ["wishlist"] as const,
+  recentlyViewed: () => ["recentlyViewed"] as const,
 };

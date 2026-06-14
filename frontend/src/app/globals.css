@@ -72,7 +72,7 @@
   }
 
   .nav-dropdown-panel {
-    @apply overflow-hidden rounded-xl border border-charcoal/10 bg-pearl shadow-elevated;
+    @apply overflow-hidden rounded-xl border border-rose/20 bg-pearl shadow-elevated;
   }
 
   .nav-dropdown-link {
@@ -104,7 +104,7 @@
   }
 
   .trust-ticker {
-    @apply border-y border-charcoal/5 bg-pearl py-3.5 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-charcoal/55;
+    @apply border-y border-rose/15 bg-pink-soft/50 py-3.5 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-charcoal/55;
   }
 
   .badge-editorial {

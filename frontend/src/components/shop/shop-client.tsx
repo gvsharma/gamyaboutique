@@ -7,6 +7,7 @@ import { ProductGrid } from "@/components/catalog/product-grid";
 import { Button } from "@/components/ui/button";
 import { ProductGridSkeleton } from "@/components/ui/skeleton";
 import { fetchProducts } from "@/lib/api/services/product.service";
+import { filterWomenGirlsProducts } from "@/lib/catalog-filters";
 import { queryKeys } from "@/lib/query/query-keys";
 
 export function ShopClient() {
@@ -53,13 +54,15 @@ export function ShopClient() {
           Could not load products. Please try again shortly.
         </p>
       )}
-      {data && (
+      {data && (() => {
+        const products = filterWomenGirlsProducts(data.content);
+        return (
         <>
           <p className="mb-8 text-sm uppercase tracking-wider text-stone">
-            {data.totalElements} piece{data.totalElements !== 1 ? "s" : ""}
+            {products.length} piece{products.length !== 1 ? "s" : ""}
             {q ? ` for “${q}”` : ""}
           </p>
-          <ProductGrid products={data.content} />
+          <ProductGrid products={products} />
           <div className="mt-16 flex justify-center gap-4">
             <Button
               variant="outline"
@@ -80,7 +83,8 @@ export function ShopClient() {
             </Button>
           </div>
         </>
-      )}
+        );
+      })()}
     </div>
   );
 }

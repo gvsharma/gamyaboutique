@@ -10,5 +10,7 @@ public interface PrintJpaRepository extends JpaRepository<Print, UUID> {
 
     List<Print> findByActiveTrueOrderByNameAsc();
 
+    List<Print> findAllByOrderByNameAsc();
+
     java.util.Optional<Print> findByIdAndActiveTrue(UUID id);
 }

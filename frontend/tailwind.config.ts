@@ -32,6 +32,10 @@ const config: Config = {
           DEFAULT: "#C9A9A6",
           soft: "#F0E4E2",
         },
+        pink: {
+          soft: "#FFF5F7",
+          mist: "#FCE8EE",
+        },
         maroon: {
           DEFAULT: "rgb(122 62 72 / <alpha-value>)",
           hover: "#6A3540",
@@ -89,6 +93,12 @@ const config: Config = {
         "fade-in": "fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards",
         shimmer: "shimmer 1.8s ease-in-out infinite",
         "slow-zoom": "slowZoom 12s ease-out forwards",
+        "boutique-float-a": "boutiqueFloatA 14s ease-in-out infinite",
+        "boutique-float-b": "boutiqueFloatB 18s ease-in-out infinite",
+        "boutique-float-c": "boutiqueFloatC 16s ease-in-out infinite",
+        "boutique-drift-a": "boutiqueDriftA 22s ease-in-out infinite",
+        "boutique-drift-b": "boutiqueDriftB 26s ease-in-out infinite",
+        "boutique-drift-c": "boutiqueDriftC 20s ease-in-out infinite",
       },
       keyframes: {
         fadeUp: {
@@ -110,6 +120,33 @@ const config: Config = {
         marquee: {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
+        },
+        boutiqueFloatA: {
+          "0%, 100%": { transform: "translate(0, 0) rotate(0deg)" },
+          "50%": { transform: "translate(8px, -12px) rotate(6deg)" },
+        },
+        boutiqueFloatB: {
+          "0%, 100%": { transform: "translate(0, 0) rotate(0deg)" },
+          "50%": { transform: "translate(-10px, 8px) rotate(-5deg)" },
+        },
+        boutiqueFloatC: {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "50%": { transform: "translate(6px, 10px)" },
+        },
+        boutiqueDriftA: {
+          "0%, 100%": { transform: "translate(0, 0) scaleX(1)" },
+          "25%": { transform: "translate(24px, -16px) scaleX(1)" },
+          "50%": { transform: "translate(40px, 4px) scaleX(-1)" },
+          "75%": { transform: "translate(16px, 20px) scaleX(-1)" },
+        },
+        boutiqueDriftB: {
+          "0%, 100%": { transform: "translate(0, 0) scaleX(-1)" },
+          "33%": { transform: "translate(-20px, -12px) scaleX(-1)" },
+          "66%": { transform: "translate(-36px, 8px) scaleX(1)" },
+        },
+        boutiqueDriftC: {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "50%": { transform: "translate(14px, -18px)" },
         },
       },
     },

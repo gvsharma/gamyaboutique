@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ROUTES } from "@/constants/routes";
 import { categoryCoverImage } from "@/lib/category-images";
+import { filterWomenGirlsCategories } from "@/lib/catalog-filters";
 import { cn } from "@/lib/utils";
 import type { CategoryTreeNode } from "@/types/catalog";
 
@@ -13,7 +14,7 @@ interface FeaturedCategoriesProps {
 }
 
 export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
-  const topLevel = categories.slice(0, 4);
+  const topLevel = filterWomenGirlsCategories(categories).slice(0, 4);
 
   return (
     <section className="container-premium py-20 sm:py-28">
