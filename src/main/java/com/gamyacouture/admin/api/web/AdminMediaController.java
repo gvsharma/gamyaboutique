@@ -2,6 +2,7 @@ package com.gamyacouture.admin.api.web;
 
 import com.gamyacouture.admin.api.dto.MediaUploadResponse;
 import com.gamyacouture.shared.storage.ImageStorageService;
+import com.gamyacouture.shared.storage.MediaUploadType;
 import com.gamyacouture.shared.web.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,11 +29,24 @@ public class AdminMediaController {
 
     @PostMapping("/upload")
     @Operation(summary = "Upload a product image to S3 and return the public URL")
-    public ApiResponse<MediaUploadResponse> upload(
+    public ApiResponse<MediaUploadResponse> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folder", defaultValue = "products") String folder) {
-        String url = imageStorageService.upload(file, folder);
+        return upload(file, folder, MediaUploadType.IMAGE, "Image uploaded");
+    }
+
+    @PostMapping("/upload-video")
+    @Operation(summary = "Upload a product video to S3 and return the public URL")
+    public ApiResponse<MediaUploadResponse> uploadVideo(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "folder", defaultValue = "videos") String folder) {
+        return upload(file, folder, MediaUploadType.VIDEO, "Video uploaded");
+    }
+
+    private ApiResponse<MediaUploadResponse> upload(
+            MultipartFile file, String folder, MediaUploadType type, String message) {
+        String url = imageStorageService.upload(file, folder, type);
         String provider = imageStorageService.isEnabled() ? "s3" : "disabled";
-        return ApiResponse.ok(new MediaUploadResponse(url, provider), "Image uploaded");
+        return ApiResponse.ok(new MediaUploadResponse(url, provider), message);
     }
 }

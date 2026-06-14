@@ -21,6 +21,7 @@ import com.gamyacouture.shared.exception.BusinessException;
 import com.gamyacouture.shared.exception.ErrorCode;
 import com.gamyacouture.shared.exception.ResourceNotFoundException;
 import com.gamyacouture.shared.validation.ImageUrlValidator;
+import com.gamyacouture.shared.validation.MediaUrlValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -107,6 +108,16 @@ public class ProductCommandService {
         product.setStockQuantity(request.stockQuantity());
         product.setLowStockThreshold(request.lowStockThreshold() != null ? request.lowStockThreshold() : 5);
         applyImages(product, request.images());
+        applyVideoUrl(product, request.videoUrl());
+    }
+
+    private void applyVideoUrl(Product product, String videoUrl) {
+        if (videoUrl == null || videoUrl.isBlank()) {
+            product.setVideoUrl(null);
+            return;
+        }
+        MediaUrlValidator.validate(videoUrl);
+        product.setVideoUrl(videoUrl.trim());
     }
 
     private void applyImages(Product product, List<ProductImageInput> images) {

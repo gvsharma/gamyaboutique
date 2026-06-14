@@ -98,6 +98,9 @@ public class Product extends BaseSoftDeletableEntity {
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
 
+    @Column(name = "video_url", length = 500)
+    private String videoUrl;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "product_categories",

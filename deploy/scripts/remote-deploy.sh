@@ -134,17 +134,51 @@ ensure_nginx_upload_limit() {
     return 0
   fi
   if grep -q 'client_max_body_size' "${conf}"; then
+    if ! grep -q 'client_max_body_size 55M' "${conf}"; then
+      log "Updating nginx client_max_body_size to 55M for admin media uploads"
+      sed -i 's/client_max_body_size[^;]*;/client_max_body_size 55M;/' "${conf}"
+      nginx -t
+      systemctl reload nginx
+    fi
     return 0
   fi
-  log "Setting nginx client_max_body_size 15M for admin image uploads"
-  sed -i '/server_name _;/a\    client_max_body_size 15M;' "${conf}"
+  log "Setting nginx client_max_body_size 55M for admin media uploads"
+  sed -i '/server_name _;/a\    client_max_body_size 55M;' "${conf}"
   nginx -t
   systemctl reload nginx
+}
+
+ensure_s3_env_vars() {
+  local env_file="${APP_PATH}/config/application.env"
+  if [[ ! -f "${env_file}" ]]; then
+    log "WARN: ${env_file} missing — skip S3 env sync"
+    return 0
+  fi
+  declare -A defaults=(
+    [APP_STORAGE_S3_ENABLED]="true"
+    [APP_STORAGE_S3_BUCKET]="gamya-couture-dev-media"
+    [APP_STORAGE_S3_REGION]="ap-south-1"
+    [APP_STORAGE_S3_PUBLIC_BASE_URL]="https://d2568bpd35bq6a.cloudfront.net"
+    [APP_STORAGE_S3_KEY_PREFIX]="products/"
+  )
+  local key value
+  for key in "${!defaults[@]}"; do
+    value="${defaults[$key]}"
+    if grep -q "^${key}=" "${env_file}"; then
+      continue
+    fi
+    log "Adding missing ${key} to application.env"
+    echo "${key}=${value}" >> "${env_file}"
+  done
+  chmod 640 "${env_file}"
+  chown root:gamya "${env_file}"
 }
 
 require_root
 
 sync_db_password_from_ssm
+
+ensure_s3_env_vars
 
 ensure_nginx_upload_limit
 
