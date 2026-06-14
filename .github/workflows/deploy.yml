@@ -160,21 +160,31 @@ jobs:
             STATE="$(instance_state "${EC2_INSTANCE_ID}")"
           fi
 
+          COLD_STARTED=false
           if [[ "${STATE}" == "stopped" ]]; then
             echo "Starting stopped instance ${EC2_INSTANCE_ID}..."
             aws ec2 start-instances --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}" >/dev/null
             aws ec2 wait instance-running --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+            echo "Waiting for EC2 status checks (instance-status-ok)..."
+            aws ec2 wait instance-status-ok --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+            COLD_STARTED=true
+          fi
+
+          SSM_PING_ATTEMPTS=36
+          if [[ "${COLD_STARTED}" == "true" ]]; then
+            SSM_PING_ATTEMPTS=48
+            echo "Instance was cold-started; allowing up to ${SSM_PING_ATTEMPTS} SSM ping attempts (~$((SSM_PING_ATTEMPTS * 10 / 60)) min)."
           fi
 
           PING_STATUS="None"
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 "${SSM_PING_ATTEMPTS}"); do
             PING_STATUS="$(aws ssm describe-instance-information \
               --region "${AWS_REGION}" \
               --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
               --query 'InstanceInformationList[0].PingStatus' \
               --output text 2>/dev/null || echo "Unknown")"
             PING_STATUS="${PING_STATUS:-None}"
-            echo "SSM PingStatus for ${EC2_INSTANCE_ID}: ${PING_STATUS} (attempt ${attempt}/36)"
+            echo "SSM PingStatus for ${EC2_INSTANCE_ID}: ${PING_STATUS} (attempt ${attempt}/${SSM_PING_ATTEMPTS})"
             if [[ "${PING_STATUS}" == "Online" ]]; then
               break
             fi
@@ -182,7 +192,13 @@ jobs:
           done
 
           if [[ "${PING_STATUS}" != "Online" ]]; then
-            echo "::error::EC2 instance is not Online in SSM (status=${PING_STATUS})." >&2
+            STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+            SSM_INFO="$(aws ssm describe-instance-information \
+              --region "${AWS_REGION}" \
+              --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
+              --output json 2>/dev/null || echo '{}')"
+            echo "SSM instance information: ${SSM_INFO}"
+            echo "::error title=SSM agent not Online::EC2 ${EC2_INSTANCE_ID} is ${STATE} but SSM PingStatus=${PING_STATUS} after ${SSM_PING_ATTEMPTS} attempts (~$((SSM_PING_ATTEMPTS * 10 / 60)) min). In AWS Console: EC2 → verify instance running; Systems Manager → Fleet Manager → Ping status; connect via Session Manager (if available) and run: sudo systemctl restart amazon-ssm-agent && sudo systemctl status amazon-ssm-agent; verify instance IAM role includes AmazonSSMManagedInstanceCore and outbound HTTPS to SSM endpoints. Troubleshooting: https://docs.aws.amazon.com/systems-manager/latest/userguide/troubleshooting-ssm-agent.html" >&2
             exit 1
           fi
 
