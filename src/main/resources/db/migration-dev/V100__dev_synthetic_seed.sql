@@ -103,17 +103,17 @@ INSERT INTO seasonal_collections (id, name, slug, season, year, description, sta
     ('33100000-0000-0000-0000-000000000010', 'Classic Reds', 'classic-reds', 'FESTIVE', 2026, 'Red festive tones', '2026-10-01', '2026-11-30', TRUE, 'seed', 'seed')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO categories (id, name, slug, description, parent_id, path, depth, display_order, active, created_by, updated_by) VALUES
-    ('40100000-0000-0000-0000-000000000001', 'Women', 'women', 'Women''s couture', NULL, '/women', 0, 1, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000002', 'Men', 'men', 'Men''s ethnic wear', NULL, '/men', 0, 2, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000003', 'Kids', 'kids', 'Kids ethnic', NULL, '/kids', 0, 3, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000004', 'Sarees', 'sarees', 'Designer sarees', '40100000-0000-0000-0000-000000000001', '/women/sarees', 1, 1, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000005', 'Lehengas', 'lehengas', 'Bridal lehengas', '40100000-0000-0000-0000-000000000001', '/women/lehengas', 1, 2, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000006', 'Kurtas', 'kurtas', 'Women kurtas', '40100000-0000-0000-0000-000000000001', '/women/kurtas', 1, 3, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000007', 'Sherwanis', 'sherwanis', 'Men sherwanis', '40100000-0000-0000-0000-000000000002', '/men/sherwanis', 1, 1, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000008', 'Kids Ethnic', 'kids-ethnic', 'Kids sets', '40100000-0000-0000-0000-000000000003', '/kids/ethnic', 1, 1, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000009', 'Bridal', 'bridal', 'Bridal couture', '40100000-0000-0000-0000-000000000001', '/women/bridal', 1, 4, TRUE, 'seed', 'seed'),
-    ('40100000-0000-0000-0000-000000000010', 'Festive', 'festive', 'Festive wear', '40100000-0000-0000-0000-000000000001', '/women/festive', 1, 5, TRUE, 'seed', 'seed')
+INSERT INTO categories (id, name, slug, description, parent_id, path, depth, display_order, active, image_url, created_by, updated_by) VALUES
+    ('40100000-0000-0000-0000-000000000001', 'Women', 'women', 'Women''s couture', NULL, '/women', 0, 1, TRUE, 'https://images.unsplash.com/photo-1583391734527-658aeeef0f35?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000002', 'Men', 'men', 'Men''s ethnic wear', NULL, '/men', 0, 2, TRUE, 'https://images.unsplash.com/photo-1620799140408-8747d1d90e59?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000003', 'Kids', 'kids', 'Kids ethnic', NULL, '/kids', 0, 3, TRUE, 'https://images.unsplash.com/photo-1515488042361-ee00e8170dc8?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000004', 'Sarees', 'sarees', 'Designer sarees', '40100000-0000-0000-0000-000000000001', '/women/sarees', 1, 1, TRUE, 'https://images.unsplash.com/photo-1610030469983-98e550b19538?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000005', 'Lehengas', 'lehengas', 'Bridal lehengas', '40100000-0000-0000-0000-000000000001', '/women/lehengas', 1, 2, TRUE, 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000006', 'Kurtas', 'kurtas', 'Women kurtas', '40100000-0000-0000-0000-000000000001', '/women/kurtas', 1, 3, TRUE, 'https://images.unsplash.com/photo-1617627143750-d86bc21e3273?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000007', 'Sherwanis', 'sherwanis', 'Men sherwanis', '40100000-0000-0000-0000-000000000002', '/men/sherwanis', 1, 1, TRUE, 'https://images.unsplash.com/photo-1620799140408-8747d1d90e59?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000008', 'Kids Ethnic', 'kids-ethnic', 'Kids sets', '40100000-0000-0000-0000-000000000003', '/kids/ethnic', 1, 1, TRUE, 'https://images.unsplash.com/photo-1515488042361-ee00e8170dc8?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000009', 'Bridal', 'bridal', 'Bridal couture', '40100000-0000-0000-0000-000000000001', '/women/bridal', 1, 4, TRUE, 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1200&q=80', 'seed', 'seed'),
+    ('40100000-0000-0000-0000-000000000010', 'Festive', 'festive', 'Festive wear', '40100000-0000-0000-0000-000000000001', '/women/festive', 1, 5, TRUE, 'https://images.unsplash.com/photo-1583391734527-658aeeef0f35?w=1200&q=80', 'seed', 'seed')
 ON CONFLICT (id) DO NOTHING;
 
 -- =============================================================================
@@ -137,7 +137,7 @@ INSERT INTO product_images (id, product_id, url, alt_text, display_order, create
     ('60100000-0000-0000-0000-000000000001', '50100000-0000-0000-0000-000000000001', 'https://images.unsplash.com/photo-1610030469983-98e550b19538?w=800', 'Royal Banarasi Saree', 0, 'seed', 'seed'),
     ('60100000-0000-0000-0000-000000000002', '50100000-0000-0000-0000-000000000002', 'https://images.unsplash.com/photo-1583391733981-464be288e924?w=800', 'Kanjivaram Temple Saree', 0, 'seed', 'seed'),
     ('60100000-0000-0000-0000-000000000003', '50100000-0000-0000-0000-000000000003', 'https://images.unsplash.com/photo-1595777457583-95e059a581f5?w=800', 'Bridal Lehenga Set', 0, 'seed', 'seed'),
-    ('60100000-0000-0000-0000-000000000004', '50100000-0000-0000-0000-000000000004', 'https://images.unsplash.com/photo-1617627143750-d86bc21e3273?w=800', 'Chanderi Kurta Set', 0, 'seed', 'seed'),
+    ('60100000-0000-0000-0000-000000000004', '50100000-0000-0000-0000-000000000004', 'https://images.unsplash.com/photo-1617627143750-d86bc21e3273?w=800&q=80', 'Chanderi Kurta Set', 0, 'seed', 'seed'),
     ('60100000-0000-0000-0000-000000000005', '50100000-0000-0000-0000-000000000005', 'https://images.unsplash.com/photo-1620799140408-8747d1d90e59?w=800', 'Ivory Sherwani', 0, 'seed', 'seed'),
     ('60100000-0000-0000-0000-000000000006', '50100000-0000-0000-0000-000000000006', 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800', 'Kids Festive Kurta', 0, 'seed', 'seed'),
     ('60100000-0000-0000-0000-000000000007', '50100000-0000-0000-0000-000000000007', 'https://images.unsplash.com/photo-1609639561548-ef9b8a55a146?w=800', 'Georgette Party Saree', 0, 'seed', 'seed'),

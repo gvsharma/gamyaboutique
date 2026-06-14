@@ -47,6 +47,7 @@ export interface ProductSummary {
   onOffer: boolean;
   currency: string;
   primaryImageUrl: string | null;
+  primaryCategorySlug?: string | null;
   fabric: FabricDto | null;
   print: PrintDto | null;
   offer: OfferSummaryDto | null;

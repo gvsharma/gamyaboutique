@@ -62,4 +62,7 @@ public class Category extends BaseSoftDeletableEntity {
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 }

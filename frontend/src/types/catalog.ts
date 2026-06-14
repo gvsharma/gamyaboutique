@@ -5,6 +5,7 @@ export interface CategoryDto {
   description: string | null;
   displayOrder: number;
   parentId: string | null;
+  imageUrl?: string | null;
 }
 
 export interface CategoryTreeNode {
@@ -14,5 +15,6 @@ export interface CategoryTreeNode {
   description: string | null;
   displayOrder: number;
   depth: number;
+  imageUrl?: string | null;
   children: CategoryTreeNode[];
 }

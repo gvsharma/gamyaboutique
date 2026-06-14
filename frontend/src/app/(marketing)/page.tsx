@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HeroBanner } from "@/components/home/hero-banner";
+import { categoryCoverImage } from "@/lib/category-images";
 import { EditorialFeatures } from "@/components/home/editorial-features";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { ProductGrid } from "@/components/catalog/product-grid";
@@ -50,13 +51,7 @@ export default async function HomePage() {
                 className="group relative aspect-[3/4] overflow-hidden bg-linen"
               >
                 <Image
-                  src={
-                    cat.slug === "lehengas"
-                      ? "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80"
-                      : cat.slug === "sarees"
-                        ? "https://images.unsplash.com/photo-1610030469983-98e550b19538?w=800&q=80"
-                        : "https://images.unsplash.com/photo-1515488042361-ee00e8170dc8?w=800&q=80"
-                  }
+                  src={categoryCoverImage(cat.slug, cat.imageUrl)}
                   alt={cat.name}
                   fill
                   className="object-cover transition-transform duration-700 ease-premium group-hover:scale-[1.03]"

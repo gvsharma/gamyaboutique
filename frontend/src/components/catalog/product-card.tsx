@@ -8,11 +8,9 @@ import { ROUTES } from "@/constants/routes";
 import { useWishlistActions } from "@/hooks/use-wishlist";
 import { addToCart } from "@/lib/api/services/cart.service";
 import { queryKeys } from "@/lib/query/query-keys";
+import { productPlaceholderImage } from "@/lib/category-images";
 import { formatPrice, cn } from "@/lib/utils";
 import type { ProductSummary } from "@/types/product";
-
-const PLACEHOLDER =
-  "https://images.unsplash.com/photo-1610030469983-98e550b19538?w=600&q=80";
 
 const STAGGER = ["", "stagger-1", "stagger-2", "stagger-3", "stagger-4"] as const;
 
@@ -25,7 +23,9 @@ interface ProductCardProps {
 export function ProductCard({ product, className, index = 0 }: ProductCardProps) {
   const { has, toggle } = useWishlistActions();
   const inWishlist = has(product.id);
-  const imageUrl = product.primaryImageUrl ?? PLACEHOLDER;
+  const imageUrl =
+    product.primaryImageUrl ??
+    productPlaceholderImage(product.primaryCategorySlug, product.name);
   const queryClient = useQueryClient();
 
   const addCartMutation = useMutation({
