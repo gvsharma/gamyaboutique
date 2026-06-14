@@ -233,47 +233,88 @@ jobs:
           print(json.dumps({"commands": commands}))
           PY
 
-          COMMAND_ID=$(aws ssm send-command \
-            --region "${AWS_REGION}" \
-            --instance-ids "${EC2_INSTANCE_ID}" \
-            --document-name "AWS-RunShellScript" \
-            --comment "GitHub Actions backend deploy" \
-            --parameters file:///tmp/ssm-deploy-params.json \
-            --query 'Command.CommandId' --output text)
-
-          for attempt in $(seq 1 36); do
-            INVOCATION=$(aws ssm get-command-invocation \
+          log_ssm_invocation() {
+            local command_id="$1"
+            local label="$2"
+            echo "::error::${label}" >&2
+            aws ssm get-command-invocation \
               --region "${AWS_REGION}" \
-              --command-id "${COMMAND_ID}" \
+              --command-id "${command_id}" \
               --instance-id "${EC2_INSTANCE_ID}" \
-              --output json 2>/dev/null || echo '{}')
-            STATUS=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Status','Pending'))")
-            echo "SSM status: ${STATUS} (attempt ${attempt}/36)"
-            case "${STATUS}" in
-              Success)
-                aws ssm get-command-invocation \
-                  --region "${AWS_REGION}" \
-                  --command-id "${COMMAND_ID}" \
-                  --instance-id "${EC2_INSTANCE_ID}" \
-                  --query '[StandardOutputContent,StandardErrorContent]' \
-                  --output text
-                exit 0
-                ;;
-              Failed|Cancelled|TimedOut)
-                echo "::error::SSM deploy command ${STATUS}" >&2
-                aws ssm get-command-invocation \
-                  --region "${AWS_REGION}" \
-                  --command-id "${COMMAND_ID}" \
-                  --instance-id "${EC2_INSTANCE_ID}" \
-                  --query '{Status:Status,ResponseCode:ResponseCode,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
-                  --output json
-                exit 1
-                ;;
-            esac
-            sleep 10
+              --query '{Status:Status,StatusDetails:StatusDetails,ResponseCode:ResponseCode,Stdout:StandardOutputContent,Stderr:StandardErrorContent,StandardOutputUrl:StandardOutputUrl,StandardErrorUrl:StandardErrorUrl}' \
+              --output json
+          }
+
+          send_ssm_deploy_command() {
+            aws ssm send-command \
+              --region "${AWS_REGION}" \
+              --instance-ids "${EC2_INSTANCE_ID}" \
+              --document-name "AWS-RunShellScript" \
+              --comment "GitHub Actions backend deploy" \
+              --timeout-seconds 600 \
+              --cloud-watch-output-config 'CloudWatchOutputEnabled=true,CloudWatchLogGroupName=/aws/ssm/gamya-couture-deploy' \
+              --parameters file:///tmp/ssm-deploy-params.json \
+              --query 'Command.CommandId' \
+              --output text
+          }
+
+          poll_ssm_deploy_command() {
+            local command_id="$1"
+            for attempt in $(seq 1 36); do
+              INVOCATION=$(aws ssm get-command-invocation \
+                --region "${AWS_REGION}" \
+                --command-id "${command_id}" \
+                --instance-id "${EC2_INSTANCE_ID}" \
+                --output json 2>/dev/null || echo '{}')
+              STATUS=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Status','Pending'))")
+              echo "SSM status: ${STATUS} (attempt ${attempt}/36)"
+              case "${STATUS}" in
+                Success)
+                  aws ssm get-command-invocation \
+                    --region "${AWS_REGION}" \
+                    --command-id "${command_id}" \
+                    --instance-id "${EC2_INSTANCE_ID}" \
+                    --query '[StandardOutputContent,StandardErrorContent]' \
+                    --output text
+                  return 0
+                  ;;
+                Failed|Cancelled|TimedOut)
+                  RESPONSE_CODE=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('ResponseCode',''))")
+                  STDERR=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('StandardErrorContent','') or '')")
+                  if [[ "${RESPONSE_CODE}" == "-1" && -z "${STDERR//[[:space:]]/}" ]]; then
+                    echo "Transient SSM delivery failure (ResponseCode -1, empty stderr)."
+                    log_ssm_invocation "${command_id}" "SSM deploy command ${STATUS} (delivery error)"
+                    return 2
+                  fi
+                  log_ssm_invocation "${command_id}" "SSM deploy command ${STATUS}"
+                  return 1
+                  ;;
+              esac
+              sleep 10
+            done
+            log_ssm_invocation "${command_id}" "SSM deploy timed out waiting for terminal status"
+            return 1
+          }
+
+          for send_attempt in 1 2; do
+            if [[ "${send_attempt}" -gt 1 ]]; then
+              echo "Retrying SSM send-command after transient delivery failure (attempt ${send_attempt}/2)..."
+              sleep 5
+            fi
+
+            COMMAND_ID="$(send_ssm_deploy_command)"
+            echo "SSM command id: ${COMMAND_ID}"
+
+            poll_ssm_deploy_command "${COMMAND_ID}"
+            poll_rc=$?
+            if [[ "${poll_rc}" -eq 0 ]]; then
+              exit 0
+            fi
+            if [[ "${poll_rc}" -eq 2 && "${send_attempt}" -lt 2 ]]; then
+              continue
+            fi
+            exit 1
           done
-          echo "SSM deploy timed out" >&2
-          exit 1
         env:
           DEPLOY_BUCKET: ${{ steps.deploy_cfg.outputs.deploy_bucket }}
           APP_PATH: ${{ env.APP_PATH }}
