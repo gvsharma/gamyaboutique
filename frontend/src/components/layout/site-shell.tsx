@@ -3,6 +3,7 @@ import { SupportDialogProvider } from "@/components/layout/contact-support-dialo
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { WhatsAppFab } from "@/components/layout/whatsapp-fab";
+import { RecentlyViewedSection } from "@/components/product/recently-viewed-section";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         <BoutiqueDecor />
         <Navbar />
         <main className="relative z-10 flex-1">{children}</main>
+        <RecentlyViewedSection />
         <Footer />
         <WhatsAppFab />
       </div>

@@ -13,8 +13,7 @@ import { ROUTES } from "@/constants/routes";
 import { CONTACT } from "@/constants/site";
 import { useWishlistActions } from "@/hooks/use-wishlist";
 import { addToCart } from "@/lib/api/services/cart.service";
-import { apiClient } from "@/lib/api/client";
-import { API } from "@/lib/api/endpoints";
+import { recordProductView } from "@/lib/api/services/recently-viewed.service";
 import { queryKeys } from "@/lib/query/query-keys";
 import { formatPrice, cn } from "@/lib/utils";
 import type { ProductDetail } from "@/types/product";
@@ -32,8 +31,12 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
 
   useEffect(() => {
     setShareUrl(window.location.href);
-    apiClient.post(API.productView(product.id)).catch(() => undefined);
-  }, [product.id]);
+    recordProductView(product.id)
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["recentlyViewed"] });
+      })
+      .catch(() => undefined);
+  }, [product.id, queryClient]);
 
   const addCartMutation = useMutation({
     mutationFn: () => addToCart(product.id, 1),
