@@ -65,7 +65,7 @@ class CartServiceTest {
                 new com.gamyacouture.product.api.dto.ProductSummaryDto(
                         productId, "SKU", "Dress", ProductStatus.ACTIVE,
                         BigDecimal.TEN, null, BigDecimal.TEN, false, "INR",
-                        null, null, null, null, null));
+                        null, null, null, null, null, null));
 
         cartService.addItem(guestToken, new AddCartItemRequest(productId, 2, null, null));
 
@@ -123,7 +123,7 @@ class CartServiceTest {
                 new com.gamyacouture.product.api.dto.ProductSummaryDto(
                         productId, "SKU", "Dress", ProductStatus.ACTIVE,
                         BigDecimal.TEN, null, BigDecimal.TEN, false, "INR",
-                        null, null, null, null, null));
+                        null, null, null, null, null, null));
 
         cartService.updateItem(guestToken, itemId, new UpdateCartItemRequest(3));
 
