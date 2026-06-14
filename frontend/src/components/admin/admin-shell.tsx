@@ -2,7 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Package, Tags } from "lucide-react";
+import {
+  Heart,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  ShoppingCart,
+  Tags,
+  Users,
+  UserCircle,
+  Sparkles,
+  Inbox,
+  Layers,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
 import { SITE_NAME } from "@/constants/site";
@@ -13,6 +25,13 @@ const nav = [
   { href: ROUTES.admin.home, label: "Dashboard", icon: LayoutDashboard },
   { href: ROUTES.admin.products, label: "Products", icon: Package },
   { href: ROUTES.admin.categories, label: "Categories", icon: Tags },
+  { href: ROUTES.admin.users, label: "Users", icon: Users },
+  { href: ROUTES.admin.customers, label: "Customers", icon: UserCircle },
+  { href: ROUTES.admin.carts, label: "Carts", icon: ShoppingCart },
+  { href: ROUTES.admin.wishlists, label: "Wishlists", icon: Heart },
+  { href: ROUTES.admin.interests, label: "Interests", icon: Sparkles },
+  { href: ROUTES.admin.leads, label: "Leads", icon: Inbox },
+  { href: ROUTES.admin.taxonomy, label: "Taxonomy", icon: Layers },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

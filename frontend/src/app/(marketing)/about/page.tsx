@@ -1,3 +1,5 @@
+import { ExternalLink } from "lucide-react";
+import { StoreMap } from "@/components/contact/store-map";
 import { CONTACT, SITE_NAME, SITE_TAGLINE } from "@/constants/site";
 import { SectionHeader } from "@/components/ui/section-header";
 
@@ -71,8 +73,18 @@ export default function AboutPage() {
 
         <div className="surface-muted mt-10 px-6 py-6 sm:px-8">
           <p className="font-display text-xl text-charcoal">{SITE_NAME}</p>
-          <p className="mt-2 text-sm text-stone">{CONTACT.addressShort}</p>
+          <p className="mt-2 text-sm text-stone">{CONTACT.address}</p>
           <p className="mt-1 text-sm italic text-stone/80">{SITE_TAGLINE}</p>
+          <a
+            href={CONTACT.mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-maroon transition-colors hover:text-maroon-deep"
+          >
+            Open in Google Maps
+            <ExternalLink className="h-4 w-4" strokeWidth={1.5} />
+          </a>
+          <StoreMap className="mt-6" />
         </div>
       </div>
     </div>

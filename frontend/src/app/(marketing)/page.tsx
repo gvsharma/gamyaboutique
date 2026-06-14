@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { HeroBanner } from "@/components/home/hero-banner";
 import { categoryCoverImage } from "@/lib/category-images";
+import { filterWomenGirlsProducts, pickHomepageCategories } from "@/lib/catalog-filters";
 import { EditorialFeatures } from "@/components/home/editorial-features";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { ProductGrid } from "@/components/catalog/product-grid";
@@ -30,7 +31,9 @@ export default async function HomePage() {
     // API offline — page still renders
   }
 
-  const spotlightCategories = categories.slice(0, 3);
+  const spotlightCategories = pickHomepageCategories(categories);
+  const womenTrending = filterWomenGirlsProducts(trending);
+  const womenFeatured = filterWomenGirlsProducts(featured);
 
   return (
     <>
@@ -69,9 +72,9 @@ export default async function HomePage() {
         </section>
       )}
 
-      {trending.length > 0 && (
+      {womenTrending.length > 0 && (
         <ProductCarousel
-          products={trending}
+          products={womenTrending}
           eyebrow="Trending"
           title="Most loved right now"
           description="Pieces our customers are saving and inquiring about this season."
@@ -81,7 +84,7 @@ export default async function HomePage() {
 
       <EditorialFeatures />
 
-      {featured.length > 0 && (
+      {womenFeatured.length > 0 && (
         <section className="container-premium py-16 sm:py-24">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeader align="left" eyebrow="Curated" title="Featured pieces" className="mb-0" />
@@ -92,7 +95,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="mt-12">
-            <ProductGrid products={featured} />
+            <ProductGrid products={womenFeatured} />
           </div>
         </section>
       )}

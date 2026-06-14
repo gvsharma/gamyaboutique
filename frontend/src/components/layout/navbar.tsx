@@ -236,10 +236,8 @@ export function Navbar() {
 
         <header
           className={cn(
-            "border-b border-charcoal/5 transition-all duration-500 ease-premium",
-            scrolled
-              ? "bg-pearl/98 shadow-soft backdrop-blur-xl"
-              : "bg-pearl",
+            "border-b border-rose/30 bg-gradient-to-b from-pink-soft via-pearl to-pearl transition-all duration-500 ease-premium",
+            scrolled && "shadow-soft backdrop-blur-xl",
           )}
         >
           <div className="container-premium flex h-14 items-center gap-3 lg:h-[4.25rem] lg:gap-4">
@@ -312,7 +310,7 @@ export function Navbar() {
 
         {/* Tablet: compact secondary row with dropdown links */}
         <nav
-          className="hidden border-t border-charcoal/5 lg:flex 2xl:hidden"
+          className="hidden border-t border-rose/20 bg-pink-soft/40 lg:flex 2xl:hidden"
           aria-label="Main navigation tablet"
         >
           <div className="container-premium flex items-center justify-center gap-4 overflow-x-auto py-2.5 scrollbar-none">
@@ -349,7 +347,7 @@ export function Navbar() {
         />
         <nav
           className={cn(
-            "absolute inset-y-0 right-0 flex w-[min(100%,22rem)] flex-col bg-pearl shadow-elevated transition-transform duration-500 ease-premium",
+            "absolute inset-y-0 right-0 flex w-[min(100%,22rem)] flex-col bg-gradient-to-b from-pink-soft to-pearl shadow-elevated transition-transform duration-500 ease-premium",
             open ? "translate-x-0" : "translate-x-full",
           )}
           aria-label="Mobile navigation"

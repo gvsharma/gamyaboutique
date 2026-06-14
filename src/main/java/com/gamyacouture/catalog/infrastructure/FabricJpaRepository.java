@@ -10,5 +10,7 @@ public interface FabricJpaRepository extends JpaRepository<Fabric, UUID> {
 
     List<Fabric> findByActiveTrueOrderByNameAsc();
 
+    List<Fabric> findAllByOrderByNameAsc();
+
     java.util.Optional<Fabric> findByIdAndActiveTrue(UUID id);
 }

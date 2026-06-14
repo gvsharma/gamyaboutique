@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Button } from "@/components/ui/button";
 import { fetchCategoryProducts } from "@/lib/api/services/catalog.service";
+import { filterWomenGirlsProducts } from "@/lib/catalog-filters";
 import { queryKeys } from "@/lib/query/query-keys";
 
 export function CategoryPageClient({ slug }: { slug: string }) {
@@ -24,12 +25,14 @@ export function CategoryPageClient({ slug }: { slug: string }) {
     );
   }
 
+  const products = filterWomenGirlsProducts(data?.content ?? []);
+
   return (
     <div className="mt-10">
       {data && (
-        <p className="mb-6 text-sm text-stone">{data.totalElements} pieces</p>
+        <p className="mb-6 text-sm text-stone">{products.length} pieces</p>
       )}
-      <ProductGrid products={data?.content ?? []} />
+      <ProductGrid products={products} />
       {data && data.totalPages > 1 && (
         <div className="mt-12 flex justify-center gap-4">
           <Button variant="outline" disabled={data.first} onClick={() => setPage((p) => p - 1)}>

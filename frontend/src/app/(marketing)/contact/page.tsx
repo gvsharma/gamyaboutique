@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { MessageCircle, MapPin, Phone, Instagram } from "lucide-react";
+import { ExternalLink, MessageCircle, MapPin, Phone, Instagram } from "lucide-react";
+import { StoreMap } from "@/components/contact/store-map";
 import { CONTACT, SITE_NAME, whatsappHref } from "@/constants/site";
 import { ROUTES } from "@/constants/routes";
 
@@ -62,6 +63,22 @@ export default function ContactPage() {
             </a>
           </div>
         </div>
+
+        <section className="mx-auto mt-16 max-w-3xl">
+          <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-stone">Find us</p>
+          <h2 className="mt-3 font-display text-2xl text-charcoal sm:text-3xl">Visit {SITE_NAME}</h2>
+          <p className="mt-4 text-body text-charcoal/75">{CONTACT.address}</p>
+          <a
+            href={CONTACT.mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-maroon transition-colors hover:text-maroon-deep"
+          >
+            Open in Google Maps
+            <ExternalLink className="h-4 w-4" strokeWidth={1.5} />
+          </a>
+          <StoreMap className="mt-8" />
+        </section>
 
         <p className="mx-auto mt-12 max-w-2xl text-center text-body">
           For a specific piece, use <strong className="font-medium text-charcoal">Express your interest</strong> on

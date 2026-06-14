@@ -22,8 +22,8 @@ export default function AdminDashboardPage() {
   const cards = [
     { label: "Active products", value: data.activeProducts, href: ROUTES.admin.products },
     { label: "Active categories", value: data.activeCategories, href: ROUTES.admin.categories },
-    { label: "Open leads", value: data.openLeads, href: ROUTES.admin.home },
-    { label: "Recent interests (7d)", value: data.recentInterests, href: ROUTES.admin.home },
+    { label: "Open leads", value: data.openLeads, href: ROUTES.admin.leads },
+    { label: "Recent interests (7d)", value: data.recentInterests, href: ROUTES.admin.interests },
   ];
 
   return (

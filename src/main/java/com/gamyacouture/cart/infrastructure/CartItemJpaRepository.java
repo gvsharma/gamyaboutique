@@ -26,4 +26,6 @@ public interface CartItemJpaRepository extends JpaRepository<CartItem, UUID> {
             @Param("color") String color);
 
     void deleteByCartId(UUID cartId);
+
+    int countByCartId(UUID cartId);
 }
