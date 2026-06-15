@@ -2,9 +2,11 @@ package com.gamyacouture.catalog.infrastructure;
 
 import com.gamyacouture.catalog.domain.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -50,4 +52,12 @@ public interface CategoryJpaRepository extends JpaRepository<Category, UUID> {
             AND (c.path = :path OR c.path LIKE CONCAT(:path, '/%'))
             """)
     Set<UUID> findActiveIdsInSubtree(@Param("path") String path);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE Category c
+            SET c.active = false, c.deletedAt = :deletedAt
+            WHERE c.path = :path OR c.path LIKE CONCAT(:path, '/%')
+            """)
+    int softDeleteSubtree(@Param("path") String path, @Param("deletedAt") Instant deletedAt);
 }

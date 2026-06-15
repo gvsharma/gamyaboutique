@@ -97,10 +97,12 @@ public class AdminTaxonomyService {
 
     @Transactional
     public void deactivateFabric(UUID id) {
-        Fabric fabric = fabricRepository.findById(id)
+        fabricRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Fabric not found: " + id));
-        fabric.setActive(false);
-        fabric.setDeletedAt(Instant.now());
+        int updated = fabricRepository.softDelete(id, Instant.now());
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Fabric not found: " + id);
+        }
     }
 
     @Transactional
@@ -132,10 +134,12 @@ public class AdminTaxonomyService {
 
     @Transactional
     public void deactivatePrint(UUID id) {
-        Print print = printRepository.findById(id)
+        printRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Print not found: " + id));
-        print.setActive(false);
-        print.setDeletedAt(Instant.now());
+        int updated = printRepository.softDelete(id, Instant.now());
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Print not found: " + id);
+        }
     }
 
     @Transactional
@@ -163,9 +167,12 @@ public class AdminTaxonomyService {
 
     @Transactional
     public void deactivateTag(UUID id) {
-        Tag tag = tagRepository.findById(id)
+        tagRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tag not found: " + id));
-        tag.setDeletedAt(Instant.now());
+        int updated = tagRepository.softDelete(id, Instant.now());
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Tag not found: " + id);
+        }
     }
 
     @Transactional
@@ -203,10 +210,12 @@ public class AdminTaxonomyService {
 
     @Transactional
     public void deactivateOffer(UUID id) {
-        Offer offer = offerRepository.findById(id)
+        offerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Offer not found: " + id));
-        offer.setActive(false);
-        offer.setDeletedAt(Instant.now());
+        int updated = offerRepository.softDelete(id, Instant.now());
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Offer not found: " + id);
+        }
     }
 
     private static String resolveSlug(String name, String requestedSlug) {
