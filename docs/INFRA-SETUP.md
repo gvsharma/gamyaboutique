@@ -57,6 +57,7 @@ Example dev outputs (verify with `terraform output` — IPs may change):
 | `ec2_instance_id` | `i-...` |
 | `backend_deploy_bucket` | `gamya-couture-dev-backend-deploy` |
 | `backend_deploy_role_arn` | IAM role for OIDC |
+| RDS instance id | `gamya-couture-dev-pg` (Name tag: `gamya-couture-dev-postgres`) |
 | RDS endpoint | `gamya-couture-dev-pg.*.ap-south-1.rds.amazonaws.com` |
 
 ---
@@ -104,7 +105,7 @@ Configure in **gvsharma/gamyaboutique** → Settings → Secrets and variables �
 |------|------|---------|
 | `EC2_INSTANCE_ID` | Variable or secret | Target instance; resolved by tag `{prefix}-api` if stale |
 | `EC2_HOST` | Variable or secret | Public IP for health checks; resolved at deploy time |
-| `RDS_INSTANCE_ID` | Variable | RDS identifier; defaults to `{prefix}-pg` |
+| `RDS_INSTANCE_ID` | Variable or secret | DB instance id (e.g. `gamya-couture-dev-pg`); defaults to `{prefix}-pg`, then tag lookup `{prefix}-postgres` |
 | `SMOKE_TEST_EMAIL` | Secret | Authenticated smoke test login |
 | `SMOKE_TEST_PASSWORD` | Secret | Authenticated smoke test login |
 
@@ -241,7 +242,7 @@ Full details: [deploy/README.md](../deploy/README.md)
 
 | Symptom | Investigation |
 |---------|---------------|
-| Deploy: RDS not found | Set `RDS_INSTANCE_ID` var or verify Terraform naming `{prefix}-pg` |
+| Deploy: RDS not found / prepare skipped | Set `RDS_INSTANCE_ID=gamya-couture-dev-pg`, or grant deploy role `rds:DescribeDBInstances` + `tag:GetResources`; workflow falls back to Name tag `{prefix}-postgres` |
 | Deploy: SSM PingStatus ≠ Online | Instance IAM role needs `AmazonSSMManagedInstanceCore`; restart SSM agent |
 | Deploy: health check timeout | Read `/opt/gamya-couture/logs/deploy.latest.log` via SSM |
 | 502 after midnight IST | Cost scheduler stopped EC2/RDS — wait for 09:00 or start manually |
