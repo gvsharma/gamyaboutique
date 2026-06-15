@@ -1,0 +1,45 @@
+---
+description: Run full test suites before git commit or push
+alwaysApply: true
+---
+
+# Pre-Commit and Pre-Push Test Gate
+
+Before any `git commit` or `git push`, run the full validation suites locally. CI must not be the first place tests run.
+
+## Required checks
+
+### Backend (requires Docker for Testcontainers)
+
+```bash
+mvn -B test
+```
+
+On Colima/macOS without `/var/run/docker.sock`, also set:
+
+```bash
+export DOCKER_HOST=unix://$HOME/.colima/default/docker.sock
+export TESTCONTAINERS_RYUK_DISABLED=true
+```
+
+### Frontend (matches `.github/workflows/validate.yml`)
+
+```bash
+cd frontend && npm run lint && npx tsc --noEmit && npm run build
+```
+
+Set build env vars when needed:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=/api/v1 \
+API_PROXY_TARGET=http://127.0.0.1:8080 \
+NEXT_PUBLIC_SITE_URL=https://example.vercel.app \
+NEXT_PUBLIC_IMAGE_CDN_HOST=d2568bpd35bq6a.cloudfront.net \
+npm run build
+```
+
+## Rules
+
+- Do **not** commit or push until **all** checks pass.
+- If any test fails, fix the issue, re-run the full suites, then commit/push.
+- Never skip hooks or push with known failing tests.
