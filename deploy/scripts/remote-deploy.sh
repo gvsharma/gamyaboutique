@@ -91,8 +91,8 @@ quick_post_restart_check() {
     log "deploy: quick check ${attempt}/6 — not healthy yet"
     sleep 5
   done
-  log "deploy: service started; full health check deferred to CI"
-  return 0
+  log "ERROR: ${SERVICE_NAME} not healthy after quick check"
+  return 1
 }
 
 wait_for_health() {

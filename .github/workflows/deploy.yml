@@ -377,6 +377,7 @@ jobs:
           DEPLOY_KICKOFF_SCRIPT_KEY: ${{ env.DEPLOY_KICKOFF_SCRIPT_KEY }}
 
       - name: Verify public health via nginx
+        id: public_health
         run: |
           EC2_HOST="${{ steps.ec2_target.outputs.ec2_host }}"
           HEALTH_URL="http://${EC2_HOST}/actuator/health"
@@ -389,8 +390,55 @@ jobs:
             echo "Attempt ${attempt}/48 — response: ${RESPONSE:-<empty>}"
             sleep 5
           done
-          echo "::error::Public health check failed." >&2
+          echo "::error::Public health check failed — backend not UP behind nginx." >&2
           exit 1
+
+      - name: Dump EC2 startup logs on health failure
+        if: failure() && steps.public_health.outcome == 'failure'
+        run: |
+          set -euo pipefail
+          EC2_INSTANCE_ID="${{ steps.ec2_target.outputs.ec2_instance_id }}"
+          APP_PATH="${APP_PATH}"
+          python3 -c 'import json,sys; print(json.dumps({"commands": sys.argv[1:]}))' \
+            "set -euo pipefail" \
+            "echo '--- deploy.latest.log ---'" \
+            "tail -80 ${APP_PATH}/logs/deploy.latest.log 2>/dev/null || true" \
+            "echo '--- application.log ---'" \
+            "tail -80 ${APP_PATH}/logs/application.log 2>/dev/null || true" \
+            "echo '--- systemctl status ---'" \
+            "systemctl status gamya-couture-backend --no-pager -l 2>/dev/null || true" \
+            > /tmp/ssm-log-dump.json
+          COMMAND_ID="$(aws ssm send-command \
+            --region "${AWS_REGION}" \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "GitHub Actions deploy failure log dump" \
+            --timeout-seconds 120 \
+            --parameters file:///tmp/ssm-log-dump.json \
+            --query 'Command.CommandId' \
+            --output text)"
+          for attempt in $(seq 1 24); do
+            STATUS="$(aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'Status' \
+              --output text 2>/dev/null || echo Pending)"
+            if [[ "${STATUS}" == "Success" ]]; then
+              aws ssm get-command-invocation \
+                --region "${AWS_REGION}" \
+                --command-id "${COMMAND_ID}" \
+                --instance-id "${EC2_INSTANCE_ID}" \
+                --query '[StandardOutputContent,StandardErrorContent]' \
+                --output text
+              exit 0
+            fi
+            [[ "${STATUS}" == "Failed" || "${STATUS}" == "Cancelled" || "${STATUS}" == "TimedOut" ]] && break
+            sleep 5
+          done
+          echo "Could not fetch EC2 logs via SSM"
+        env:
+          APP_PATH: ${{ env.APP_PATH }}
 
       - name: Run API smoke tests
         env:
