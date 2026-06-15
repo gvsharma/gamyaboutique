@@ -28,7 +28,16 @@ public interface CategoryJpaRepository extends JpaRepository<Category, UUID> {
 
     Optional<Category> findBySlugAndActiveTrue(String slug);
 
+    @Query("""
+            SELECT c FROM Category c
+            LEFT JOIN FETCH c.parent
+            WHERE c.deletedAt IS NULL
+            ORDER BY c.displayOrder ASC, c.name ASC
+            """)
     List<Category> findAllByOrderByDisplayOrderAscNameAsc();
+
+    @Query("SELECT c.path FROM Category c WHERE c.id = :id")
+    Optional<String> findPathById(@Param("id") UUID id);
 
     List<Category> findByParentId(UUID parentId);
 
@@ -53,11 +62,17 @@ public interface CategoryJpaRepository extends JpaRepository<Category, UUID> {
             """)
     Set<UUID> findActiveIdsInSubtree(@Param("path") String path);
 
-    @Modifying(clearAutomatically = true)
-    @Query("""
-            UPDATE Category c
-            SET c.active = false, c.deletedAt = :deletedAt
-            WHERE c.path = :path OR c.path LIKE CONCAT(:path, '/%')
-            """)
-    int softDeleteSubtree(@Param("path") String path, @Param("deletedAt") Instant deletedAt);
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+            UPDATE categories
+            SET active = false,
+                deleted_at = :deletedAt,
+                updated_at = :deletedAt
+            WHERE deleted_at IS NULL
+              AND (path = :path OR path LIKE :pathPrefix)
+            """, nativeQuery = true)
+    int softDeleteSubtree(
+            @Param("path") String path,
+            @Param("pathPrefix") String pathPrefix,
+            @Param("deletedAt") Instant deletedAt);
 }

@@ -92,9 +92,9 @@ public class CategoryCommandService {
             @CacheEvict(value = ProductCacheNames.PRODUCT_BY_ID, allEntries = true)
     })
     public void deactivate(UUID id) {
-        Category category = categoryRepository.findById(id)
+        String path = categoryRepository.findPathById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id));
-        int updated = categoryRepository.softDeleteSubtree(category.getPath(), Instant.now());
+        int updated = categoryRepository.softDeleteSubtree(path, path + "/%", Instant.now());
         if (updated == 0) {
             throw new ResourceNotFoundException("Category not found: " + id);
         }
