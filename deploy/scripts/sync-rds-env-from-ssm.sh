@@ -17,8 +17,8 @@ DB_NAME="${RDS_DATABASE:-gamya}"
 log() { echo "[$(date -Iseconds)] $*"; }
 
 if ! command -v aws >/dev/null 2>&1; then
-  log "Installing AWS CLI v2..."
-  dnf install -y aws-cli
+  log "ERROR: aws CLI not found — run ec2-bootstrap.sh first (dnf install blocked during deploy)"
+  exit 1
 fi
 
 if [[ ! -f "$ENV_FILE" ]]; then

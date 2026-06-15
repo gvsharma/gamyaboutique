@@ -76,6 +76,25 @@ sync_db_password_from_ssm() {
   log "DB_PASSWORD synced from SSM (${password_path})"
 }
 
+quick_post_restart_check() {
+  local attempt
+  for attempt in $(seq 1 6); do
+    if is_healthy; then
+      log "deploy: health check passed"
+      return 0
+    fi
+    if systemctl is-failed --quiet "${SERVICE_NAME}" 2>/dev/null; then
+      log "ERROR: ${SERVICE_NAME} failed immediately after restart"
+      dump_service_diagnostics
+      return 1
+    fi
+    log "deploy: quick check ${attempt}/6 — not healthy yet"
+    sleep 5
+  done
+  log "deploy: service started; full health check deferred to CI"
+  return 0
+}
+
 wait_for_health() {
   local label="$1"
   local attempt
@@ -210,7 +229,13 @@ log "Restarting ${SERVICE_NAME}"
 systemctl daemon-reload
 systemctl restart "${SERVICE_NAME}"
 
-if wait_for_health "deploy"; then
+if [[ "${SKIP_POST_RESTART_HEALTH_WAIT:-}" == "1" ]]; then
+  if quick_post_restart_check; then
+    prune_backups
+    log "Deployment successful (CI will verify public health)"
+    exit 0
+  fi
+elif wait_for_health "deploy"; then
   prune_backups
   log "Deployment successful"
   exit 0

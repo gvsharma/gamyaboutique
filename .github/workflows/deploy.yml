@@ -16,6 +16,7 @@ env:
   DEPLOY_OBJECT_KEY: incoming/gamya-couture.jar
   DEPLOY_SCRIPT_KEY: incoming/remote-deploy.sh
   DEPLOY_SYNC_SCRIPT_KEY: incoming/sync-rds-env-from-ssm.sh
+  DEPLOY_KICKOFF_SCRIPT_KEY: incoming/ssm-kickoff-deploy.sh
 
 jobs:
   validate:
@@ -218,36 +219,48 @@ jobs:
           aws s3 cp "${{ steps.jar.outputs.path }}" "s3://${DEPLOY_BUCKET}/${DEPLOY_OBJECT_KEY}"
           aws s3 cp deploy/scripts/remote-deploy.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_SCRIPT_KEY}"
           aws s3 cp deploy/scripts/sync-rds-env-from-ssm.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_SYNC_SCRIPT_KEY}"
+          aws s3 cp deploy/scripts/ssm-kickoff-deploy.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_KICKOFF_SCRIPT_KEY}"
 
       - name: Deploy on EC2 via SSM
         run: |
           set -euo pipefail
           DEPLOY_BUCKET="${{ steps.deploy_cfg.outputs.deploy_bucket }}"
           EC2_INSTANCE_ID="${{ steps.ec2_target.outputs.ec2_instance_id }}"
+          APP_PATH="${APP_PATH}"
+          SSM_SHORT_TIMEOUT=120
+          SSM_POLL_INTERVAL=5
+          SSM_SHORT_POLL_ATTEMPTS=24
+          DEPLOY_STATUS_POLL_ATTEMPTS=36
+          DEPLOY_STATUS_POLL_INTERVAL=10
 
-          python3 <<'PY' > /tmp/ssm-deploy-params.json
-          import json
-          import os
+          cancel_stale_ssm_commands() {
+            local stale_ids
+            stale_ids="$(aws ssm list-commands \
+              --region "${AWS_REGION}" \
+              --filters "key=InvokedAfter,value=$(date -u -d '3 hours ago' +%Y-%m-%dT%H:%M:%SZ)" \
+              --query "Commands[?Status=='InProgress' || Status=='Pending'].CommandId" \
+              --output text 2>/dev/null || true)"
+            for command_id in ${stale_ids}; do
+              [[ -z "${command_id}" || "${command_id}" == "None" ]] && continue
+              echo "Cancelling stale SSM command ${command_id}"
+              aws ssm cancel-command --region "${AWS_REGION}" --command-id "${command_id}" 2>/dev/null || true
+            done
+          }
 
-          app_path = os.environ["APP_PATH"]
-          bucket = os.environ["DEPLOY_BUCKET"]
-          jar_key = os.environ["DEPLOY_OBJECT_KEY"]
-          script_key = os.environ["DEPLOY_SCRIPT_KEY"]
-
-          sync_script_key = os.environ["DEPLOY_SYNC_SCRIPT_KEY"]
-
-          commands = [
-              "set -euxo pipefail",
-              f"mkdir -p {app_path}/incoming {app_path}/scripts {app_path}/app {app_path}/backup {app_path}/logs {app_path}/config",
-              f"aws s3 cp s3://{bucket}/{sync_script_key} {app_path}/scripts/sync-rds-env-from-ssm.sh",
-              f"aws s3 cp s3://{bucket}/{script_key} {app_path}/scripts/remote-deploy.sh",
-              f"aws s3 cp s3://{bucket}/{jar_key} {app_path}/incoming/gamya-couture.jar.new",
-              f"chmod 755 {app_path}/scripts/sync-rds-env-from-ssm.sh {app_path}/scripts/remote-deploy.sh",
-              f"sudo bash {app_path}/scripts/sync-rds-env-from-ssm.sh {app_path}/config/application.env",
-              f"sudo APP_PATH={app_path} bash {app_path}/scripts/remote-deploy.sh",
-          ]
-          print(json.dumps({"commands": commands}))
-          PY
+          send_ssm_shell_command() {
+            local timeout_seconds="$1"
+            local comment="$2"
+            local params_file="$3"
+            aws ssm send-command \
+              --region "${AWS_REGION}" \
+              --instance-ids "${EC2_INSTANCE_ID}" \
+              --document-name "AWS-RunShellScript" \
+              --comment "${comment}" \
+              --timeout-seconds "${timeout_seconds}" \
+              --parameters "file://${params_file}" \
+              --query 'Command.CommandId' \
+              --output text
+          }
 
           log_ssm_invocation() {
             local command_id="$1"
@@ -257,103 +270,123 @@ jobs:
               --region "${AWS_REGION}" \
               --command-id "${command_id}" \
               --instance-id "${EC2_INSTANCE_ID}" \
-              --query '{Status:Status,StatusDetails:StatusDetails,ResponseCode:ResponseCode,Stdout:StandardOutputContent,Stderr:StandardErrorContent,StandardOutputUrl:StandardOutputUrl,StandardErrorUrl:StandardErrorUrl}' \
+              --query '{Status:Status,StatusDetails:StatusDetails,ResponseCode:ResponseCode,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
               --output json
           }
 
-          SSM_DEPLOY_TIMEOUT_SECONDS=600
-          SSM_DEPLOY_POLL_INTERVAL=10
-          # Match poll window to SSM command timeout (remote-deploy health checks can take ~6 min)
-          SSM_DEPLOY_POLL_ATTEMPTS=60
-
-          send_ssm_deploy_command() {
-            aws ssm send-command \
-              --region "${AWS_REGION}" \
-              --instance-ids "${EC2_INSTANCE_ID}" \
-              --document-name "AWS-RunShellScript" \
-              --comment "GitHub Actions backend deploy" \
-              --timeout-seconds "${SSM_DEPLOY_TIMEOUT_SECONDS}" \
-              --cloud-watch-output-config 'CloudWatchOutputEnabled=true,CloudWatchLogGroupName=/aws/ssm/gamya-couture-deploy' \
-              --parameters file:///tmp/ssm-deploy-params.json \
-              --query 'Command.CommandId' \
-              --output text
-          }
-
-          poll_ssm_deploy_command() {
+          wait_for_ssm_command() {
             local command_id="$1"
-            for attempt in $(seq 1 "${SSM_DEPLOY_POLL_ATTEMPTS}"); do
-              INVOCATION=$(aws ssm get-command-invocation \
+            local label="$2"
+            local max_attempts="$3"
+            local attempt
+            for attempt in $(seq 1 "${max_attempts}"); do
+              INVOCATION="$(aws ssm get-command-invocation \
                 --region "${AWS_REGION}" \
                 --command-id "${command_id}" \
                 --instance-id "${EC2_INSTANCE_ID}" \
-                --output json 2>/dev/null || echo '{}')
-              STATUS=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Status','Pending'))")
-              echo "SSM status: ${STATUS} (attempt ${attempt}/${SSM_DEPLOY_POLL_ATTEMPTS})"
+                --output json 2>/dev/null || echo '{}')"
+              STATUS="$(echo "${INVOCATION}" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Status','Pending'))")"
+              echo "${label}: ${STATUS} (attempt ${attempt}/${max_attempts})"
               case "${STATUS}" in
                 Success)
-                  aws ssm get-command-invocation \
-                    --region "${AWS_REGION}" \
-                    --command-id "${command_id}" \
-                    --instance-id "${EC2_INSTANCE_ID}" \
-                    --query '[StandardOutputContent,StandardErrorContent]' \
-                    --output text
+                  echo "${INVOCATION}" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('StandardOutputContent','') or '')"
+                  echo "${INVOCATION}" | python3 -c "import json,sys; d=json.load(sys.stdin); s=d.get('StandardErrorContent','') or ''; print(s, end='')" >&2
                   return 0
                   ;;
                 Failed|Cancelled|TimedOut)
-                  RESPONSE_CODE=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('ResponseCode',''))")
-                  STDERR=$(echo "$INVOCATION" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('StandardErrorContent','') or '')")
-                  if [[ "${RESPONSE_CODE}" == "-1" && -z "${STDERR//[[:space:]]/}" ]]; then
-                    echo "Transient SSM delivery failure (ResponseCode -1, empty stderr)."
-                    log_ssm_invocation "${command_id}" "SSM deploy command ${STATUS} (delivery error)"
-                    return 2
-                  fi
-                  log_ssm_invocation "${command_id}" "SSM deploy command ${STATUS}"
+                  log_ssm_invocation "${command_id}" "${label} ${STATUS}"
                   return 1
                   ;;
               esac
-              sleep "${SSM_DEPLOY_POLL_INTERVAL}"
+              sleep "${SSM_POLL_INTERVAL}"
             done
-            log_ssm_invocation "${command_id}" "SSM deploy timed out waiting for terminal status after ${SSM_DEPLOY_POLL_ATTEMPTS} attempts (~$((SSM_DEPLOY_POLL_ATTEMPTS * SSM_DEPLOY_POLL_INTERVAL / 60)) min)"
+            log_ssm_invocation "${command_id}" "${label} timed out"
             return 1
           }
 
-          for send_attempt in 1 2; do
-            if [[ "${send_attempt}" -gt 1 ]]; then
-              echo "Retrying SSM send-command after transient delivery failure (attempt ${send_attempt}/2)..."
-              sleep 5
-            fi
+          write_ssm_params() {
+            python3 -c 'import json,sys; print(json.dumps({"commands": sys.argv[1:]}))' "$@" > /tmp/ssm-command-params.json
+          }
 
-            COMMAND_ID="$(send_ssm_deploy_command)"
-            echo "SSM command id: ${COMMAND_ID}"
+          cancel_stale_ssm_commands
 
-            poll_ssm_deploy_command "${COMMAND_ID}"
-            poll_rc=$?
-            if [[ "${poll_rc}" -eq 0 ]]; then
+          write_ssm_params \
+            "set -euxo pipefail" \
+            "export AWS_DEFAULT_REGION=${AWS_REGION}" \
+            "echo SSM_PROBE_OK"
+          PROBE_ID="$(send_ssm_shell_command "${SSM_SHORT_TIMEOUT}" "GitHub Actions SSM probe" /tmp/ssm-command-params.json)"
+          echo "SSM probe command id: ${PROBE_ID}"
+          PROBE_OUT="$(wait_for_ssm_command "${PROBE_ID}" "SSM probe" "${SSM_SHORT_POLL_ATTEMPTS}")" || {
+            echo "::error title=SSM delivery failed::SSM agent is Online but cannot execute commands on ${EC2_INSTANCE_ID}. Connect via EC2 Instance Connect and run: sudo systemctl restart amazon-ssm-agent" >&2
+            exit 1
+          }
+          if ! grep -q "SSM_PROBE_OK" <<< "${PROBE_OUT}"; then
+            echo "::error::SSM probe did not return expected output: ${PROBE_OUT}" >&2
+            exit 1
+          fi
+
+          write_ssm_params \
+            "set -euxo pipefail" \
+            "export AWS_DEFAULT_REGION=${AWS_REGION}" \
+            "mkdir -p ${APP_PATH}/scripts ${APP_PATH}/logs ${APP_PATH}/incoming ${APP_PATH}/config" \
+            "aws s3 cp s3://${DEPLOY_BUCKET}/${DEPLOY_KICKOFF_SCRIPT_KEY} ${APP_PATH}/scripts/ssm-kickoff-deploy.sh" \
+            "chmod 755 ${APP_PATH}/scripts/ssm-kickoff-deploy.sh" \
+            "if [[ -f ${APP_PATH}/logs/deploy.pid ]]; then kill \"\$(cat ${APP_PATH}/logs/deploy.pid)\" 2>/dev/null || true; fi" \
+            "nohup env DEPLOY_BUCKET=${DEPLOY_BUCKET} AWS_REGION=${AWS_REGION} APP_PATH=${APP_PATH} DEPLOY_OBJECT_KEY=${DEPLOY_OBJECT_KEY} DEPLOY_SCRIPT_KEY=${DEPLOY_SCRIPT_KEY} DEPLOY_SYNC_SCRIPT_KEY=${DEPLOY_SYNC_SCRIPT_KEY} bash ${APP_PATH}/scripts/ssm-kickoff-deploy.sh >> ${APP_PATH}/logs/kickoff-wrapper.log 2>&1 &" \
+            "echo \$! > ${APP_PATH}/logs/deploy.pid" \
+            "echo DEPLOY_KICKED_OFF"
+          KICKOFF_ID="$(send_ssm_shell_command "${SSM_SHORT_TIMEOUT}" "GitHub Actions deploy kickoff" /tmp/ssm-command-params.json)"
+          echo "SSM kickoff command id: ${KICKOFF_ID}"
+          KICKOFF_OUT="$(wait_for_ssm_command "${KICKOFF_ID}" "SSM kickoff" "${SSM_SHORT_POLL_ATTEMPTS}")" || exit 1
+          if ! grep -q "DEPLOY_KICKED_OFF" <<< "${KICKOFF_OUT}"; then
+            echo "::error::Deploy kickoff did not start: ${KICKOFF_OUT}" >&2
+            exit 1
+          fi
+
+          write_ssm_params \
+            "set -euo pipefail" \
+            "STATUS=\$(cat ${APP_PATH}/logs/deploy.status 2>/dev/null || echo pending)" \
+            "echo deploy_status=\${STATUS}" \
+            "echo '--- deploy log (tail) ---'" \
+            "tail -40 ${APP_PATH}/logs/deploy.latest.log 2>/dev/null || true"
+
+          for attempt in $(seq 1 "${DEPLOY_STATUS_POLL_ATTEMPTS}"); do
+            POLL_ID="$(send_ssm_shell_command "${SSM_SHORT_TIMEOUT}" "GitHub Actions deploy status poll" /tmp/ssm-command-params.json)"
+            POLL_OUT="$(wait_for_ssm_command "${POLL_ID}" "Deploy status poll" "${SSM_SHORT_POLL_ATTEMPTS}")" || exit 1
+            echo "${POLL_OUT}"
+            if grep -q 'deploy_status=success' <<< "${POLL_OUT}"; then
+              echo "Remote deploy completed successfully"
               exit 0
             fi
-            if [[ "${poll_rc}" -eq 2 && "${send_attempt}" -lt 2 ]]; then
-              continue
+            if grep -q 'deploy_status=failed' <<< "${POLL_OUT}"; then
+              echo "::error::Remote deploy failed on EC2 — see deploy log above" >&2
+              exit 1
             fi
-            exit 1
+            echo "Deploy still running (attempt ${attempt}/${DEPLOY_STATUS_POLL_ATTEMPTS})"
+            sleep "${DEPLOY_STATUS_POLL_INTERVAL}"
           done
+
+          echo "::error::Deploy did not finish within ~$((DEPLOY_STATUS_POLL_ATTEMPTS * DEPLOY_STATUS_POLL_INTERVAL / 60)) minutes — check ${APP_PATH}/logs/deploy.latest.log on EC2" >&2
+          exit 1
         env:
           DEPLOY_BUCKET: ${{ steps.deploy_cfg.outputs.deploy_bucket }}
           APP_PATH: ${{ env.APP_PATH }}
           DEPLOY_OBJECT_KEY: ${{ env.DEPLOY_OBJECT_KEY }}
           DEPLOY_SCRIPT_KEY: ${{ env.DEPLOY_SCRIPT_KEY }}
           DEPLOY_SYNC_SCRIPT_KEY: ${{ env.DEPLOY_SYNC_SCRIPT_KEY }}
+          DEPLOY_KICKOFF_SCRIPT_KEY: ${{ env.DEPLOY_KICKOFF_SCRIPT_KEY }}
 
       - name: Verify public health via nginx
         run: |
           EC2_HOST="${{ steps.ec2_target.outputs.ec2_host }}"
           HEALTH_URL="http://${EC2_HOST}/actuator/health"
-          for attempt in $(seq 1 24); do
+          for attempt in $(seq 1 48); do
             RESPONSE="$(curl -sS "$HEALTH_URL" || true)"
             if echo "$RESPONSE" | grep -q '"status":"UP"'; then
               echo "Public health check passed"
               exit 0
             fi
-            echo "Attempt ${attempt}/24 — response: ${RESPONSE:-<empty>}"
+            echo "Attempt ${attempt}/48 — response: ${RESPONSE:-<empty>}"
             sleep 5
           done
           echo "::error::Public health check failed." >&2
