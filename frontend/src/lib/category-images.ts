@@ -1,7 +1,7 @@
 /** Category-aware cover and product placeholder images. */
 
 const IMAGES = {
-  saree: "/brand/hero-saree.jpg",
+  saree: "/brand/category-saree.jpg",
   lehenga: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1200&q=80",
   kurti: "/brand/hero-saree.jpg",
   blouse: "/brand/hero-saree.jpg",
