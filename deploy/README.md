@@ -123,12 +123,17 @@ PR merged → push to main
   → mvn verify (unit + integration tests via Testcontainers)
   → find target/gamya-couture-*.jar
   → OIDC assume AWS_BACKEND_DEPLOY_ROLE_ARN
-  → aws s3 cp JAR → s3://<DEPLOY_BUCKET>/incoming/gamya-couture.jar
-  → aws ssm send-command on EC2_INSTANCE_ID
-       → aws s3 cp JAR → /opt/gamya-couture/incoming/gamya-couture.jar.new
+  → Start RDS + EC2 if stopped (cost scheduler); wait SSM Online
+  → aws s3 cp JAR + scripts → s3://<DEPLOY_BUCKET>/incoming/
+  → SSM short probe → SSM kickoff (nohup ssm-kickoff-deploy.sh)
+       → downloads artifacts, sync-rds-env-from-ssm.sh
        → remote-deploy.sh (backup, install, systemd restart, health check, rollback)
+  → Poll deploy.status via SSM until success/failed
   → curl http://<EC2_HOST>/actuator/health through nginx
+  → smoke-test-api.sh
 ```
+
+Async SSM avoids long-running command timeouts: `ssm-kickoff-deploy.sh` runs in the background on EC2; GitHub Actions polls `/opt/gamya-couture/logs/deploy.status`. See [docs/INFRA-SETUP.md](../docs/INFRA-SETUP.md).
 
 ## systemd service
 
