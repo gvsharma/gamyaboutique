@@ -67,6 +67,7 @@ jobs:
           EC2_INSTANCE_ID_SECRET: ${{ secrets.EC2_INSTANCE_ID }}
           EC2_HOST_VAR: ${{ vars.EC2_HOST }}
           EC2_HOST_SECRET: ${{ secrets.EC2_HOST }}
+          RDS_INSTANCE_ID_VAR: ${{ vars.RDS_INSTANCE_ID }}
         run: |
           set -euo pipefail
           pick_non_empty() {
@@ -82,6 +83,7 @@ jobs:
           DEPLOY_BUCKET="$(pick_non_empty "$DEPLOY_BUCKET_VAR" "$DEPLOY_BUCKET_SECRET")"
           EC2_INSTANCE_ID="$(pick_non_empty "$EC2_INSTANCE_ID_VAR" "$EC2_INSTANCE_ID_SECRET")"
           EC2_HOST="$(pick_non_empty "$EC2_HOST_VAR" "$EC2_HOST_SECRET")"
+          RDS_INSTANCE_ID="${RDS_INSTANCE_ID_VAR//[[:space:]]/}"
 
           missing=()
           [[ -z "${AWS_BACKEND_DEPLOY_ROLE_ARN//[[:space:]]/}" ]] && missing+=(AWS_BACKEND_DEPLOY_ROLE_ARN)
@@ -101,12 +103,55 @@ jobs:
           echo "deploy_bucket=${DEPLOY_BUCKET}" >> "$GITHUB_OUTPUT"
           echo "ec2_instance_id=${EC2_INSTANCE_ID}" >> "$GITHUB_OUTPUT"
           echo "ec2_host=${EC2_HOST}" >> "$GITHUB_OUTPUT"
+          echo "rds_instance_id=${RDS_INSTANCE_ID}" >> "$GITHUB_OUTPUT"
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Prepare RDS database
+        env:
+          DEPLOY_BUCKET: ${{ steps.deploy_cfg.outputs.deploy_bucket }}
+          CONFIGURED_RDS_INSTANCE_ID: ${{ steps.deploy_cfg.outputs.rds_instance_id }}
+        run: |
+          set -euo pipefail
+          RDS_INSTANCE_ID="${CONFIGURED_RDS_INSTANCE_ID//[[:space:]]/}"
+          NAME_PREFIX="${DEPLOY_BUCKET%-backend-deploy}"
+          if [[ "${NAME_PREFIX}" == "${DEPLOY_BUCKET}" ]]; then
+            NAME_PREFIX="${DEPLOY_BUCKET%-deploy}"
+          fi
+          if [[ -z "${RDS_INSTANCE_ID}" ]]; then
+            RDS_INSTANCE_ID="${NAME_PREFIX}-pg"
+            echo "RDS_INSTANCE_ID not set — using ${RDS_INSTANCE_ID}"
+          fi
+
+          rds_state() {
+            aws rds describe-db-instances \
+              --region "${AWS_REGION}" \
+              --db-instance-identifier "$1" \
+              --query 'DBInstances[0].DBInstanceStatus' \
+              --output text 2>/dev/null || echo "missing"
+          }
+
+          STATE="$(rds_state "${RDS_INSTANCE_ID}")"
+          if [[ "${STATE}" == "missing" || "${STATE}" == "None" ]]; then
+            echo "::error::RDS instance ${RDS_INSTANCE_ID} not found." >&2
+            exit 1
+          fi
+
+          if [[ "${STATE}" == "stopped" ]]; then
+            echo "Starting stopped RDS instance ${RDS_INSTANCE_ID}..."
+            aws rds start-db-instance --region "${AWS_REGION}" --db-instance-identifier "${RDS_INSTANCE_ID}" >/dev/null
+            echo "Waiting for RDS to become available (cold start may take several minutes)..."
+            aws rds wait db-instance-available --region "${AWS_REGION}" --db-instance-identifier "${RDS_INSTANCE_ID}"
+          elif [[ "${STATE}" != "available" ]]; then
+            echo "RDS ${RDS_INSTANCE_ID} is ${STATE}; waiting for available..."
+            aws rds wait db-instance-available --region "${AWS_REGION}" --db-instance-identifier "${RDS_INSTANCE_ID}"
+          else
+            echo "RDS ${RDS_INSTANCE_ID} is available"
+          fi
 
       - name: Prepare EC2 deploy target
         id: ec2_target
@@ -377,6 +422,7 @@ jobs:
           DEPLOY_KICKOFF_SCRIPT_KEY: ${{ env.DEPLOY_KICKOFF_SCRIPT_KEY }}
 
       - name: Verify public health via nginx
+        id: public_health
         run: |
           EC2_HOST="${{ steps.ec2_target.outputs.ec2_host }}"
           HEALTH_URL="http://${EC2_HOST}/actuator/health"
@@ -389,8 +435,55 @@ jobs:
             echo "Attempt ${attempt}/48 — response: ${RESPONSE:-<empty>}"
             sleep 5
           done
-          echo "::error::Public health check failed." >&2
+          echo "::error::Public health check failed — backend not UP behind nginx." >&2
           exit 1
+
+      - name: Dump EC2 startup logs on health failure
+        if: failure() && steps.public_health.outcome == 'failure'
+        run: |
+          set -euo pipefail
+          EC2_INSTANCE_ID="${{ steps.ec2_target.outputs.ec2_instance_id }}"
+          APP_PATH="${APP_PATH}"
+          python3 -c 'import json,sys; print(json.dumps({"commands": sys.argv[1:]}))' \
+            "set -euo pipefail" \
+            "echo '--- deploy.latest.log ---'" \
+            "tail -80 ${APP_PATH}/logs/deploy.latest.log 2>/dev/null || true" \
+            "echo '--- application.log ---'" \
+            "tail -80 ${APP_PATH}/logs/application.log 2>/dev/null || true" \
+            "echo '--- systemctl status ---'" \
+            "systemctl status gamya-couture-backend --no-pager -l 2>/dev/null || true" \
+            > /tmp/ssm-log-dump.json
+          COMMAND_ID="$(aws ssm send-command \
+            --region "${AWS_REGION}" \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "GitHub Actions deploy failure log dump" \
+            --timeout-seconds 120 \
+            --parameters file:///tmp/ssm-log-dump.json \
+            --query 'Command.CommandId' \
+            --output text)"
+          for attempt in $(seq 1 24); do
+            STATUS="$(aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'Status' \
+              --output text 2>/dev/null || echo Pending)"
+            if [[ "${STATUS}" == "Success" ]]; then
+              aws ssm get-command-invocation \
+                --region "${AWS_REGION}" \
+                --command-id "${COMMAND_ID}" \
+                --instance-id "${EC2_INSTANCE_ID}" \
+                --query '[StandardOutputContent,StandardErrorContent]' \
+                --output text
+              exit 0
+            fi
+            [[ "${STATUS}" == "Failed" || "${STATUS}" == "Cancelled" || "${STATUS}" == "TimedOut" ]] && break
+            sleep 5
+          done
+          echo "Could not fetch EC2 logs via SSM"
+        env:
+          APP_PATH: ${{ env.APP_PATH }}
 
       - name: Run API smoke tests
         env:

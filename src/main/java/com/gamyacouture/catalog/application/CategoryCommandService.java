@@ -94,10 +94,9 @@ public class CategoryCommandService {
     public void deactivate(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id));
-        Instant now = Instant.now();
-        for (Category node : categoryRepository.findSelfAndDescendants(category.getPath())) {
-            node.setActive(false);
-            node.setDeletedAt(now);
+        int updated = categoryRepository.softDeleteSubtree(category.getPath(), Instant.now());
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Category not found: " + id);
         }
     }
 

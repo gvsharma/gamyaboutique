@@ -51,9 +51,8 @@ main() {
   log "Syncing RDS credentials into application.env"
   sudo bash "${APP_PATH}/scripts/sync-rds-env-from-ssm.sh" "${APP_PATH}/config/application.env"
 
-  log "Running remote-deploy.sh (health wait delegated to CI)"
-  if sudo SKIP_POST_RESTART_HEALTH_WAIT=1 APP_PATH="${APP_PATH}" \
-    bash "${APP_PATH}/scripts/remote-deploy.sh" >> "${DEPLOY_LOG}" 2>&1; then
+  log "Running remote-deploy.sh (full local health wait on EC2)"
+  if sudo APP_PATH="${APP_PATH}" bash "${APP_PATH}/scripts/remote-deploy.sh" >> "${DEPLOY_LOG}" 2>&1; then
     mark_status "success"
     log "Deploy finished successfully"
     exit 0
