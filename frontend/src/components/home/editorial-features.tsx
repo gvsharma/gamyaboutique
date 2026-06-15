@@ -8,7 +8,7 @@ const FEATURES = [
     title: "Custom stitching",
     body: "Blouse, lehenga, and bridal alterations tailored to your measurements — crafted in our Hyderabad boutique.",
     href: ROUTES.customStitching(),
-    image: "https://images.unsplash.com/photo-1572804013309-59a23b2e4c1f?w=900&q=80",
+    image: "/brand/editorial-custom-stitching.jpg",
     alt: "Detail of hand embroidery on ethnic wear",
   },
   {
@@ -16,7 +16,7 @@ const FEATURES = [
     title: "Girls collection",
     body: "Frocks, lehenga sets, and mom-and-daughter matching looks for festivals, birthdays, and celebrations.",
     href: ROUTES.category("girls-collection"),
-    image: "https://images.unsplash.com/photo-1515488042361-ee00e8170dc8?w=900&q=80",
+    image: "/brand/editorial-girls-festive.jpg",
     alt: "Girls festive ethnic wear",
   },
   {
@@ -24,7 +24,7 @@ const FEATURES = [
     title: "Heritage craftsmanship",
     body: "Silk sarees, bridal lehengas, and heirloom pieces — selected for drape, comfort, and timeless elegance.",
     href: ROUTES.category("sarees"),
-    image: "https://images.unsplash.com/photo-1583391734527-658aeeef0f35?w=900&q=80",
+    image: "/brand/editorial-silk-drape.jpg",
     alt: "Silk saree drape detail",
   },
 ] as const;
