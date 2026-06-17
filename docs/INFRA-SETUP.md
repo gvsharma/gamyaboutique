@@ -47,7 +47,7 @@ flowchart TB
 | **CloudFront** | CDN for S3 images | `NEXT_PUBLIC_IMAGE_CDN_HOST` on frontend |
 | **SSM Parameter Store** | DB credentials | `/gamya-couture/dev/db/username`, `/password` |
 | **IAM OIDC role** | GitHub Actions deploy | No long-lived AWS keys in GitHub |
-| **EventBridge scheduler** | Cost control | Stop EC2/RDS 00:00 IST; start 09:00 IST |
+| **EventBridge scheduler** | Cost control | Weekly IST windows — Mon–Fri 06:00–11:00; Sat 18:00–00:00; Sun 06:00–00:00 |
 
 Example dev outputs (verify with `terraform output` — IPs may change):
 
@@ -156,14 +156,15 @@ Scripts: [deploy/scripts/](../deploy/scripts/)
 
 ## Cost scheduler
 
-Dev environment uses EventBridge rules to reduce overnight costs:
+Dev environment uses EventBridge Scheduler rules (timezone `Asia/Kolkata`) to reduce compute costs:
 
-| Action | Time (IST) |
-|--------|------------|
-| **Stop** EC2 + RDS | 00:00 (midnight) |
-| **Start** EC2 + RDS | 09:00 |
+| Day | Running window (IST) | Stop rules | Start rules |
+|-----|----------------------|------------|-------------|
+| **Mon–Fri** | 06:00–11:00 (5 h) | 11:00 | 06:00 |
+| **Saturday** | 18:00–00:00 (6 h) | 00:00 Sun | 18:00 Sat |
+| **Sunday** | 06:00–00:00 (18 h) | 00:00 Mon | 06:00 Sun |
 
-**Impact:** Storefront and API are unavailable roughly midnight–9 AM IST unless manually started.
+**Impact:** Storefront and API are down outside the windows above unless manually started or a deploy cold-starts resources.
 
 **Deploy handles stopped resources:** The deploy workflow starts stopped RDS and EC2 before deploying and waits for SSM to come online (extended timeout after cold start).
 
@@ -245,7 +246,7 @@ Full details: [deploy/README.md](../deploy/README.md)
 | Deploy: RDS not found / prepare skipped | Set `RDS_INSTANCE_ID=gamya-couture-dev-pg`, or grant deploy role `rds:DescribeDBInstances` + `tag:GetResources`; workflow falls back to Name tag `{prefix}-postgres` |
 | Deploy: SSM PingStatus ≠ Online | Instance IAM role needs `AmazonSSMManagedInstanceCore`; restart SSM agent |
 | Deploy: health check timeout | Read `/opt/gamya-couture/logs/deploy.latest.log` via SSM |
-| 502 after midnight IST | Cost scheduler stopped EC2/RDS — wait for 09:00 or start manually |
+| 502 outside scheduler window | Cost scheduler stopped EC2/RDS — wait for next start window or start manually |
 | Wrong EC2 targeted | Set `EC2_INSTANCE_ID` or verify Name tag `{prefix}-api` |
 | GitHub OIDC assume role fails | Check trust policy allows `gvsharma/gamyaboutique` repo |
 

@@ -58,7 +58,7 @@
 - [ ] Or ALB + HTTPS in front of EC2
 
 ### Cost scheduler
-- [ ] Confirm 09:00–00:00 IST window is acceptable for storefront uptime
+- [ ] Confirm weekly IST windows are acceptable: Mon–Fri 06:00–11:00; Sat 18:00–00:00; Sun 06:00–00:00
 
 ### Production hardening (later)
 - [ ] Separate `prod` Spring profile without dev Flyway seeds
