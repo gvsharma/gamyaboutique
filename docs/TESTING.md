@@ -15,7 +15,7 @@ QA reference for automated and manual testing. See also [docs/production/TESTING
 | Frontend build | `next build` + tsc | PR | CI |
 | Security | npm audit + Trivy | PR | CI |
 | Manual QA | Checklist below | Pre-release | Human |
-| E2E | Playwright (`frontend/e2e/`) | Pre-release | Manual (`E2E_RUN=1`) |
+| E2E | Playwright (`frontend/e2e/`) | PR smoke + nightly full | CI (`e2e-smoke` on PR) |
 
 ```bash
 # Local full validation
@@ -101,13 +101,21 @@ Run: `mvn test -Dtest=AuthServiceTest,CartServiceTest,WishlistServiceTest`
 
 ## E2E tests (Playwright)
 
-| ID | Spec | Flow |
-|----|------|------|
-| E2E-01 | `e2e-01-auth.spec.ts` | Register → login |
-| E2E-02 | `e2e-02-browse-cart-wishlist.spec.ts` | Shop → add bag → cart; wishlist (needs creds) |
-| E2E-03 | `e2e-03-forgot-password.spec.ts` | Forgot password generic message |
+Structured under `frontend/e2e/` — see [frontend/e2e/README.md](../frontend/e2e/README.md).
 
-Not gated in CI — run manually before release. Requires `E2E_RUN=1`.
+| Suite | Specs | Flow |
+|-------|-------|------|
+| **Smoke** | `smoke/critical-path.spec.ts`, `smoke/marketing-routes.spec.ts` | Home, shop, login route, marketing, categories |
+| **User** | `user/auth.spec.ts`, `browse-cart.spec.ts`, `forgot-password.spec.ts`, `addresses.spec.ts`, `wishlist.spec.ts`, `mobile.spec.ts` | Auth, cart, addresses, wishlist, mobile |
+| **Admin** | `admin/access-control.spec.ts`, `products-crud.spec.ts`, `categories.spec.ts`, `ops-readonly.spec.ts` | Guard, products, categories, leads/interests |
+
+```bash
+cd frontend
+npm run test:e2e:smoke                              # PR CI gate (stack started in Actions)
+E2E_RUN=1 npm run test:e2e:full                     # full regression locally or nightly
+```
+
+**CI:** `validate.yml` runs smoke on every PR. `e2e-nightly.yml` runs the full suite weekdays 02:30 UTC (configurable to hit dev via secrets).
 
 ---
 

@@ -1,11 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { requireE2E } from "../fixtures/env";
 
-/**
- * E2E-03: Forgot password
- * Verifies generic success message (no user enumeration).
- */
-test.describe("E2E-03 Forgot password", () => {
-  test.skip(!process.env.E2E_RUN, "Set E2E_RUN=1 to run browser E2E tests");
+test.describe("User — forgot password", () => {
+  test.skip(!requireE2E(), "Set E2E_RUN=1 to run browser E2E tests");
 
   test("shows generic confirmation after submit", async ({ page }) => {
     await page.goto("/forgot-password");

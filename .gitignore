@@ -24,3 +24,8 @@ target/
 
 .DS_Store
 Thumbs.db
+
+# Playwright
+frontend/e2e/.auth/
+frontend/playwright-report/
+frontend/test-results/

@@ -158,29 +158,27 @@ npm ci && npm run lint && npx tsc --noEmit && npm run build
 
 ## 5. E2E tests
 
-**Scope:** Full browser journeys against staging (Vercel preview + EC2 API).
+**Scope:** Full browser journeys — local CI stack, Vercel preview, or dev EC2 (nightly).
 
-**Tooling:** Playwright (recommended).
+**Tooling:** Playwright (`frontend/e2e/`). See [frontend/e2e/README.md](../../frontend/e2e/README.md).
 
-**Critical journeys (P1):**
+**Implemented journeys:**
 
-| ID | Journey |
-|----|---------|
-| E2E-01 | Browse shop → open PDP → add to cart → view cart drawer |
-| E2E-02 | Register → login → profile visible in navbar |
-| E2E-03 | Login → add wishlist → move to bag |
-| E2E-04 | Guest cart → login → cart merged (count matches) |
-| E2E-05 | Admin login → create draft product → publish |
-| E2E-06 | Forgot password form submits (no enumeration leak in UI) |
+| ID | Spec | Status |
+|----|------|--------|
+| E2E-01 | `user/browse-cart.spec.ts` | ✅ browse → add bag → cart |
+| E2E-02 | `user/auth.spec.ts` | ✅ register → login |
+| E2E-03 | `user/wishlist.spec.ts` | ✅ wishlist → move to bag |
+| E2E-04 | Guest cart merge | ⏳ planned |
+| E2E-05 | `admin/products-crud.spec.ts` | ✅ create draft → publish → shop |
+| E2E-06 | `user/forgot-password.spec.ts` | ✅ generic confirmation |
 
-**Environment:**
+**CI gates:**
 
-```bash
-BASE_URL=https://gamyaboutique.vercel.app
-# Or preview URL from PR
-```
+- **PR:** `validate.yml` → `e2e-smoke` (Postgres + backend + frontend + smoke suite)
+- **Nightly:** `e2e-nightly.yml` → full suite (local stack or `E2E_BASE_URL` secret for dev)
 
-**Gate:** Run nightly or pre-release (not blocking PR initially); promote to blocking after stability.
+**Gate:** Smoke blocking on PR; full suite nightly / pre-release.
 
 ---
 

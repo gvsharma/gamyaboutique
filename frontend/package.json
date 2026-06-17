@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=smoke",
+    "test:e2e:smoke": "playwright test --project=smoke",
+    "test:e2e:user": "E2E_RUN=1 playwright test --project=user",
+    "test:e2e:admin": "E2E_RUN=1 playwright test --project=admin",
+    "test:e2e:full": "E2E_RUN=1 playwright test",
+    "test:e2e:setup": "E2E_RUN=1 playwright test --project=setup",
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
