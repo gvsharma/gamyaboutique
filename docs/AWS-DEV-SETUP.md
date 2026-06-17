@@ -28,7 +28,7 @@ Product images
 | DB user (SSM) | `/gamya-couture/dev/db/username` → `gamya_admin` |
 | DB password | `gamyaadmin` (dev; also in SSM `/gamya-couture/dev/db/password`) |
 | Region | `ap-south-1` |
-| Cost scheduler | EC2/RDS stop 00:00 IST, start 09:00 IST |
+| Cost scheduler | Mon–Fri 06:00–11:00; Sat 18:00–00:00; Sun 06:00–00:00 IST |
 
 ---
 
@@ -213,7 +213,7 @@ Response includes `data.url` — store that URL in `product_images.url` (admin p
 | Flyway connection refused | EC2 SG must allow outbound to RDS; RDS SG must allow EC2 SG on 5432 |
 | CORS error on login | Add Vercel URL to `CORS_ALLOWED_ORIGINS` on EC2 |
 | Empty products on Vercel | Check `API_PROXY_TARGET`; redeploy Vercel after env change |
-| RDS stopped (midnight IST) | Wait for 09:00 scheduler or start RDS manually in console |
+| RDS stopped (outside scheduler window) | Wait for next scheduled start or start RDS manually in console |
 | `next/image` broken for S3 | Add bucket hostname to `NEXT_PUBLIC_IMAGE_CDN_HOST` |
 
 ### Logs
