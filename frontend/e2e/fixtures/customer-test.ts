@@ -2,7 +2,11 @@ import { test as base } from "@playwright/test";
 import { requireE2E } from "./env";
 import { AuthPage } from "../pages/auth.page";
 
-export const test = base.extend({
+type CustomerFixtures = {
+  authenticatedCustomer: { email: string; password: string };
+};
+
+export const test = base.extend<CustomerFixtures>({
   authenticatedCustomer: async ({ page }, use) => {
     if (!requireE2E()) {
       await use({ email: "", password: "" });
