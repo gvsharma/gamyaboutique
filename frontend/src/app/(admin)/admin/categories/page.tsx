@@ -80,7 +80,7 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const visibleCategories = adminVisibleCategories(data ?? []);
+  const visibleCategories = adminVisibleCategories<AdminCategory>(data ?? []);
 
   return (
     <div className="space-y-6">

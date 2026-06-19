@@ -14,10 +14,22 @@ export class AdminCategoriesPage {
     return form.locator("label", { hasText: label }).locator("xpath=..").locator("input, textarea, select").first();
   }
 
-  async createCategory(input: { name: string; slug: string; description?: string }) {
+  async expectTaxonomyCategoriesVisible() {
+    for (const name of ["Women", "Girls", "Sarees", "Lehengas"]) {
+      await expect(this.page.getByText(name, { exact: true })).toBeVisible();
+    }
+  }
+
+  async createCategory(input: {
+    group: "Women" | "Girls";
+    type: string;
+    name: string;
+    description?: string;
+  }) {
     const form = this.page.locator("form").filter({ hasText: "Add category" });
-    await this.fieldInForm(form, "Name").fill(input.name);
-    await this.fieldInForm(form, "Slug (optional)").fill(input.slug);
+    await this.fieldInForm(form, "Group").selectOption({ label: input.group });
+    await this.fieldInForm(form, "Type").selectOption({ label: input.type });
+    await this.fieldInForm(form, "Display name").fill(input.name);
     if (input.description) {
       await this.fieldInForm(form, "Description").fill(input.description);
     }

@@ -2,7 +2,7 @@
 
 export const ALLOWED_ROOT_SLUGS = ["women", "girls"] as const;
 
-export const WOMEN_CHILD_SLUGS = ["sarees", "kurtas", "lehangas", "blouses"] as const;
+export const WOMEN_CHILD_SLUGS = ["sarees", "kurtas", "lehengas", "blouses"] as const;
 
 /** Globally unique slugs — distinct from women's kurtas/lehengas. */
 export const GIRLS_CHILD_SLUGS = ["girls-kurtas", "girls-lehengas"] as const;

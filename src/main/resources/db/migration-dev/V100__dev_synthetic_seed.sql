@@ -103,6 +103,17 @@ INSERT INTO seasonal_collections (id, name, slug, season, year, description, sta
     ('33100000-0000-0000-0000-000000000010', 'Classic Reds', 'classic-reds', 'FESTIVE', 2026, 'Red festive tones', '2026-10-01', '2026-11-30', TRUE, 'seed', 'seed')
 ON CONFLICT (id) DO NOTHING;
 
+-- V21 may insert girls taxonomy before dev seed; drop migration rows so stable seed IDs apply.
+DELETE FROM categories
+WHERE deleted_at IS NULL
+  AND created_by = 'migration'
+  AND path IN ('/girls/girls-kurtas', '/girls/girls-lehengas', '/women/blouses');
+
+DELETE FROM categories
+WHERE deleted_at IS NULL
+  AND created_by = 'migration'
+  AND path IN ('/girls');
+
 INSERT INTO categories (id, name, slug, description, parent_id, path, depth, display_order, active, image_url, created_by, updated_by) VALUES
     ('40100000-0000-0000-0000-000000000001', 'Women', 'women', 'Women''s couture', NULL, '/women', 0, 1, TRUE, 'https://images.unsplash.com/photo-1583391734527-658aeeef0f35?w=1200&q=80', 'seed', 'seed'),
     ('40100000-0000-0000-0000-000000000011', 'Girls', 'girls', 'Girls ethnic wear', NULL, '/girls', 0, 2, TRUE, 'https://images.unsplash.com/photo-1515488042361-ee00e8170dc8?w=1200&q=80', 'seed', 'seed'),

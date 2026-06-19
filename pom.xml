@@ -179,4 +179,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- CI/local E2E: include dev-only Flyway seed (V100) in the runnable JAR. -->
+        <profile>
+            <id>e2e-seed</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources/db/migration-dev</directory>
+                        <targetPath>db/migration-dev</targetPath>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
 </project>
