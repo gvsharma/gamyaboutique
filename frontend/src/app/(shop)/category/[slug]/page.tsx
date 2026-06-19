@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { CategoryPageClient } from "@/components/shop/category-page-client";
-import { SectionHeader } from "@/components/ui/section-header";
+import { CoverHeroImage } from "@/components/ui/cover-hero-image";
 import { serverFetch } from "@/lib/api/server-fetch";
 import { API } from "@/lib/api/endpoints";
 import { categoryCoverImage } from "@/lib/category-images";
@@ -25,7 +24,9 @@ export default async function CategoryPage({ params }: Props) {
 
   try {
     const categories = await serverFetch<CategoryDto[]>(API.catalogCategories);
-    const match = categories.find((c) => c.slug === catalogSlug);
+    const match =
+      categories.find((c) => c.slug === catalogSlug) ??
+      (catalogSlug === "girls" ? categories.find((c) => c.slug === "kids") : undefined);
     if (match) {
       categoryName = slug === catalogSlug ? match.name : displayCategoryName(slug);
       coverImage = categoryCoverImage(slug, match.imageUrl);
@@ -36,17 +37,10 @@ export default async function CategoryPage({ params }: Props) {
 
   return (
     <>
-      <div className="relative aspect-[21/9] min-h-[12rem] overflow-hidden bg-linen sm:min-h-[16rem]">
-        <Image
-          src={coverImage}
-          alt={categoryName}
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-charcoal/35" />
-        <div className="container-premium relative flex h-full items-end pb-10 pt-16">
+      <div className="relative bg-linen">
+        <CoverHeroImage src={coverImage} alt={categoryName} priority variant="banner" />
+        <div className="pointer-events-none absolute inset-0 bg-charcoal/25" />
+        <div className="container-premium pointer-events-none absolute inset-x-0 bottom-0 flex items-end pb-10 pt-16">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-pearl/70">
               Collection
