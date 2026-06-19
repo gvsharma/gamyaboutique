@@ -4,8 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Button } from "@/components/ui/button";
-import { fetchCategoryProducts } from "@/lib/api/services/catalog.service";
-import { filterWomenGirlsProducts } from "@/lib/catalog-filters";
+import { fetchCategoryProductsResolved } from "@/lib/api/services/catalog.service";
 import { resolveCatalogSlug } from "@/lib/category-slugs";
 import { queryKeys } from "@/lib/query/query-keys";
 
@@ -15,11 +14,12 @@ export function CategoryPageClient({ slug }: { slug: string }) {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.categoryProducts(catalogSlug, page),
-    queryFn: () => fetchCategoryProducts(catalogSlug, page, 12),
+    queryFn: () => fetchCategoryProductsResolved(catalogSlug, page, 12),
+    staleTime: 0,
   });
 
   if (isLoading) return <p className="mt-10 text-center text-stone">Loading…</p>;
-  if (isError) {
+  if (isError || !data) {
     return (
       <p className="mt-10 text-center text-stone">
         No pieces in this collection yet. Browse our{" "}
@@ -31,7 +31,7 @@ export function CategoryPageClient({ slug }: { slug: string }) {
     );
   }
 
-  const products = filterWomenGirlsProducts(data?.content ?? []);
+  const products = data.content;
 
   if (products.length === 0) {
     return (
@@ -46,12 +46,12 @@ export function CategoryPageClient({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="mt-10">
-      {data && (
-        <p className="mb-6 text-sm text-stone">{products.length} pieces</p>
-      )}
+    <div>
+      <p className="mb-6 text-sm text-stone">
+        {data.totalElements} piece{data.totalElements !== 1 ? "s" : ""}
+      </p>
       <ProductGrid products={products} />
-      {data && data.totalPages > 1 && (
+      {data.totalPages > 1 && (
         <div className="mt-12 flex justify-center gap-4">
           <Button variant="outline" disabled={data.first} onClick={() => setPage((p) => p - 1)}>
             Previous

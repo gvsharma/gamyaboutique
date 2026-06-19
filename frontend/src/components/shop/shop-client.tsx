@@ -24,6 +24,7 @@ export function ShopClient() {
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.products({ q, page }),
     queryFn: () => fetchProducts({ page, size: 12, q: q || undefined }),
+    staleTime: 0,
   });
 
   return (

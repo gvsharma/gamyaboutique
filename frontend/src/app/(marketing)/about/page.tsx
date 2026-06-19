@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, MapPin } from "lucide-react";
 import { StoreMap } from "@/components/contact/store-map";
+import { CoverHeroImage } from "@/components/ui/cover-hero-image";
 import { CONTACT, SITE_NAME, SITE_TAGLINE } from "@/constants/site";
 import { ROUTES } from "@/constants/routes";
 
@@ -45,16 +45,13 @@ function StoryImage({
   className?: string;
 }) {
   return (
-    <div className={`relative overflow-hidden bg-linen ${className}`}>
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        priority={priority}
-        className="object-cover transition-transform duration-700 ease-premium hover:scale-[1.02]"
-        sizes="(max-width: 1024px) 100vw, 50vw"
-      />
-    </div>
+    <CoverHeroImage
+      src={src}
+      alt={alt}
+      priority={priority}
+      variant="editorial"
+      className={className}
+    />
   );
 }
 
@@ -82,30 +79,30 @@ export default function AboutPage() {
   return (
     <div className="bg-cream">
       {/* Hero */}
-      <section className="relative min-h-[min(78vh,44rem)]">
-        <Image
-          src={STORY_IMAGES.hero}
-          alt="Elegant ethnic wear at Gamya Couture, Hyderabad"
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/75 via-charcoal/45 to-charcoal/20" />
-        <div className="container-premium relative flex min-h-[min(78vh,44rem)] items-center py-20 sm:py-24">
-          <div className="animate-fade-up max-w-2xl">
-            <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-pearl/60">
-              Our story · Hyderabad
-            </p>
-            <h1 className="mt-5 font-display text-hero text-pearl text-balance">
-              A drape woven with intention
-            </h1>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-pearl/80 sm:text-lg">
-              {SITE_NAME} began with a simple conviction: every woman and every little girl deserves
-              ethnic wear that fits as beautifully as it looks — crafted with patience, pride, and
-              the warmth of a family boutique.
-            </p>
-            <p className="mt-3 text-sm italic text-pearl/65">{SITE_TAGLINE}</p>
+      <section className="relative bg-linen">
+        <div className="relative">
+          <CoverHeroImage
+            src={STORY_IMAGES.hero}
+            alt="Elegant ethnic wear at Gamya Couture, Hyderabad"
+            priority
+            variant="editorial"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-charcoal/75 via-charcoal/45 to-charcoal/20" />
+          <div className="container-premium absolute inset-0 flex items-center py-20 sm:py-24">
+            <div className="animate-fade-up max-w-2xl">
+              <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-pearl/60">
+                Our story · Hyderabad
+              </p>
+              <h1 className="mt-5 font-display text-hero text-pearl text-balance">
+                A drape woven with intention
+              </h1>
+              <p className="mt-6 max-w-lg text-base leading-relaxed text-pearl/80 sm:text-lg">
+                {SITE_NAME} began with a simple conviction: every woman and every little girl deserves
+                ethnic wear that fits as beautifully as it looks — crafted with patience, pride, and
+                the warmth of a family boutique.
+              </p>
+              <p className="mt-3 text-sm italic text-pearl/65">{SITE_TAGLINE}</p>
+            </div>
           </div>
         </div>
       </section>
@@ -116,7 +113,6 @@ export default function AboutPage() {
           <StoryImage
             src={STORY_IMAGES.craft}
             alt="Festive ethnic wear for family celebrations — Gamya Couture"
-            className="aspect-[4/5] sm:aspect-[5/4]"
           />
           <div id="our-story" className="scroll-mt-40">
             <StoryText eyebrow="Our beginning" title="Rooted in Hyderabad, grown with love">
@@ -147,7 +143,6 @@ export default function AboutPage() {
             <StoryImage
               src={STORY_IMAGES.atelier}
               alt="Bridal lehenga and ethnic wear craftsmanship"
-              className="aspect-[4/5] sm:aspect-[5/4]"
             />
             <StoryText eyebrow="Craft & fit" title="Where every stitch has a purpose">
               <p>
@@ -231,7 +226,6 @@ export default function AboutPage() {
           <StoryImage
             src={STORY_IMAGES.celebration}
             alt="Festive ethnic wear for celebrations"
-            className="aspect-[4/5] sm:aspect-[5/4]"
           />
         </div>
       </section>

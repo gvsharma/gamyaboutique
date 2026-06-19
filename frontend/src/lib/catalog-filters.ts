@@ -1,3 +1,4 @@
+import { GIRLS_CHILD_SLUGS } from "@/constants/category-taxonomy";
 import type { CategoryTreeNode } from "@/types/catalog";
 import type { ProductSummary } from "@/types/product";
 
@@ -8,14 +9,19 @@ const EXCLUDED_CATEGORY_SLUGS = new Set([
   "boys",
   "boys-wear",
   "kids",
+  "kids-ethnic",
+  "sherwanis",
 ]);
+
+/** Legacy slugs that map to the girls storefront before V21 migration. */
+export const GIRLS_CATALOG_SLUGS = [...GIRLS_CHILD_SLUGS, "kids-ethnic"] as const;
 
 const HOMEPAGE_CATEGORY_SLUGS = ["sarees", "blouses", "girls"] as const;
 
 export function isExcludedCategorySlug(slug: string): boolean {
   const s = slug.toLowerCase();
   if (EXCLUDED_CATEGORY_SLUGS.has(s)) return true;
-  return s.includes("sherwani") || s.startsWith("men-") || s.includes("boys");
+  return s.includes("sherwani") || s.startsWith("men-");
 }
 
 export function isWomenGirlsProduct(product: ProductSummary): boolean {
@@ -23,13 +29,26 @@ export function isWomenGirlsProduct(product: ProductSummary): boolean {
     return false;
   }
   const name = product.name.toLowerCase();
-  if (name.includes("sherwani")) return false;
-  if (name.includes("kids festive kurta")) return false;
-  return true;
+  return !name.includes("sherwani");
+}
+
+export function isGirlsCatalogProduct(product: ProductSummary): boolean {
+  const slug = product.primaryCategorySlug?.toLowerCase();
+  if (slug) {
+    if ((GIRLS_CATALOG_SLUGS as readonly string[]).includes(slug)) return true;
+    if (slug === "girls") return true;
+    if (isExcludedCategorySlug(slug)) return false;
+  }
+  const name = product.name.toLowerCase();
+  return /\b(girl|frock|kids?\s+festive)\b/.test(name);
 }
 
 export function filterWomenGirlsProducts<T extends ProductSummary>(products: T[]): T[] {
   return products.filter(isWomenGirlsProduct);
+}
+
+export function filterGirlsProducts<T extends ProductSummary>(products: T[]): T[] {
+  return products.filter(isGirlsCatalogProduct);
 }
 
 export function filterWomenGirlsCategories(categories: CategoryTreeNode[]): CategoryTreeNode[] {
