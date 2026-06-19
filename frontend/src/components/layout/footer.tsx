@@ -29,13 +29,13 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.category("lehengas")} className="text-charcoal/75 transition-colors hover:text-maroon">
-                Lehengas
+              <Link href={ROUTES.category("girls")} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Girls
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.category("girls-collection")} className="text-charcoal/75 transition-colors hover:text-maroon">
-                Girls collection
+              <Link href={ROUTES.category("blouses")} className="text-charcoal/75 transition-colors hover:text-maroon">
+                Blouses
               </Link>
             </li>
             <li>

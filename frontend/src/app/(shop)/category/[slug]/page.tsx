@@ -5,6 +5,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { serverFetch } from "@/lib/api/server-fetch";
 import { API } from "@/lib/api/endpoints";
 import { categoryCoverImage } from "@/lib/category-images";
+import { displayCategoryName, resolveCatalogSlug } from "@/lib/category-slugs";
 import type { CategoryDto } from "@/types/catalog";
 
 interface Props {
@@ -18,14 +19,15 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  let categoryName = slug.replace(/-/g, " ");
+  const catalogSlug = resolveCatalogSlug(slug);
+  let categoryName = displayCategoryName(slug);
   let coverImage = categoryCoverImage(slug);
 
   try {
     const categories = await serverFetch<CategoryDto[]>(API.catalogCategories);
-    const match = categories.find((c) => c.slug === slug);
+    const match = categories.find((c) => c.slug === catalogSlug);
     if (match) {
-      categoryName = match.name;
+      categoryName = slug === catalogSlug ? match.name : displayCategoryName(slug);
       coverImage = categoryCoverImage(slug, match.imageUrl);
     }
   } catch {

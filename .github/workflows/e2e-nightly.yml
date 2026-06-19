@@ -74,7 +74,7 @@ jobs:
         if: env.E2E_TARGET == 'local'
         run: |
           chmod +x scripts/wait-for-url.sh
-          mvn -B -ntp -DskipTests package
+          mvn -B -ntp -DskipTests -Pe2e-seed package
           JAR_PATH=$(find target -maxdepth 1 -name 'gamya-couture-*.jar' ! -name '*-original.jar' | head -1)
           nohup java -jar "$JAR_PATH" > backend-e2e.log 2>&1 &
           echo $! > backend-e2e.pid

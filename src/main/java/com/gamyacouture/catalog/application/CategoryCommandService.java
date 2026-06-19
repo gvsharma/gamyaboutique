@@ -52,6 +52,7 @@ public class CategoryCommandService {
                 .active(request.active() == null || request.active())
                 .imageUrl(resolveImageUrl(request.imageUrl(), slug))
                 .build();
+        CategoryTaxonomy.validateAdminCategory(category, parent);
         return toDto(categoryRepository.save(category));
     }
 
@@ -82,6 +83,7 @@ public class CategoryCommandService {
         if (request.imageUrl() != null) {
             category.setImageUrl(request.imageUrl().isBlank() ? CategoryImages.coverForSlug(slug) : request.imageUrl().trim());
         }
+        CategoryTaxonomy.validateAdminCategory(category, parent);
         categoryRepository.save(category);
         refreshDescendantPaths(category);
         return toDto(category);

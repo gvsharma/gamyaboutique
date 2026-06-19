@@ -6,7 +6,6 @@ import com.gamyacouture.catalog.infrastructure.CategoryJpaRepository;
 import com.gamyacouture.catalog.infrastructure.mapper.CategoryMapper;
 import com.gamyacouture.product.api.ProductQueryApi;
 import com.gamyacouture.product.api.dto.ProductSummaryDto;
-import com.gamyacouture.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +22,7 @@ public class CategoryBrowseService {
     private final CategoryJpaRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final ProductQueryApi productQueryApi;
+    private final CategorySlugResolver categorySlugResolver;
 
     public List<CategoryDto> listActiveCategories() {
         return categoryRepository.findByActiveTrueOrderByDisplayOrderAscNameAsc().stream()
@@ -31,8 +31,7 @@ public class CategoryBrowseService {
     }
 
     public Page<ProductSummaryDto> productsBySlug(String slug, Pageable pageable) {
-        Category category = categoryRepository.findBySlugAndActiveTrue(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + slug));
+        Category category = categorySlugResolver.resolveActiveBySlug(slug);
         return productQueryApi.findByCategory(category.getId(), pageable);
     }
 }

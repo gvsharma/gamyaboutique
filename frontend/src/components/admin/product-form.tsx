@@ -1,10 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import { VideoUploader } from "@/components/admin/video-uploader";
+import {
+  categoryOptionLabel,
+  productAssignableCategories,
+} from "@/constants/category-taxonomy";
 import { ROUTES } from "@/constants/routes";
 import {
   createProduct,
@@ -78,6 +82,11 @@ export function ProductForm({ product }: ProductFormProps) {
       .catch(() => setError("Failed to load form options from API."));
   }, []);
 
+  const assignableCategories = useMemo(
+    () => productAssignableCategories(categories),
+    [categories],
+  );
+
   const buildPayload = (): UpsertProductPayload => ({
     sku,
     name,
@@ -98,6 +107,10 @@ export function ProductForm({ product }: ProductFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!primaryCategoryId) {
+      setError("Select a product type under Women or Girls (e.g. Sarees, Kurtas).");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -188,19 +201,24 @@ export function ProductForm({ product }: ProductFormProps) {
           />
         </div>
         <div>
-          <label className={labelClass}>Primary category</label>
+          <label className={labelClass}>Product type</label>
           <select
             className={inputClass}
             value={primaryCategoryId}
             onChange={(e) => setPrimaryCategoryId(e.target.value)}
+            required
           >
-            <option value="">— Select —</option>
-            {categories.map((cat) => (
+            <option value="">— Select type —</option>
+            {assignableCategories.map((cat) => (
               <option key={cat.id} value={cat.id}>
-                {cat.name}
+                {categoryOptionLabel(cat, categories)}
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-stone">
+            Choose a specific type (Sarees, Kurtas, etc.). Products assigned only to Women or Girls
+            will not appear in shop collections.
+          </p>
         </div>
         <div>
           <label className={labelClass}>Fabric</label>

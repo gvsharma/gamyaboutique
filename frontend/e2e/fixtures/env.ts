@@ -12,6 +12,13 @@ export function requireE2E(): boolean {
   return process.env.E2E_RUN === "1";
 }
 
+/** Prevent the first-visit support modal from blocking nav interactions in smoke tests. */
+export async function suppressSupportNotice(page: { addInitScript: (fn: () => void) => Promise<void> }) {
+  await page.addInitScript(() => {
+    sessionStorage.setItem("gamya_support_notice_shown", "1");
+  });
+}
+
 export function uniqueSku(prefix = "E2E"): string {
   return `${prefix}-${Date.now()}`;
 }

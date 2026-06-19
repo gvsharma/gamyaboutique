@@ -8,10 +8,10 @@ import { RecentlyViewedSection } from "@/components/product/recently-viewed-sect
 export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <SupportDialogProvider>
-      <div className="relative flex min-h-screen flex-col bg-cream">
+      <div className="relative isolate flex min-h-screen flex-col bg-cream">
         <BoutiqueDecor />
         <Navbar />
-        <main className="relative z-10 flex-1">{children}</main>
+        <main className="relative z-[2] flex-1">{children}</main>
         <RecentlyViewedSection />
         <Footer />
         <WhatsAppFab />

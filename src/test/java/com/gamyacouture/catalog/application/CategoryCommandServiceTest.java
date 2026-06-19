@@ -41,11 +41,21 @@ class CategoryCommandServiceTest {
 
     @Test
     void deactivateSoftDeletesCategoryFromAdminList() {
+        var women = categoryCommandService.create(new UpsertCategoryRequest(
+                "Women",
+                "women",
+                null,
+                null,
+                1,
+                true,
+                null
+        ));
+
         var created = categoryCommandService.create(new UpsertCategoryRequest(
-                "Deactivate Test",
-                "deactivate-test",
+                "Deactivate Test Sarees",
+                "sarees",
                 null,
-                null,
+                women.id(),
                 99,
                 true,
                 null

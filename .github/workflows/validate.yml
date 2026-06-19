@@ -132,7 +132,7 @@ jobs:
           cache: maven
 
       - name: Build backend JAR
-        run: mvn -B -ntp -DskipTests package
+        run: mvn -B -ntp -DskipTests -Pe2e-seed package
 
       - name: Start backend
         run: |

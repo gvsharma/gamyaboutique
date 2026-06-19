@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, ShoppingBag } from "lucide-react";
@@ -8,7 +7,8 @@ import { ROUTES } from "@/constants/routes";
 import { useWishlistActions } from "@/hooks/use-wishlist";
 import { addToCart } from "@/lib/api/services/cart.service";
 import { queryKeys } from "@/lib/query/query-keys";
-import { productPlaceholderImage } from "@/lib/category-images";
+import { CatalogImage } from "@/components/ui/catalog-image";
+import { normalizeProductImage } from "@/lib/category-images";
 import { formatPrice, cn } from "@/lib/utils";
 import type { ProductSummary } from "@/types/product";
 
@@ -23,9 +23,12 @@ interface ProductCardProps {
 export function ProductCard({ product, className, index = 0 }: ProductCardProps) {
   const { has, toggle } = useWishlistActions();
   const inWishlist = has(product.id);
-  const imageUrl =
-    product.primaryImageUrl ??
-    productPlaceholderImage(product.primaryCategorySlug, product.name);
+  const imageUrl = normalizeProductImage(
+    product.primaryImageUrl,
+    product.primaryCategorySlug,
+    product.name,
+  );
+  const fallbackImage = normalizeProductImage(null, product.primaryCategorySlug, product.name);
   const queryClient = useQueryClient();
 
   const addCartMutation = useMutation({
@@ -42,8 +45,9 @@ export function ProductCard({ product, className, index = 0 }: ProductCardProps)
       )}
     >
       <Link href={ROUTES.product(product.id)} className="product-image-wrap block">
-        <Image
+        <CatalogImage
           src={imageUrl}
+          fallbackSrc={fallbackImage}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-700 ease-premium group-hover:scale-[1.03]"

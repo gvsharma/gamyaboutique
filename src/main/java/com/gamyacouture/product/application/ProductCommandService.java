@@ -1,5 +1,6 @@
 package com.gamyacouture.product.application;
 
+import com.gamyacouture.catalog.application.CategoryTaxonomy;
 import com.gamyacouture.catalog.domain.Category;
 import com.gamyacouture.catalog.domain.Fabric;
 import com.gamyacouture.catalog.domain.Print;
@@ -164,9 +165,11 @@ public class ProductCommandService {
         if (id == null) {
             return null;
         }
-        return categoryRepository.findByIdAndActiveTrue(id)
+        Category category = categoryRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.VALIDATION_ERROR,
                         "Category not found or inactive: " + id));
+        CategoryTaxonomy.validateProductCategory(category);
+        return category;
     }
 
     private Fabric resolveFabric(UUID id) {

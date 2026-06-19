@@ -15,7 +15,7 @@ const FEATURES = [
     num: "02",
     title: "Girls collection",
     body: "Frocks, lehenga sets, and mom-and-daughter matching looks for festivals, birthdays, and celebrations.",
-    href: ROUTES.category("girls-collection"),
+    href: ROUTES.category("girls"),
     image: "/brand/editorial-girls-festive.jpg",
     alt: "Girls festive ethnic wear",
   },

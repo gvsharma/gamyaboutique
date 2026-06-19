@@ -30,6 +30,14 @@ public interface CategoryJpaRepository extends JpaRepository<Category, UUID> {
 
     @Query("""
             SELECT c FROM Category c
+            WHERE c.slug = :slug AND c.active = true
+            """)
+    List<Category> findAllBySlugAndActiveTrue(@Param("slug") String slug);
+
+    Optional<Category> findByPathAndActiveTrue(String path);
+
+    @Query("""
+            SELECT c FROM Category c
             LEFT JOIN FETCH c.parent
             WHERE c.deletedAt IS NULL
             ORDER BY c.displayOrder ASC, c.name ASC
