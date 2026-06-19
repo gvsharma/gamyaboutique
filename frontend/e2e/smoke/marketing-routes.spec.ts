@@ -4,10 +4,13 @@ const MARKETING_ROUTES = ["/", "/about", "/contact", "/privacy", "/shipping", "/
 
 const CATEGORY_ROUTES = [
   "/category/sarees",
+  "/category/kurtas",
   "/category/lehengas",
   "/category/blouses",
   "/category/girls",
   "/category/girls-kurtas",
+  "/category/girls-lehengas",
+  // Legacy marketing slugs still resolve via category-slugs aliases
   "/category/silk-sarees",
   "/category/bridal-lehengas",
   "/category/kids-ethnic",
@@ -28,16 +31,18 @@ test.describe("Smoke — marketing and category routes", () => {
 
     const nav = page.getByRole("navigation", { name: "Main navigation" });
 
-    await nav.getByRole("link", { name: "Sarees", exact: true }).first().click();
+    await nav.getByRole("link", { name: "Women", exact: true }).hover();
+    await nav.getByRole("link", { name: "Sarees", exact: true }).click();
     await expect(page).toHaveURL(/\/category\/sarees$/);
     await expect(page.getByRole("heading", { name: /sarees/i })).toBeVisible();
 
     await page.goto("/");
-    await nav.getByRole("link", { name: "Lehengas", exact: true }).first().click();
+    await nav.getByRole("link", { name: "Women", exact: true }).hover();
+    await nav.getByRole("link", { name: "Lehengas", exact: true }).click();
     await expect(page).toHaveURL(/\/category\/lehengas$/);
 
     await page.goto("/");
-    await nav.getByRole("link", { name: "Girls", exact: true }).first().click();
+    await nav.getByRole("link", { name: "Girls", exact: true }).click();
     await expect(page).toHaveURL(/\/category\/girls$/);
   });
 
