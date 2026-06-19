@@ -6,26 +6,44 @@ import { ProductGrid } from "@/components/catalog/product-grid";
 import { Button } from "@/components/ui/button";
 import { fetchCategoryProducts } from "@/lib/api/services/catalog.service";
 import { filterWomenGirlsProducts } from "@/lib/catalog-filters";
+import { resolveCatalogSlug } from "@/lib/category-slugs";
 import { queryKeys } from "@/lib/query/query-keys";
 
 export function CategoryPageClient({ slug }: { slug: string }) {
   const [page, setPage] = useState(0);
+  const catalogSlug = resolveCatalogSlug(slug);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: queryKeys.categoryProducts(slug, page),
-    queryFn: () => fetchCategoryProducts(slug, page, 12),
+    queryKey: queryKeys.categoryProducts(catalogSlug, page),
+    queryFn: () => fetchCategoryProducts(catalogSlug, page, 12),
   });
 
   if (isLoading) return <p className="mt-10 text-center text-stone">Loading…</p>;
   if (isError) {
     return (
-      <p className="mt-10 text-center text-maroon">
-        Could not load this category. Check the API is running.
+      <p className="mt-10 text-center text-stone">
+        No pieces in this collection yet. Browse our{" "}
+        <a href="/shop" className="font-medium text-maroon underline-offset-2 hover:underline">
+          full shop
+        </a>{" "}
+        or contact us for bespoke styling.
       </p>
     );
   }
 
   const products = filterWomenGirlsProducts(data?.content ?? []);
+
+  if (products.length === 0) {
+    return (
+      <p className="mt-10 text-center text-stone">
+        No pieces in this collection yet. Browse our{" "}
+        <a href="/shop" className="font-medium text-maroon underline-offset-2 hover:underline">
+          full shop
+        </a>{" "}
+        or contact us for bespoke styling.
+      </p>
+    );
+  }
 
   return (
     <div className="mt-10">

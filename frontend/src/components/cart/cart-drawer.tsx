@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
+import { CatalogImage } from "@/components/ui/catalog-image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,7 @@ import {
 import { formatPrice, cn } from "@/lib/utils";
 import { queryKeys } from "@/lib/query/query-keys";
 
-const PLACEHOLDER =
-  "https://images.unsplash.com/photo-1610030469983-98e550b19538?w=400&q=80";
+import { normalizeProductImage } from "@/lib/category-images";
 
 interface CartDrawerProps {
   open: boolean;
@@ -94,8 +93,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             {cart?.items.map((item) => (
               <li key={item.id} className="flex gap-4">
                 <div className="relative h-28 w-[5.5rem] shrink-0 overflow-hidden rounded-xl bg-ivory">
-                  <Image
-                    src={item.product?.primaryImageUrl ?? PLACEHOLDER}
+                  <CatalogImage
+                    src={normalizeProductImage(
+                      item.product?.primaryImageUrl,
+                      item.product?.primaryCategorySlug,
+                      item.product?.name,
+                    )}
+                    fallbackSrc={normalizeProductImage(
+                      null,
+                      item.product?.primaryCategorySlug,
+                      item.product?.name,
+                    )}
                     alt={item.product?.name ?? ""}
                     fill
                     className="object-cover"

@@ -1,5 +1,6 @@
 package com.gamyacouture.product.application;
 
+import com.gamyacouture.catalog.application.CategorySlugResolver;
 import com.gamyacouture.catalog.domain.Category;
 import com.gamyacouture.catalog.infrastructure.CategoryJpaRepository;
 import com.gamyacouture.product.api.dto.ProductListFilter;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class ProductFilterResolver {
 
     private final CategoryJpaRepository categoryRepository;
+    private final CategorySlugResolver categorySlugResolver;
 
     public ProductFilter resolve(ProductListFilter request) {
         validatePriceRange(request.minPrice(), request.maxPrice());
@@ -64,8 +66,7 @@ public class ProductFilterResolver {
             category = categoryRepository.findByIdAndActiveTrue(categoryId)
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + categoryId));
         } else if (categorySlug != null && !categorySlug.isBlank()) {
-            category = categoryRepository.findBySlugAndActiveTrue(categorySlug.trim())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + categorySlug));
+            category = categorySlugResolver.resolveActiveBySlug(categorySlug.trim());
         } else {
             return null;
         }

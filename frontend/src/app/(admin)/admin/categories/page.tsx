@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CategoryForm } from "@/components/admin/category-form";
+import { CategoryForm, adminVisibleCategories } from "@/components/admin/category-form";
 import { deleteCategory, fetchAdminCategories, updateCategory } from "@/lib/api/services/admin.service";
 import type { AdminCategory, UpsertCategoryPayload } from "@/types/admin";
 
@@ -79,12 +79,16 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const visibleCategories = adminVisibleCategories(data ?? []);
+
   return (
     <div className="space-y-6">
       <div>
         <p className="text-eyebrow">Catalog</p>
         <h1 className="mt-2 font-display text-section-title text-charcoal">Categories</h1>
-        <p className="mt-1 text-sm text-stone">Catalog taxonomy stored in RDS</p>
+        <p className="mt-1 text-sm text-stone">
+          Women and Girls taxonomy only — assign products to leaf types (Sarees, Kurtas, etc.)
+        </p>
       </div>
 
       <CategoryForm categories={data ?? []} onCreated={() => refetch()} />
@@ -109,8 +113,8 @@ export default function AdminCategoriesPage() {
               <label className={labelClass}>Parent</label>
               <select className={inputClass} value={parentId} onChange={(e) => setParentId(e.target.value)}>
                 <option value="">— Root —</option>
-                {data
-                  ?.filter((c) => c.id !== editing.id)
+                {visibleCategories
+                  .filter((c) => c.id !== editing.id)
                   .map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
@@ -155,8 +159,8 @@ export default function AdminCategoriesPage() {
             </tr>
           </thead>
           <tbody>
-            {data?.map((cat) => {
-              const parent = data.find((p) => p.id === cat.parentId);
+            {visibleCategories.map((cat) => {
+              const parent = data?.find((p) => p.id === cat.parentId);
               return (
                 <tr key={cat.id} className="border-b border-charcoal/5 last:border-0">
                   <td className="px-5 py-3.5 text-charcoal">{cat.name}</td>

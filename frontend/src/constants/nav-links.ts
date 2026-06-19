@@ -17,35 +17,21 @@ export type NavItem = {
 export const MAIN_NAV: NavItem[] = [
   { label: "Home", href: ROUTES.home },
   {
-    label: "Sarees",
-    href: ROUTES.category("sarees"),
+    label: "Women",
+    href: ROUTES.category("women"),
     children: [
-      { label: "Silk Sarees", href: ROUTES.category("silk-sarees") },
-      { label: "Cotton Sarees", href: ROUTES.category("cotton-sarees") },
-      { label: "Party Wear Sarees", href: ROUTES.category("party-wear-sarees") },
-      { label: "Wedding Sarees", href: ROUTES.category("wedding-sarees") },
-      { label: "Daily Wear Sarees", href: ROUTES.category("daily-wear-sarees") },
+      { label: "Sarees", href: ROUTES.category("sarees") },
+      { label: "Kurtas", href: ROUTES.category("kurtas") },
+      { label: "Lehengas", href: ROUTES.category("lehengas") },
+      { label: "Blouses", href: ROUTES.category("blouses") },
     ],
   },
   {
-    label: "Lehengas",
-    href: ROUTES.category("lehengas"),
+    label: "Girls",
+    href: ROUTES.category("girls"),
     children: [
-      { label: "Bridal Lehengas", href: ROUTES.category("bridal-lehengas") },
-      { label: "Party Wear", href: ROUTES.category("party-wear-lehengas") },
-      { label: "Festive Collection", href: ROUTES.category("festive-lehengas") },
-      { label: "Girls Lehengas", href: ROUTES.category("girls-lehengas") },
-    ],
-  },
-  {
-    label: "Girls Collection",
-    href: ROUTES.category("girls-collection"),
-    children: [
-      { label: "Frocks", href: ROUTES.category("frocks") },
-      { label: "Girls Lehenga Sets", href: ROUTES.category("girls-lehenga-sets") },
-      { label: "Festival Wear", href: ROUTES.category("girls-festival-wear") },
-      { label: "Birthday Specials", href: ROUTES.category("birthday-specials") },
-      { label: "Mom & Daughter Matching Sets", href: ROUTES.category("mom-daughter-sets") },
+      { label: "Kurtas", href: ROUTES.category("girls-kurtas") },
+      { label: "Lehengas", href: ROUTES.category("girls-lehengas") },
     ],
   },
   {

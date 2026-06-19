@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import Image from "next/image";
+import { CatalogImage } from "@/components/ui/catalog-image";
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ROUTES } from "@/constants/routes";
@@ -10,8 +10,7 @@ import { fetchCart, removeCartItem, updateCartItem } from "@/lib/api/services/ca
 import { formatPrice } from "@/lib/utils";
 import { queryKeys } from "@/lib/query/query-keys";
 
-const PLACEHOLDER =
-  "https://images.unsplash.com/photo-1610030469983-98e550b19538?w=600&q=80";
+import { normalizeProductImage } from "@/lib/category-images";
 
 export default function CartPage() {
   const queryClient = useQueryClient();
@@ -58,8 +57,17 @@ export default function CartPage() {
           {items.map((item) => (
             <div key={item.id} className="surface-card flex gap-4 p-4 sm:p-5">
               <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-xl bg-ivory">
-                <Image
-                  src={item.product?.primaryImageUrl ?? PLACEHOLDER}
+                <CatalogImage
+                  src={normalizeProductImage(
+                    item.product?.primaryImageUrl,
+                    item.product?.primaryCategorySlug,
+                    item.product?.name,
+                  )}
+                  fallbackSrc={normalizeProductImage(
+                    null,
+                    item.product?.primaryCategorySlug,
+                    item.product?.name,
+                  )}
                   alt={item.product?.name ?? "Product"}
                   fill
                   className="object-cover"

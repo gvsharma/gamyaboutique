@@ -11,9 +11,9 @@
     html {
       scroll-behavior: auto;
     }
-    *,
-    *::before,
-    *::after {
+    *:not(.boutique-decor):not(.boutique-decor *),
+    *:not(.boutique-decor):not(.boutique-decor *)::before,
+    *:not(.boutique-decor):not(.boutique-decor *)::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;

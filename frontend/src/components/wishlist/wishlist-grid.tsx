@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CatalogImage } from "@/components/ui/catalog-image";
 import Link from "next/link";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,10 +12,7 @@ import { queryKeys } from "@/lib/query/query-keys";
 import { formatPrice, cn } from "@/lib/utils";
 import type { ProductSummary } from "@/types/product";
 
-const PLACEHOLDER =
-  "https://images.unsplash.com/photo-1610030469983-98e550b19538?w=600&q=80";
-
-/** Pinterest-style masonry using CSS columns */
+import { normalizeProductImage } from "@/lib/category-images";
 export function WishlistGrid({ products }: { products: ProductSummary[] }) {
   return (
     <div className="columns-2 gap-4 sm:columns-3 sm:gap-5 lg:columns-4 lg:gap-6">
@@ -43,8 +40,13 @@ function WishlistPin({ product, index }: { product: ProductSummary; index: numbe
     <article className="mb-4 break-inside-avoid sm:mb-5 lg:mb-6 animate-fade-up">
       <div className="group relative overflow-hidden rounded-2xl bg-ivory">
         <Link href={ROUTES.product(product.id)} className={cn("relative block w-full", aspect)}>
-          <Image
-            src={product.primaryImageUrl ?? PLACEHOLDER}
+          <CatalogImage
+            src={normalizeProductImage(
+              product.primaryImageUrl,
+              product.primaryCategorySlug,
+              product.name,
+            )}
+            fallbackSrc={normalizeProductImage(null, product.primaryCategorySlug, product.name)}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-700 ease-premium group-hover:scale-[1.03]"

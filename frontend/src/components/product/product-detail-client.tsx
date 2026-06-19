@@ -18,10 +18,8 @@ import { addToCart } from "@/lib/api/services/cart.service";
 import { recordProductView } from "@/lib/api/services/recently-viewed.service";
 import { queryKeys } from "@/lib/query/query-keys";
 import { formatPrice, cn } from "@/lib/utils";
+import { productPlaceholderImage } from "@/lib/category-images";
 import type { ProductDetail } from "@/types/product";
-
-const PLACEHOLDER =
-  "https://images.unsplash.com/photo-1610030469983-98e550b19538?w=900&q=80";
 
 export function ProductDetailClient({ product }: { product: ProductDetail }) {
   const images = [...product.images].sort((a, b) => a.displayOrder - b.displayOrder);
@@ -82,7 +80,7 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
             <ProductImageGallery
               images={images}
               productName={product.name}
-              placeholder={PLACEHOLDER}
+              placeholder={productPlaceholderImage(product.primaryCategorySlug, product.name)}
             />
             {product.videoUrl && (
               <div className="mt-6">

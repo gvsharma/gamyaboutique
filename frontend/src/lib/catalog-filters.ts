@@ -10,7 +10,7 @@ const EXCLUDED_CATEGORY_SLUGS = new Set([
   "kids",
 ]);
 
-const HOMEPAGE_CATEGORY_SLUGS = ["sarees", "lehengas", "girls-collection"] as const;
+const HOMEPAGE_CATEGORY_SLUGS = ["sarees", "blouses", "girls"] as const;
 
 export function isExcludedCategorySlug(slug: string): boolean {
   const s = slug.toLowerCase();

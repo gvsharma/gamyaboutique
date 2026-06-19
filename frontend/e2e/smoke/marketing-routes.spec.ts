@@ -5,6 +5,9 @@ const MARKETING_ROUTES = ["/", "/about", "/contact", "/privacy", "/shipping", "/
 const CATEGORY_ROUTES = [
   "/category/sarees",
   "/category/lehengas",
+  "/category/blouses",
+  "/category/girls",
+  "/category/girls-kurtas",
   "/category/silk-sarees",
   "/category/bridal-lehengas",
   "/category/kids-ethnic",
@@ -23,21 +26,19 @@ test.describe("Smoke — marketing and category routes", () => {
   test("header nav category links resolve", async ({ page }) => {
     await page.goto("/");
 
-    await page
-      .getByRole("navigation", { name: "Main navigation" })
-      .getByRole("link", { name: "Sarees", exact: true })
-      .first()
-      .click();
+    const nav = page.getByRole("navigation", { name: "Main navigation" });
+
+    await nav.getByRole("link", { name: "Sarees", exact: true }).first().click();
     await expect(page).toHaveURL(/\/category\/sarees$/);
     await expect(page.getByRole("heading", { name: /sarees/i })).toBeVisible();
 
     await page.goto("/");
-    await page.getByRole("link", { name: "Lehengas", exact: true }).first().click();
+    await nav.getByRole("link", { name: "Lehengas", exact: true }).first().click();
     await expect(page).toHaveURL(/\/category\/lehengas$/);
 
     await page.goto("/");
-    await page.getByRole("link", { name: /girls collection/i }).first().click();
-    await expect(page).toHaveURL(/\/category\/kids-ethnic$/);
+    await nav.getByRole("link", { name: "Girls", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/category\/girls$/);
   });
 
   test("category routes load without API error banner", async ({ page }) => {
