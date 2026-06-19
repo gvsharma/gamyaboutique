@@ -3,7 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CategoryForm, adminVisibleCategories } from "@/components/admin/category-form";
+import { CategoryForm } from "@/components/admin/category-form";
+import { adminVisibleCategories } from "@/constants/category-taxonomy";
 import { deleteCategory, fetchAdminCategories, updateCategory } from "@/lib/api/services/admin.service";
 import type { AdminCategory, UpsertCategoryPayload } from "@/types/admin";
 

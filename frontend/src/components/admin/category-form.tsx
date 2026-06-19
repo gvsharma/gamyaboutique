@@ -6,7 +6,6 @@ import {
   ALLOWED_ROOT_SLUGS,
   GIRLS_CHILD_SLUGS,
   WOMEN_CHILD_SLUGS,
-  adminVisibleCategories,
 } from "@/constants/category-taxonomy";
 import { createCategory } from "@/lib/api/services/admin.service";
 import type { AdminCategory, UpsertCategoryPayload } from "@/types/admin";
@@ -158,5 +157,3 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
     </form>
   );
 }
-
-export { adminVisibleCategories };

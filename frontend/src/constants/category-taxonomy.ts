@@ -54,7 +54,7 @@ export function productAssignableCategories(categories: CategoryLike[]): Categor
     });
 }
 
-export function adminVisibleCategories(categories: CategoryLike[]): CategoryLike[] {
+export function adminVisibleCategories<T extends CategoryLike>(categories: T[]): T[] {
   const allowed = new Set<string>([...ALLOWED_ROOT_SLUGS, ...WOMEN_CHILD_SLUGS, ...GIRLS_CHILD_SLUGS]);
   return categories.filter((c) => allowed.has(c.slug.toLowerCase()));
 }
