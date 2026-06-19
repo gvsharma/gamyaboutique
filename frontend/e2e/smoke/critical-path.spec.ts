@@ -1,9 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { requireE2E } from "../fixtures/env";
+import { requireE2E, suppressSupportNotice } from "../fixtures/env";
 import { CartPage } from "../pages/cart.page";
 import { ShopPage } from "../pages/shop.page";
 
 test.describe("Smoke — critical storefront path", () => {
+  test.beforeEach(async ({ page }) => {
+    await suppressSupportNotice(page);
+  });
+
   test("home and shop navigation load", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("link", { name: "Gamya Couture", exact: true })).toBeVisible();

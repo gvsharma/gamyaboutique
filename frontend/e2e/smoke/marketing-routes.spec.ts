@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { suppressSupportNotice } from "../fixtures/env";
 
 const MARKETING_ROUTES = ["/", "/about", "/contact", "/privacy", "/shipping", "/returns", "/terms"];
 
@@ -17,6 +18,10 @@ const CATEGORY_ROUTES = [
 ];
 
 test.describe("Smoke — marketing and category routes", () => {
+  test.beforeEach(async ({ page }) => {
+    await suppressSupportNotice(page);
+  });
+
   test("marketing pages load with boutique decor", async ({ page }) => {
     for (const route of MARKETING_ROUTES) {
       await page.goto(route);
@@ -27,9 +32,12 @@ test.describe("Smoke — marketing and category routes", () => {
   });
 
   test("header nav category links resolve", async ({ page }) => {
+    // Desktop dropdown nav is only visible at the 2xl breakpoint (1536px+).
+    await page.setViewportSize({ width: 1536, height: 900 });
     await page.goto("/");
 
     const nav = page.getByRole("navigation", { name: "Main navigation" });
+    await expect(nav).toBeVisible();
 
     await nav.getByRole("link", { name: "Women", exact: true }).hover();
     await nav.getByRole("link", { name: "Sarees", exact: true }).click();
@@ -38,7 +46,7 @@ test.describe("Smoke — marketing and category routes", () => {
 
     await page.goto("/");
     await nav.getByRole("link", { name: "Women", exact: true }).hover();
-    await nav.getByRole("link", { name: "Lehengas", exact: true }).click();
+    await nav.getByRole("link", { name: "Lehengas", exact: true }).first().click();
     await expect(page).toHaveURL(/\/category\/lehengas$/);
 
     await page.goto("/");
