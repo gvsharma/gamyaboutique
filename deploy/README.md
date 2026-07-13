@@ -72,39 +72,44 @@ sudo APP_PATH=/opt/gamya-couture bash deploy/scripts/ec2-bootstrap.sh
 
 ### 2. Configure runtime secrets
 
+Preferred: copy the Supabase template, then set the real DB password and JWT:
+
 ```bash
+sudo cp deploy/env/application.supabase.env.example /opt/gamya-couture/config/application.env
 sudo nano /opt/gamya-couture/config/application.env
-# Set DB_PASSWORD, JWT_SECRET, CORS_ALLOWED_ORIGINS
+# Set DB_PASSWORD (Supabase Dashboard → Database), JWT_SECRET, CORS_ALLOWED_ORIGINS
 sudo chmod 640 /opt/gamya-couture/config/application.env
 sudo chown root:gamya /opt/gamya-couture/config/application.env
 ```
 
-### 3. RDS PostgreSQL (Terraform-managed)
+`DB_PROVIDER=supabase` (or `SPRING_PROFILES_ACTIVE=supabase` / a `supabase.co` JDBC URL) tells deploy scripts **not** to overwrite the DB with legacy RDS SSM secrets.
 
-Dev uses **RDS**, not local Postgres. Credentials live in SSM:
+### 3. Database — Supabase (preferred) or RDS (legacy)
+
+**Supabase** ([project dashboard](https://supabase.com/dashboard/project/nlntrftvzcwtrdenufoi)):
+
+| Setting | Value |
+|---------|-------|
+| Profile | `supabase` (Flyway disabled; schema via `supabase/migrations/`) |
+| JDBC | `jdbc:postgresql://db.nlntrftvzcwtrdenufoi.supabase.co:5432/postgres?sslmode=require` |
+| Optional SSM | `/gamya-couture/dev/supabase/db/password` (password only) |
+
+**Legacy RDS** — only if you still run `DB_PROVIDER=rds` / profile `dev`. Credentials live in SSM:
 
 | SSM path | Value |
 |----------|-------|
 | `/gamya-couture/dev/db/username` | `gamya_admin` |
 | `/gamya-couture/dev/db/password` | (encrypted) |
 
-**Quick setup** — sync into `application.env`:
+RDS sync (rewrites `DB_URL`/`DB_USER`/`DB_PASSWORD` to RDS — **skipped** for Supabase targets):
 
 ```bash
 sudo bash deploy/scripts/sync-rds-env-from-ssm.sh
 ```
 
-Then set `JWT_SECRET` and verify `CORS_ALLOWED_ORIGINS` in `/opt/gamya-couture/config/application.env`.
+See [docs/BACKEND-SETUP.md](../docs/BACKEND-SETUP.md) and [docs/AWS-DEV-SETUP.md](../docs/AWS-DEV-SETUP.md).
 
-Manual `DB_URL`:
-
-```
-jdbc:postgresql://gamya-couture-dev-pg.c8xkhvlstsfp.ap-south-1.rds.amazonaws.com:5432/gamya
-```
-
-Flyway runs on first Spring Boot start (schema + sample data). See [docs/AWS-DEV-SETUP.md](../docs/AWS-DEV-SETUP.md).
-
-**Alternative:** Docker on EC2 without local Postgres — `./scripts/deploy-ec2-rds.sh` (uses `docker-compose.rds.yml`).
+**Alternative:** Docker on EC2 without systemd — `./scripts/deploy-ec2-rds.sh` (uses `docker-compose.rds.yml`, legacy RDS).
 
 ### 4. Verify nginx → Spring Boot
 

@@ -1,0 +1,15 @@
+# For detailed configuration reference documentation, visit:
+# https://supabase.com/docs/guides/local-development/cli/config
+project_id = "nlntrftvzcwtrdenufoi"
+
+[db]
+major_version = 17
+
+[api]
+enabled = true
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db.migrations]
+enabled = true

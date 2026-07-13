@@ -1,6 +1,10 @@
-# AWS Dev Setup — Vercel → EC2 → RDS
+# AWS Dev Setup — Vercel → EC2 → Database
 
-End-to-end guide to run the Gamya Couture storefront on Vercel with the Spring Boot API on EC2 and PostgreSQL on RDS.
+> **Preferred database:** [Supabase](https://supabase.com/dashboard/project/nlntrftvzcwtrdenufoi) with `SPRING_PROFILES_ACTIVE=supabase`.
+> See [BACKEND-SETUP.md](./BACKEND-SETUP.md) Option B and [deploy/env/application.supabase.env.example](../deploy/env/application.supabase.env.example).
+> The RDS steps below remain for legacy dual-run / rollback.
+
+End-to-end guide to run the Gamya Couture storefront on Vercel with the Spring Boot API on EC2 and PostgreSQL (Supabase preferred, or legacy RDS).
 
 ## Architecture
 

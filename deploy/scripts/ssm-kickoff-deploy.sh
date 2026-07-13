@@ -48,7 +48,8 @@ main() {
   log "Downloading JAR from S3"
   aws s3 cp "s3://${DEPLOY_BUCKET}/${JAR_KEY}" "${APP_PATH}/incoming/gamya-couture.jar.new"
 
-  log "Syncing RDS credentials into application.env"
+  # Skips RDS overwrite when application.env targets Supabase (profile/URL/DB_PROVIDER).
+  log "Syncing DB credentials into application.env (RDS or Supabase-aware)"
   sudo bash "${APP_PATH}/scripts/sync-rds-env-from-ssm.sh" "${APP_PATH}/config/application.env"
 
   log "Running remote-deploy.sh (full local health wait on EC2)"

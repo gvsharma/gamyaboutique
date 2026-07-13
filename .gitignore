@@ -20,6 +20,7 @@ target/
 
 .env
 .env.local
+.env.supabase
 *.env
 
 .DS_Store
