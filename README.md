@@ -6,7 +6,7 @@ Customized women's wear boutique — ecommerce storefront, admin catalog, and CR
 |-------|-------|------|
 | Frontend | Next.js 15, React 19, TanStack Query, Zustand, Tailwind | [Vercel](https://vercel.com) |
 | Backend | Java 21, Spring Boot 3.4, Spring Security, JWT | AWS EC2 (`ap-south-1`) |
-| Database | PostgreSQL 16, Flyway, JPA | AWS RDS |
+| Database | PostgreSQL 17 + JPA | [Supabase](https://supabase.com/dashboard/project/nlntrftvzcwtrdenufoi) (primary); local Docker / legacy RDS + Flyway |
 | Media | S3 + CloudFront | AWS |
 | CI/CD | GitHub Actions (OIDC) → S3 → SSM deploy | This repo |
 
@@ -23,7 +23,7 @@ flowchart TB
   EC2[EC2 t3.small]
   NGINX[nginx :80]
   Spring[Spring Boot :8080]
-  RDS[(RDS PostgreSQL)]
+  Supa[(Supabase PostgreSQL)]
   S3[(S3 media bucket)]
   CF[CloudFront CDN]
   GHA[GitHub Actions]
@@ -34,7 +34,7 @@ flowchart TB
   GHA -->|OIDC + S3 + SSM| S3Deploy
   S3Deploy --> EC2
   NGINX --> Spring
-  Spring --> RDS
+  Spring --> Supa
   Spring --> S3
   User -->|product images| CF
   CF --> S3
@@ -59,13 +59,15 @@ gamya-boutique/
 │   ├── customer/ crm/ admin/    # Profile, leads, dashboard, media
 │   └── shared/                  # Security, exceptions, S3 storage
 ├── src/main/resources/
-│   ├── db/migration/            # Flyway V1–V20 (shipped to prod)
+│   ├── application-supabase.yml # Spring profile for hosted Supabase
+│   ├── db/migration/            # Flyway V1–V21 (local / legacy RDS)
 │   └── db/migration-dev/        # Local-only synthetic seed (V100)
+├── supabase/migrations/         # Canonical schema for Supabase project
 ├── deploy/                      # EC2 bootstrap, systemd, env templates, SSM scripts
 ├── scripts/                     # Smoke tests, env pairing, deploy helpers
 ├── docs/                        # Architecture, API, setup guides
 ├── docker-compose.yml           # Local PostgreSQL
-├── docker-compose.rds.yml       # Optional: app container → RDS
+├── docker-compose.rds.yml       # Optional: app container → legacy RDS
 └── .github/workflows/           # CI (validate) + deploy (main)
 ```
 
@@ -86,6 +88,8 @@ gamya-boutique/
 
 ### 1. Clone and start database
 
+**Option A — local Docker (Flyway):**
+
 ```bash
 git clone https://github.com/gvsharma/gamyaboutique.git
 cd gamya-boutique
@@ -94,10 +98,17 @@ docker compose up -d
 
 Creates PostgreSQL on `localhost:5432`, database `gamya_couture`, user `gamya` / `gamya_secret`.
 
+**Option B — Supabase (preferred hosted):** copy `.env.supabase.example` → `.env.supabase`, set `DB_PASSWORD` from the [Database settings](https://supabase.com/dashboard/project/nlntrftvzcwtrdenufoi/settings/database), then use profile `supabase` below.
+
 ### 2. Backend
 
 ```bash
+# Local Docker
 mvn spring-boot:run -Dspring-boot.run.profiles=local
+
+# Or Supabase
+set -a && source .env.supabase && set +a
+mvn spring-boot:run -Dspring-boot.run.profiles=supabase
 ```
 
 | URL | Purpose |
@@ -106,7 +117,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 | http://localhost:8080/swagger-ui.html | OpenAPI UI |
 | http://localhost:8080/actuator/health | Health check |
 
-**Default admin** (Flyway V8): `admin@gamyacouture.com` / `Admin@123`
+**Default admin** (seeded): `admin@gamyacouture.com` / `Admin@123`
 
 ### 3. Frontend
 
@@ -143,14 +154,15 @@ Full walkthrough: [docs/DEVELOPER-ONBOARDING.md](docs/DEVELOPER-ONBOARDING.md)
 |-----------|----------------|
 | **Frontend** | Vercel auto-deploy on push to `main`; root directory = `frontend` |
 | **Backend** | GitHub Actions `deploy.yml` on push to `main`: validate → build JAR → S3 → SSM → health + smoke |
-| **Database** | RDS managed by Terraform; Flyway runs on Spring Boot startup |
+| **Database** | Supabase (profile `supabase`, migrations under `supabase/`); legacy RDS + Flyway still supported |
 | **Images** | Admin upload → S3 `gamya-couture-dev-media` → CloudFront URLs in DB |
 
-Deploy workflow highlights (recent improvements):
+Deploy workflow highlights:
 
-- **RDS auto-start** — if RDS is stopped (cost scheduler), deploy starts it and waits before proceeding
+- **Supabase-safe env sync** — deploy skips RDS SSM overwrite when `DB_PROVIDER=supabase` / profile or URL targets Supabase
+- **RDS auto-start** — if still on legacy RDS and instance is stopped, deploy starts it and waits
 - **EC2 auto-start** — stopped instances are started; SSM ping waits extended after cold start
-- **Async SSM deploy** — short SSM kickoff runs `remote-deploy.sh` via `nohup`; workflow polls `deploy.status` instead of blocking on a long SSM timeout
+- **Async SSM deploy** — short SSM kickoff runs `remote-deploy.sh` via `nohup`; workflow polls `deploy.status`
 
 Details: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) · [docs/INFRA-SETUP.md](docs/INFRA-SETUP.md)
 
@@ -162,14 +174,15 @@ Details: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) · [docs/INFRA-SETUP.md](docs/
 
 | Variable | Local default | Production |
 |----------|---------------|------------|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/gamya_couture` | RDS JDBC URL |
-| `DB_USER` / `DB_PASSWORD` | `gamya` / `gamya_secret` | From SSM or `application.env` |
+| `DB_URL` | Docker `gamya_couture` or Supabase JDBC | Supabase JDBC (`sslmode=require`) |
+| `DB_USER` / `DB_PASSWORD` | `gamya` / `gamya_secret` | `postgres` + Dashboard/SSM |
+| `DB_PROVIDER` | — | `supabase` (or `rds` legacy) |
 | `JWT_SECRET` | dev placeholder | Strong random (≥256 bits) |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | Vercel URL + localhost |
 | `APP_STORAGE_S3_*` | disabled locally | Enabled on EC2 |
-| `SPRING_PROFILES_ACTIVE` | `local` | `dev` (EC2) |
+| `SPRING_PROFILES_ACTIVE` | `local` | `supabase` (EC2 preferred) |
 
-Template: [deploy/env/application.env.example](deploy/env/application.env.example)
+Templates: [deploy/env/application.supabase.env.example](deploy/env/application.supabase.env.example) · [`.env.supabase.example`](.env.supabase.example)
 
 ### Frontend
 

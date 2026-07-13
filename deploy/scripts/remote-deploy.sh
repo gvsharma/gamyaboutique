@@ -43,10 +43,29 @@ is_healthy() {
   curl -sf "${HEALTH_FALLBACK_URL}" 2>/dev/null | grep -q '"status":"UP"'
 }
 
+read_env_value() {
+  local env_file="$1"
+  local key="$2"
+  grep -E "^${key}=" "${env_file}" 2>/dev/null | tail -n1 | cut -d= -f2- || true
+}
+
+is_supabase_target() {
+  local env_file="$1"
+  local provider profile db_url
+  provider="$(read_env_value "${env_file}" DB_PROVIDER)"
+  profile="$(read_env_value "${env_file}" SPRING_PROFILES_ACTIVE)"
+  db_url="$(read_env_value "${env_file}" DB_URL)"
+  [[ "${provider}" == "supabase" ]] && return 0
+  [[ "${profile}" == *supabase* ]] && return 0
+  [[ "${db_url}" == *supabase.co* ]] && return 0
+  return 1
+}
+
 sync_db_password_from_ssm() {
   local env_file="${APP_PATH}/config/application.env"
   local region="${AWS_REGION:-ap-south-1}"
   local password_path="${SSM_DB_PASSWORD_PATH:-/gamya-couture/dev/db/password}"
+  local supabase_password_path="${SSM_SUPABASE_DB_PASSWORD_PATH:-/gamya-couture/dev/supabase/db/password}"
   if [[ ! -f "${env_file}" ]]; then
     log "WARN: ${env_file} missing — skip SSM DB password sync"
     return 0
@@ -55,6 +74,12 @@ sync_db_password_from_ssm() {
     log "WARN: aws CLI not found — skip SSM DB password sync"
     return 0
   fi
+
+  if is_supabase_target "${env_file}"; then
+    password_path="${supabase_password_path}"
+    log "Supabase target detected — using SSM path ${password_path} (not RDS)"
+  fi
+
   local pwd
   pwd="$(aws ssm get-parameter \
     --name "${password_path}" \
@@ -63,7 +88,11 @@ sync_db_password_from_ssm() {
     --query 'Parameter.Value' \
     --output text 2>/dev/null || true)"
   if [[ -z "${pwd}" || "${pwd}" == "None" ]]; then
-    log "WARN: Could not read ${password_path} from SSM"
+    if is_supabase_target "${env_file}"; then
+      log "WARN: Could not read ${password_path} — leaving existing Supabase DB_PASSWORD unchanged"
+    else
+      log "WARN: Could not read ${password_path} from SSM"
+    fi
     return 0
   fi
   if grep -q '^DB_PASSWORD=' "${env_file}"; then

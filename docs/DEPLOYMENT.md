@@ -140,35 +140,43 @@ Keep last 5 backups (`KEEP_BACKUPS=5`).
 
 ---
 
-## Database — RDS PostgreSQL
+## Database — Supabase (preferred) / RDS (legacy)
 
-### Connection
+### Supabase (preferred)
+
+- Project: [nlntrftvzcwtrdenufoi](https://supabase.com/dashboard/project/nlntrftvzcwtrdenufoi)
+- Profile: `SPRING_PROFILES_ACTIVE=supabase` and `DB_PROVIDER=supabase`
+- Schema: `supabase/migrations/` (Flyway **disabled** on this profile)
+- Credentials: Dashboard Database password; optional SSM `/gamya-couture/dev/supabase/db/password`
+- Deploy: `sync-rds-env-from-ssm.sh` / `remote-deploy.sh` **skip RDS overwrite** when Supabase is detected
+
+EC2 `application.env` template: [deploy/env/application.supabase.env.example](../deploy/env/application.supabase.env.example)
+
+### Legacy RDS
 
 - Database name: `gamya` (RDS) vs `gamya_couture` (local Docker)
 - Access: EC2 security group → RDS port 5432 only
-- Credentials: SSM `/gamya-couture/dev/db/password` (synced in deploy)
+- Credentials: SSM `/gamya-couture/dev/db/password` (synced in deploy when `DB_PROVIDER=rds`)
 
 ### Migration steps
 
-Flyway runs **automatically** on Spring Boot startup.
+| Target | How schema changes |
+|--------|--------------------|
+| Supabase | Add SQL under `supabase/migrations/` (or MCP `apply_migration`); restart app (no Flyway) |
+| RDS / local | Flyway on Spring Boot startup from `db/migration/` |
 
-| Step | Action |
-|------|--------|
-| 1 | Snapshot RDS before major release |
-| 2 | Deploy new JAR (includes new migration files) |
-| 3 | Watch logs for `Successfully applied migration Vxx` |
-| 4 | Verify: `SELECT version FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 5;` |
+RDS Flyway verify:
 
-**Order:** V1 → V12 (see [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md))
-
-**Dev-only seed:** `migration-dev/V13__dev_synthetic_seed.sql` — only with `SPRING_PROFILES_ACTIVE=dev`.
+```sql
+SELECT version FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 5;
+```
 
 ### Rollback strategy
 
 | Approach | When |
 |----------|------|
-| RDS snapshot restore | Schema corruption, failed migration |
-| Forward-fix migration V13+ | Data fix, additive changes |
+| Supabase PITR / SQL forward-fix | Hosted Supabase |
+| RDS snapshot restore | Legacy RDS corruption |
 | **Never** delete Flyway history rows manually | — |
 
 ---
@@ -189,18 +197,22 @@ EC2 IAM role: `s3:PutObject`, `s3:GetObject` on media bucket.
 Public image URLs via `APP_STORAGE_S3_PUBLIC_BASE_URL`.  
 Frontend: `NEXT_PUBLIC_IMAGE_CDN_HOST`.
 
-### RDS
+### Database hosts
 
-PostgreSQL 16, private subnet, backups ≥ 7 days recommended.
+| Host | Notes |
+|------|-------|
+| Supabase Postgres 17 | Preferred; region `ap-southeast-2` |
+| RDS PostgreSQL 16 | Legacy; private subnet, backups ≥ 7 days |
 
 ### Secrets (SSM Parameter Store)
 
 | Parameter | Purpose |
 |-----------|---------|
-| `/gamya-couture/dev/db/password` | RDS password |
+| `/gamya-couture/dev/supabase/db/password` | Supabase DB password (optional; preferred) |
+| `/gamya-couture/dev/db/password` | Legacy RDS password |
 | (recommended) `/gamya-couture/prod/jwt/secret` | JWT signing key |
 
-**Never commit real secrets** — use `deploy/env/application.env.example` as template only.
+**Never commit real secrets** — use `deploy/env/application.supabase.env.example` as template only.
 
 ---
 
@@ -209,11 +221,12 @@ PostgreSQL 16, private subnet, backups ≥ 7 days recommended.
 ### EC2 `application.env`
 
 ```bash
-SPRING_PROFILES_ACTIVE=dev   # use prod profile when created
+DB_PROVIDER=supabase
+SPRING_PROFILES_ACTIVE=supabase
 SERVER_PORT=8080
-DB_URL=jdbc:postgresql://<rds-endpoint>:5432/gamya
-DB_USER=gamya_admin
-DB_PASSWORD=<from SSM>
+DB_URL=jdbc:postgresql://db.nlntrftvzcwtrdenufoi.supabase.co:5432/postgres?sslmode=require
+DB_USER=postgres
+DB_PASSWORD=<from Supabase dashboard or SSM supabase path>
 JWT_SECRET=<strong random>
 CORS_ALLOWED_ORIGINS=https://gamyaboutique.vercel.app,http://localhost:3000
 APP_STORAGE_S3_ENABLED=true
