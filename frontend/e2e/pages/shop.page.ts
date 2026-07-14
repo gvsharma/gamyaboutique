@@ -17,6 +17,8 @@ export class ShopPage {
 
   async addFirstProductToBag() {
     await this.openFirstProduct();
-    await this.page.getByRole("button", { name: /add to bag/i }).first().click();
+    const addButton = this.page.getByRole("button", { name: /add to bag/i }).first();
+    await expect(addButton).toBeVisible({ timeout: 15_000 });
+    await addButton.click();
   }
 }
