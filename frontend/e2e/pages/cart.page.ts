@@ -5,9 +5,14 @@ export class CartPage {
 
   async goto() {
     await this.page.goto("/cart");
+    await expect(this.page).toHaveURL(/\/cart/);
   }
 
   async expectVisible() {
-    await expect(this.page.getByText(/your bag|cart/i)).toBeVisible({ timeout: 15_000 });
+    // Use the cart page heading — avoid matching the off-canvas drawer "Your bag"
+    // or nav "Cart" links (those create flaky/strict locator failures).
+    await expect(
+      this.page.getByRole("heading", { name: /shopping cart/i }),
+    ).toBeVisible({ timeout: 15_000 });
   }
 }
