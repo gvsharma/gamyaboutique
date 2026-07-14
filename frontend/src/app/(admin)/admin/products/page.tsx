@@ -1,13 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CatalogImage } from "@/components/ui/catalog-image";
 import { ROUTES } from "@/constants/routes";
 import { fetchAdminProducts, updateProductStatus } from "@/lib/api/services/admin.service";
 import type { ProductStatus } from "@/types/admin";
+import {
+  normalizeProductImage,
+  productPlaceholderImage,
+} from "@/lib/category-images";
 import { formatPrice } from "@/lib/utils";
 
 export default function AdminProductsPage() {
@@ -100,19 +104,22 @@ export default function AdminProductsPage() {
               <tr key={product.id} className="border-b border-charcoal/5 last:border-0">
                 <td className="px-5 py-3.5">
                   <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-ivory">
-                    {product.primaryImageUrl ? (
-                      <Image
-                        src={product.primaryImageUrl}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <span className="flex h-full items-center justify-center text-[10px] text-stone">
-                        No img
-                      </span>
-                    )}
+                    <CatalogImage
+                      src={normalizeProductImage(
+                        product.primaryImageUrl,
+                        product.primaryCategorySlug,
+                        product.name,
+                      )}
+                      fallbackSrc={productPlaceholderImage(
+                        product.primaryCategorySlug,
+                        product.name,
+                      )}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                      unoptimized
+                    />
                   </div>
                 </td>
                 <td className="px-5 py-3.5 font-mono text-xs text-stone">{product.sku}</td>

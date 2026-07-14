@@ -152,8 +152,15 @@
   }
 
   .admin-input {
-    @apply mt-1 w-full rounded-xl border border-charcoal bg-pearl px-3 py-2.5 text-sm outline-none transition-all duration-300 focus:border-maroon focus:ring-2 focus:ring-maroon;
+    @apply relative z-[1] mt-1 w-full rounded-xl border border-charcoal bg-pearl px-3 py-2.5 text-sm outline-none transition-all duration-300 focus:border-maroon focus:ring-2 focus:ring-maroon;
     --tw-border-opacity: 0.1;
+  }
+
+  select.admin-input {
+    appearance: auto;
+    -webkit-appearance: menulist;
+    background-image: none;
+    cursor: pointer;
   }
 
   .admin-input:focus {

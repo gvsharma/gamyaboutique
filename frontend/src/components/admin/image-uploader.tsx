@@ -1,9 +1,13 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Upload, X } from "lucide-react";
-import Image from "next/image";
 import { useState } from "react";
+import { CatalogImage } from "@/components/ui/catalog-image";
 import { uploadProductImage } from "@/lib/api/services/admin.service";
+import {
+  normalizeProductImage,
+  productPlaceholderImage,
+} from "@/lib/category-images";
 import type { ProductImageInput } from "@/types/admin";
 
 interface ImageUploaderProps {
@@ -63,7 +67,15 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
             key={`${image.url}-${index}`}
             className="relative h-24 w-24 overflow-hidden rounded-xl border border-charcoal/10 bg-pearl"
           >
-            <Image src={image.url} alt={image.altText ?? "Product"} fill className="object-cover" unoptimized />
+            <CatalogImage
+              src={normalizeProductImage(image.url, null, productName ?? image.altText)}
+              fallbackSrc={productPlaceholderImage(null, productName ?? image.altText)}
+              alt={image.altText ?? "Product"}
+              fill
+              className="object-cover"
+              sizes="96px"
+              unoptimized
+            />
             <div className="absolute left-1 top-1 flex flex-col gap-0.5">
               <button
                 type="button"

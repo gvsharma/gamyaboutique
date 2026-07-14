@@ -73,13 +73,37 @@ export function ProductForm({ product }: ProductFormProps) {
   const [videoUrl, setVideoUrl] = useState<string | null>(product?.videoUrl ?? null);
 
   useEffect(() => {
-    Promise.all([fetchAdminCategories(), fetchFabrics(), fetchPrints()])
-      .then(([cats, f, p]) => {
-        setCategories(cats);
-        setFabrics(f);
-        setPrints(p);
-      })
-      .catch(() => setError("Failed to load form options from API."));
+    let cancelled = false;
+    (async () => {
+      const [catsResult, fabricsResult, printsResult] = await Promise.allSettled([
+        fetchAdminCategories(),
+        fetchFabrics(),
+        fetchPrints(),
+      ]);
+      if (cancelled) return;
+      const failures: string[] = [];
+      if (catsResult.status === "fulfilled") {
+        setCategories(catsResult.value);
+      } else {
+        failures.push("categories");
+      }
+      if (fabricsResult.status === "fulfilled") {
+        setFabrics(fabricsResult.value);
+      } else {
+        failures.push("fabrics");
+      }
+      if (printsResult.status === "fulfilled") {
+        setPrints(printsResult.value);
+      } else {
+        failures.push("prints");
+      }
+      if (failures.length > 0) {
+        setError(`Failed to load form options: ${failures.join(", ")}. Try refreshing.`);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const assignableCategories = useMemo(
