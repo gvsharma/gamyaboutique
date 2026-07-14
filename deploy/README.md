@@ -113,10 +113,10 @@ See [docs/BACKEND-SETUP.md](../docs/BACKEND-SETUP.md) and [docs/AWS-DEV-SETUP.md
 
 ### 4. Verify nginx → Spring Boot
 
-Terraform user-data installs nginx proxying `:80` → `127.0.0.1:8080`. After first deploy:
+Terraform user-data may still mention `:8080`; runtime uses `SERVER_PORT=8087` with nginx proxying `:80` → `127.0.0.1:8087`. After first deploy:
 
 ```bash
-curl -s http://127.0.0.1:8080/actuator/health
+curl -s http://127.0.0.1:8087/actuator/health
 curl -s http://13.232.200.243/actuator/health
 curl -s http://13.232.200.243/api/v1/products?page=0&size=1
 ```
