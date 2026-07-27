@@ -17,8 +17,13 @@ export class ShopPage {
 
   async addFirstProductToBag() {
     await this.openFirstProduct();
+    const sizeButton = this.page.getByRole("button", { name: /^M$/i }).first();
+    if (await sizeButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await sizeButton.click();
+    }
     const addButton = this.page.getByRole("button", { name: /add to bag/i }).first();
     await expect(addButton).toBeVisible({ timeout: 15_000 });
+    await expect(addButton).toBeEnabled({ timeout: 5_000 });
     await addButton.click();
   }
 }
