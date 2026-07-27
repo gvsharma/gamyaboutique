@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CatalogImage } from "@/components/ui/catalog-image";
+import { useToast } from "@/components/ui/toast";
 import { ROUTES } from "@/constants/routes";
 import { fetchAdminProducts, updateProductStatus } from "@/lib/api/services/admin.service";
 import type { ProductStatus } from "@/types/admin";
@@ -15,6 +16,7 @@ import {
 import { formatPrice } from "@/lib/utils";
 
 export default function AdminProductsPage() {
+  const { toast } = useToast();
   const [status, setStatus] = useState<ProductStatus | "">("");
   const [search, setSearch] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
@@ -35,9 +37,11 @@ export default function AdminProductsPage() {
     setActionError(null);
     try {
       await updateProductStatus(id, "ARCHIVED");
+      toast("Product archived");
       await refetch();
     } catch {
       setActionError("Failed to archive product.");
+      toast("Failed to archive product", "error");
     }
   };
 
@@ -45,9 +49,11 @@ export default function AdminProductsPage() {
     setActionError(null);
     try {
       await updateProductStatus(id, "ACTIVE");
+      toast("Product published");
       await refetch();
     } catch {
       setActionError("Failed to publish product.");
+      toast("Failed to publish product", "error");
     }
   };
 

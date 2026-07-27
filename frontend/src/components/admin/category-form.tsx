@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CoverImageUploader } from "@/components/admin/cover-image-uploader";
 import {
   ALLOWED_ROOT_SLUGS,
   GIRLS_CHILD_SLUGS,
+  slugToDisplayName,
   WOMEN_CHILD_SLUGS,
 } from "@/constants/category-taxonomy";
-import { createCategory } from "@/lib/api/services/admin.service";
+import { createCategory, uploadCategoryImage } from "@/lib/api/services/admin.service";
 import type { AdminCategory, UpsertCategoryPayload } from "@/types/admin";
 
 const inputClass = "admin-input";
@@ -32,6 +34,7 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [displayOrder, setDisplayOrder] = useState("0");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +70,7 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
       parentId,
       displayOrder: Number(displayOrder),
       active: true,
+      imageUrl: imageUrl || undefined,
     };
     try {
       await createCategory(payload);
@@ -75,6 +79,7 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
       setParentId("");
       setChildSlug("");
       setDisplayOrder("0");
+      setImageUrl(null);
       onCreated();
     } catch {
       setError("Failed to create category. Only Women and Girls types are allowed.");
@@ -115,7 +120,13 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
           <select
             className={inputClass}
             value={childSlug}
-            onChange={(e) => setChildSlug(e.target.value)}
+            onChange={(e) => {
+              const nextSlug = e.target.value;
+              setChildSlug(nextSlug);
+              if (nextSlug && !name.trim()) {
+                setName(slugToDisplayName(nextSlug));
+              }
+            }}
             required
             disabled={!parentId}
           >
@@ -148,6 +159,18 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
         <div className="sm:col-span-2">
           <label className={labelClass}>Description</label>
           <input className={inputClass} value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        <div className="sm:col-span-2">
+          <label className={labelClass}>Cover image</label>
+          <div className="mt-2">
+            <CoverImageUploader
+              imageUrl={imageUrl}
+              onChange={setImageUrl}
+              upload={uploadCategoryImage}
+              slug={childSlug || undefined}
+              alt={name || "Category cover"}
+            />
+          </div>
         </div>
       </div>
       {error && <p className="text-sm text-maroon">{error}</p>}

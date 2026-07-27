@@ -30,6 +30,7 @@ export const ROUTES = {
     users: "/admin/users",
     userDetail: (id: string) => `/admin/users/${id}`,
     customers: "/admin/customers",
+    customerDetail: (id: string) => `/admin/customers/${id}`,
     carts: "/admin/carts",
     cartDetail: (id: string) => `/admin/carts/${id}`,
     wishlists: "/admin/wishlists",

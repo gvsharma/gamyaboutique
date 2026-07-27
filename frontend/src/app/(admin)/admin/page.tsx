@@ -23,7 +23,7 @@ export default function AdminDashboardPage() {
     { label: "Active products", value: data.activeProducts, href: ROUTES.admin.products },
     { label: "Active categories", value: data.activeCategories, href: ROUTES.admin.categories },
     { label: "Open leads", value: data.openLeads, href: ROUTES.admin.leads },
-    { label: "Recent interests (7d)", value: data.recentInterests, href: ROUTES.admin.interests },
+    { label: "Recent interests (7d)", value: data.recentInterests, href: `${ROUTES.admin.interests}?status=NEW` },
   ];
 
   return (
@@ -52,6 +52,11 @@ export default function AdminDashboardPage() {
       <div className="admin-card">
         <p className="font-medium text-charcoal">Quick actions</p>
         <ul className="mt-4 space-y-2 text-sm text-stone">
+          <li>
+            <Link href={`${ROUTES.admin.interests}?status=NEW`} className="link-subtle text-maroon">
+              Review new interests
+            </Link>
+          </li>
           <li>
             <Link href={ROUTES.admin.productNew} className="link-subtle text-maroon">
               Add a new product with images

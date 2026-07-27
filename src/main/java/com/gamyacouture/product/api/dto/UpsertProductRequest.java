@@ -26,6 +26,8 @@ public record UpsertProductRequest(
         @Valid List<ProductImageInput> images,
         String videoUrl,
         Integer stockQuantity,
-        Integer lowStockThreshold
+        Integer lowStockThreshold,
+        List<@Size(max = 10) String> availableSizes,
+        @Valid List<ProductColorDto> availableColors
 ) {
 }

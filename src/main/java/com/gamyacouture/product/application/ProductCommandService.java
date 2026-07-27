@@ -11,6 +11,7 @@ import com.gamyacouture.product.api.dto.ProductDetailDto;
 import com.gamyacouture.product.api.dto.ProductImageInput;
 import com.gamyacouture.product.api.dto.UpsertProductRequest;
 import com.gamyacouture.product.config.ProductCacheNames;
+import com.gamyacouture.product.application.ProductOptionsCodec;
 import com.gamyacouture.product.domain.Product;
 import com.gamyacouture.product.domain.ProductCategoryLink;
 import com.gamyacouture.product.domain.ProductImage;
@@ -108,6 +109,8 @@ public class ProductCommandService {
         product.setPrimaryCategory(resolveCategory(request.primaryCategoryId()));
         product.setStockQuantity(request.stockQuantity());
         product.setLowStockThreshold(request.lowStockThreshold() != null ? request.lowStockThreshold() : 5);
+        product.setAvailableSizes(ProductOptionsCodec.encodeSizes(request.availableSizes()));
+        product.setAvailableColors(ProductOptionsCodec.encodeColors(request.availableColors()));
         applyImages(product, request.images());
         applyVideoUrl(product, request.videoUrl());
     }
