@@ -11,6 +11,7 @@ import { QuantitySelector } from "@/components/product/quantity-selector";
 import { RelatedProducts } from "@/components/product/related-products";
 import { ShareProduct } from "@/components/product/share-product";
 import { PRODUCT_SIZES, SizeChartModal } from "@/components/product/size-chart-modal";
+import { InterestForm } from "@/components/interest/interest-form";
 import { ROUTES } from "@/constants/routes";
 import { CONTACT } from "@/constants/site";
 import { useWishlistActions } from "@/hooks/use-wishlist";
@@ -30,7 +31,14 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
   const [shareUrl, setShareUrl] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
+
+  const sizeOptions =
+    product.availableSizes && product.availableSizes.length > 0
+      ? product.availableSizes
+      : [...PRODUCT_SIZES];
+  const colorOptions = product.availableColors ?? [];
 
   useEffect(() => {
     setShareUrl(window.location.href);
@@ -42,7 +50,11 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
   }, [product.id, queryClient]);
 
   const addCartMutation = useMutation({
-    mutationFn: () => addToCart(product.id, quantity),
+    mutationFn: () =>
+      addToCart(product.id, quantity, {
+        selectedSize,
+        selectedColor,
+      }),
     onSuccess: () => {
       setAdded(true);
       queryClient.invalidateQueries({ queryKey: queryKeys.cart });
@@ -51,6 +63,7 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
   });
 
   const handleAddToCart = () => {
+    if (sizeOptions.length > 0 && !selectedSize) return;
     addCartMutation.mutate();
   };
 
@@ -153,7 +166,7 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {PRODUCT_SIZES.map((size) => (
+                {sizeOptions.map((size) => (
                   <button
                     key={size}
                     type="button"
@@ -171,9 +184,37 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
                 ))}
               </div>
               {!selectedSize && (
-                <p className="text-xs text-stone/70">Select a size for the best fit reference</p>
+                <p className="text-xs text-maroon/80">Select a size to add to bag</p>
               )}
             </div>
+
+            {colorOptions.length > 0 && (
+              <div className="mt-6 space-y-3">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-stone">Color</p>
+                <div className="flex flex-wrap gap-2">
+                  {colorOptions.map((color) => (
+                    <button
+                      key={color.name}
+                      type="button"
+                      onClick={() => setSelectedColor(color.name)}
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all",
+                        selectedColor === color.name
+                          ? "border-maroon bg-maroon text-pearl"
+                          : "border-charcoal/12 bg-pearl text-charcoal hover:border-maroon/30",
+                      )}
+                      aria-pressed={selectedColor === color.name}
+                    >
+                      <span
+                        className="h-3.5 w-3.5 rounded-full border border-charcoal/10"
+                        style={{ backgroundColor: color.hex ?? "#ccc" }}
+                      />
+                      {color.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-8">
               <QuantitySelector value={quantity} onChange={setQuantity} />
@@ -185,7 +226,7 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
                 size="lg"
                 className="flex-1 sm:min-w-[12rem]"
                 onClick={handleAddToCart}
-                disabled={addCartMutation.isPending}
+                disabled={addCartMutation.isPending || (sizeOptions.length > 0 && !selectedSize)}
               >
                 <ShoppingBag className="h-4 w-4" />
                 {addToCartLabel}
@@ -235,6 +276,13 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
                 ))}
               </div>
             )}
+
+            <InterestForm
+              productId={product.id}
+              productName={product.name}
+              selectedSize={selectedSize}
+              selectedColor={selectedColor}
+            />
           </div>
         </div>
 
@@ -276,7 +324,7 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
               className="min-w-[7.5rem] flex-1 sm:flex-none"
               size="lg"
               onClick={handleAddToCart}
-              disabled={addCartMutation.isPending}
+              disabled={addCartMutation.isPending || (sizeOptions.length > 0 && !selectedSize)}
             >
               {added ? "Added" : "Add to bag"}
             </Button>

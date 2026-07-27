@@ -18,6 +18,7 @@ import type {
   CustomerInterest,
   CustomerInterestStatus,
   DashboardSummary,
+  LeadStatus,
   MediaUploadResponse,
   ProductDetail,
   ProductStatus,
@@ -25,6 +26,7 @@ import type {
   TaxonomyOption,
   UpsertCategoryPayload,
   UpsertFabricPayload,
+  UpsertLeadPayload,
   UpsertOfferPayload,
   UpsertPrintPayload,
   UpsertProductPayload,
@@ -82,12 +84,20 @@ export async function deleteProduct(id: string): Promise<void> {
   await apiClient.delete(API.adminProduct(id));
 }
 
-export async function uploadProductImage(file: File): Promise<MediaUploadResponse> {
+async function uploadMediaImage(file: File, folder: string): Promise<MediaUploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("folder", "products");
+  formData.append("folder", folder);
   const res = await apiClient.post<ApiResponse<MediaUploadResponse>>(API.adminMediaUpload, formData);
   return unwrap(res);
+}
+
+export async function uploadProductImage(file: File): Promise<MediaUploadResponse> {
+  return uploadMediaImage(file, "products");
+}
+
+export async function uploadCategoryImage(file: File): Promise<MediaUploadResponse> {
+  return uploadMediaImage(file, "categories");
 }
 
 export async function uploadProductVideo(file: File): Promise<MediaUploadResponse> {
@@ -225,6 +235,24 @@ export async function fetchCrmLeads(params?: {
 }): Promise<PageResponse<CrmLead>> {
   const res = await apiClient.get<ApiResponse<PageResponse<CrmLead>>>(API.crmLeads, { params });
   return unwrap(res);
+}
+
+export async function createCrmLead(payload: UpsertLeadPayload): Promise<CrmLead> {
+  const res = await apiClient.post<ApiResponse<CrmLead>>(API.crmLeads, payload);
+  return unwrap(res);
+}
+
+export async function updateCrmLeadStatus(
+  id: string,
+  status: LeadStatus,
+  notes?: string,
+): Promise<CrmLead> {
+  const res = await apiClient.patch<ApiResponse<CrmLead>>(API.crmLeadStatus(id), { status, notes });
+  return unwrap(res);
+}
+
+export async function deleteCrmLead(id: string): Promise<void> {
+  await apiClient.delete(API.crmLead(id));
 }
 
 export async function fetchAdminFabrics(): Promise<AdminFabric[]> {

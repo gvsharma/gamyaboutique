@@ -1,9 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { AdminDrawer } from "@/components/ui/admin-drawer";
 import { Button } from "@/components/ui/button";
-import { fetchCrmLeads } from "@/lib/api/services/admin.service";
+import { useToast } from "@/components/ui/toast";
+import {
+  createCrmLead,
+  deleteCrmLead,
+  fetchCrmLeads,
+  updateCrmLeadStatus,
+} from "@/lib/api/services/admin.service";
+import type { CrmLead, LeadSource, LeadStatus, UpsertLeadPayload } from "@/types/admin";
+
+const STATUSES: LeadStatus[] = ["NEW", "CONTACTED", "QUALIFIED", "LOST", "WON"];
+const SOURCES: LeadSource[] = ["WEBSITE", "CUSTOMER_INTEREST", "REFERRAL", "WALK_IN", "OTHER"];
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString();
@@ -11,18 +22,66 @@ function formatDate(iso: string) {
 
 export default function AdminLeadsPage() {
   const [page, setPage] = useState(0);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState<UpsertLeadPayload>({
+    name: "",
+    email: "",
+    phone: "",
+    source: "WEBSITE",
+    notes: "",
+  });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admin", "leads", page],
     queryFn: () => fetchCrmLeads({ page, size: 20 }),
   });
 
+  const createMutation = useMutation({
+    mutationFn: createCrmLead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "leads"] });
+      toast("Lead created");
+      setCreateOpen(false);
+      setForm({ name: "", email: "", phone: "", source: "WEBSITE", notes: "" });
+    },
+    onError: () => toast("Failed to create lead", "error"),
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: LeadStatus }) =>
+      updateCrmLeadStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "leads"] });
+      toast("Lead updated");
+    },
+    onError: () => toast("Failed to update lead", "error"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteCrmLead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "leads"] });
+      toast("Lead deleted");
+    },
+    onError: () => toast("Failed to delete lead", "error"),
+  });
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(form);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-eyebrow">CRM</p>
-        <h1 className="mt-2 font-display text-section-title text-charcoal">Leads</h1>
-        <p className="mt-1 text-sm text-stone">CRM leads from /api/v1/crm/leads</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-eyebrow">CRM</p>
+          <h1 className="mt-2 font-display text-section-title text-charcoal">Leads</h1>
+          <p className="mt-1 text-sm text-stone">Manage sales leads and follow-ups</p>
+        </div>
+        <Button onClick={() => setCreateOpen(true)}>Add lead</Button>
       </div>
 
       {isLoading && <p className="text-sm text-stone">Loading leads…</p>}
@@ -38,10 +97,11 @@ export default function AdminLeadsPage() {
               <th className="px-5 py-3.5">Source</th>
               <th className="px-5 py-3.5">Status</th>
               <th className="px-5 py-3.5">Created</th>
+              <th className="px-5 py-3.5">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {data?.content.map((lead) => (
+            {data?.content.map((lead: CrmLead) => (
               <tr key={lead.id} className="border-b border-charcoal/5 last:border-0">
                 <td className="px-5 py-3.5 text-charcoal">{lead.name}</td>
                 <td className="px-5 py-3.5 text-stone">{lead.email ?? "—"}</td>
@@ -50,16 +110,36 @@ export default function AdminLeadsPage() {
                   <span className="chip">{lead.source}</span>
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className="chip">{lead.status}</span>
+                  <select
+                    className="admin-input !mt-0 !py-1 text-xs"
+                    value={lead.status}
+                    onChange={(e) =>
+                      statusMutation.mutate({ id: lead.id, status: e.target.value as LeadStatus })
+                    }
+                  >
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className="px-5 py-3.5 text-stone">{formatDate(lead.createdAt)}</td>
+                <td className="px-5 py-3.5">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      if (confirm("Delete this lead?")) deleteMutation.mutate(lead.id);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {!isLoading && data?.content.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-stone">No leads found.</p>
-        )}
       </div>
 
       {data && data.totalPages > 1 && (
@@ -72,6 +152,63 @@ export default function AdminLeadsPage() {
           </Button>
         </div>
       )}
+
+      <AdminDrawer open={createOpen} title="New lead" onClose={() => setCreateOpen(false)}>
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="text-eyebrow text-stone">Name</label>
+            <input
+              className="admin-input"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <label className="text-eyebrow text-stone">Email</label>
+            <input
+              className="admin-input"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <label className="text-eyebrow text-stone">Phone</label>
+            <input
+              className="admin-input"
+              value={form.phone ?? ""}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-eyebrow text-stone">Source</label>
+            <select
+              className="admin-input"
+              value={form.source ?? "WEBSITE"}
+              onChange={(e) => setForm({ ...form, source: e.target.value as LeadSource })}
+            >
+              {SOURCES.map((s) => (
+                <option key={s} value={s}>
+                  {s.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-eyebrow text-stone">Notes</label>
+            <textarea
+              className="admin-input min-h-20"
+              value={form.notes ?? ""}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
+          </div>
+          <Button type="submit" disabled={createMutation.isPending}>
+            {createMutation.isPending ? "Creating…" : "Create lead"}
+          </Button>
+        </form>
+      </AdminDrawer>
     </div>
   );
 }

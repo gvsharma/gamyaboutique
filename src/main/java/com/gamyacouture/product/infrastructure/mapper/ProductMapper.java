@@ -13,6 +13,7 @@ import com.gamyacouture.product.api.dto.ProductDetailDto;
 import com.gamyacouture.product.api.dto.ProductImageDto;
 import com.gamyacouture.product.api.dto.ProductSummaryDto;
 import com.gamyacouture.product.api.dto.TagDto;
+import com.gamyacouture.product.application.ProductOptionsCodec;
 import com.gamyacouture.product.application.ProductPricingCalculator;
 import com.gamyacouture.product.domain.Product;
 import com.gamyacouture.product.domain.ProductImage;
@@ -54,6 +55,8 @@ public interface ProductMapper {
     @Mapping(target = "stockQuantity", source = "product.stockQuantity")
     @Mapping(target = "lowStockThreshold", source = "product.lowStockThreshold")
     @Mapping(target = "lowStock", expression = "java(isLowStock(product))")
+    @Mapping(target = "availableSizes", expression = "java(decodeSizes(product))")
+    @Mapping(target = "availableColors", expression = "java(decodeColors(product))")
     ProductDetailDto toDetail(Product product, List<CategorySummaryDto> categories);
 
     default List<TagDto> mapTags(Set<Tag> tags) {
@@ -89,5 +92,13 @@ public interface ProductMapper {
         }
         int threshold = product.getLowStockThreshold() != null ? product.getLowStockThreshold() : 5;
         return product.getStockQuantity() <= threshold;
+    }
+
+    default List<String> decodeSizes(Product product) {
+        return ProductOptionsCodec.decodeSizes(product.getAvailableSizes());
+    }
+
+    default List<com.gamyacouture.product.api.dto.ProductColorDto> decodeColors(Product product) {
+        return ProductOptionsCodec.decodeColors(product.getAvailableColors());
     }
 }

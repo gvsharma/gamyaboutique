@@ -27,6 +27,8 @@ public record ProductDetailDto(
         String videoUrl,
         Integer stockQuantity,
         Integer lowStockThreshold,
-        boolean lowStock
+        boolean lowStock,
+        List<String> availableSizes,
+        List<ProductColorDto> availableColors
 ) {
 }

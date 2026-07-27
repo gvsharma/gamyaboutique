@@ -1,4 +1,4 @@
-import type { CategorySummaryDto, ProductDetail, ProductSummary } from "@/types/product";
+import type { CategorySummaryDto, ProductColor, ProductDetail, ProductSummary } from "@/types/product";
 
 export type ProductStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
 
@@ -38,6 +38,7 @@ export interface AdminCategory extends CategorySummaryDto {
   description: string | null;
   displayOrder: number;
   parentId: string | null;
+  imageUrl?: string | null;
 }
 
 export interface ProductImageInput {
@@ -62,6 +63,8 @@ export interface UpsertProductPayload {
   videoUrl?: string | null;
   stockQuantity?: number | null;
   lowStockThreshold?: number | null;
+  availableSizes?: string[];
+  availableColors?: ProductColor[];
 }
 
 export interface UpsertCategoryPayload {
@@ -71,6 +74,17 @@ export interface UpsertCategoryPayload {
   parentId?: string | null;
   displayOrder?: number;
   active?: boolean;
+  imageUrl?: string | null;
+}
+
+export interface UpsertLeadPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  source?: LeadSource;
+  notes?: string;
+  productId?: string | null;
+  customerId?: string | null;
 }
 
 export interface MediaUploadResponse {

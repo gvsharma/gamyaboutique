@@ -3,15 +3,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { AdminDrawer } from "@/components/ui/admin-drawer";
+import { useToast } from "@/components/ui/toast";
+import { CatalogImage } from "@/components/ui/catalog-image";
 import { CategoryForm } from "@/components/admin/category-form";
+import { CoverImageUploader } from "@/components/admin/cover-image-uploader";
 import { adminVisibleCategories } from "@/constants/category-taxonomy";
-import { deleteCategory, fetchAdminCategories, updateCategory } from "@/lib/api/services/admin.service";
+import {
+  deleteCategory,
+  fetchAdminCategories,
+  updateCategory,
+  uploadCategoryImage,
+} from "@/lib/api/services/admin.service";
+import { categoryCoverImage } from "@/lib/category-images";
 import type { AdminCategory, UpsertCategoryPayload } from "@/types/admin";
 
 const inputClass = "admin-input";
 const labelClass = "text-eyebrow text-stone";
 
 export default function AdminCategoriesPage() {
+  const { toast } = useToast();
   const [editing, setEditing] = useState<AdminCategory | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -26,6 +37,7 @@ export default function AdminCategoriesPage() {
   const [description, setDescription] = useState("");
   const [parentId, setParentId] = useState("");
   const [displayOrder, setDisplayOrder] = useState("0");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const openEdit = (cat: AdminCategory) => {
     setEditing(cat);
@@ -34,6 +46,7 @@ export default function AdminCategoriesPage() {
     setDescription(cat.description ?? "");
     setParentId(cat.parentId ?? "");
     setDisplayOrder(String(cat.displayOrder));
+    setImageUrl(cat.imageUrl ?? null);
   };
 
   const closeEdit = () => {
@@ -43,6 +56,7 @@ export default function AdminCategoriesPage() {
     setDescription("");
     setParentId("");
     setDisplayOrder("0");
+    setImageUrl(null);
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -57,13 +71,16 @@ export default function AdminCategoriesPage() {
       parentId: parentId || null,
       displayOrder: Number(displayOrder),
       active: true,
+      imageUrl,
     };
     try {
       await updateCategory(editing.id, payload);
+      toast("Category updated");
       closeEdit();
       await refetch();
     } catch {
       setActionError("Failed to update category.");
+      toast("Failed to update category", "error");
     } finally {
       setSaving(false);
     }
@@ -95,53 +112,61 @@ export default function AdminCategoriesPage() {
       <CategoryForm categories={data ?? []} onCreated={() => refetch()} />
 
       {editing && (
-        <form onSubmit={handleUpdate} className="admin-card space-y-4">
-          <h3 className="font-display text-lg text-charcoal">Edit category</h3>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className={labelClass}>Name</label>
-              <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} required />
+        <AdminDrawer open={Boolean(editing)} title="Edit category" onClose={closeEdit}>
+          <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Name</label>
+                <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} required />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Slug</label>
+                <input className={inputClass} value={slug} onChange={(e) => setSlug(e.target.value)} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Description</label>
+                <input className={inputClass} value={description} onChange={(e) => setDescription(e.target.value)} />
+              </div>
+              <div>
+                <label className={labelClass}>Parent</label>
+                <select className={inputClass} value={parentId} onChange={(e) => setParentId(e.target.value)}>
+                  <option value="">— Root —</option>
+                  {visibleCategories
+                    .filter((c) => c.id !== editing.id)
+                    .map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Display order</label>
+                <input
+                  className={inputClass}
+                  type="number"
+                  value={displayOrder}
+                  onChange={(e) => setDisplayOrder(e.target.value)}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Cover image</label>
+                <div className="mt-2">
+                  <CoverImageUploader
+                    imageUrl={imageUrl}
+                    onChange={setImageUrl}
+                    upload={uploadCategoryImage}
+                    slug={slug}
+                    alt={name || "Category cover"}
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className={labelClass}>Slug</label>
-              <input className={inputClass} value={slug} onChange={(e) => setSlug(e.target.value)} />
-            </div>
-            <div className="sm:col-span-2">
-              <label className={labelClass}>Description</label>
-              <input className={inputClass} value={description} onChange={(e) => setDescription(e.target.value)} />
-            </div>
-            <div>
-              <label className={labelClass}>Parent</label>
-              <select className={inputClass} value={parentId} onChange={(e) => setParentId(e.target.value)}>
-                <option value="">— Root —</option>
-                {visibleCategories
-                  .filter((c) => c.id !== editing.id)
-                  .map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Display order</label>
-              <input
-                className={inputClass}
-                type="number"
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
             <Button type="submit" size="sm" disabled={saving}>
               {saving ? "Saving…" : "Save changes"}
             </Button>
-            <Button type="button" size="sm" variant="outline" onClick={closeEdit}>
-              Cancel
-            </Button>
-          </div>
-        </form>
+          </form>
+        </AdminDrawer>
       )}
 
       {actionError && <p className="text-sm text-maroon">{actionError}</p>}
@@ -152,6 +177,7 @@ export default function AdminCategoriesPage() {
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-charcoal/5 text-eyebrow text-stone">
             <tr>
+              <th className="px-5 py-3.5">Cover</th>
               <th className="px-5 py-3.5">Name</th>
               <th className="px-5 py-3.5">Slug</th>
               <th className="px-5 py-3.5">Parent</th>
@@ -164,6 +190,19 @@ export default function AdminCategoriesPage() {
               const parent = data?.find((p) => p.id === cat.parentId);
               return (
                 <tr key={cat.id} className="border-b border-charcoal/5 last:border-0">
+                  <td className="px-5 py-3.5">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-lg border border-charcoal/10 bg-pearl">
+                      <CatalogImage
+                        src={categoryCoverImage(cat.slug, cat.imageUrl)}
+                        fallbackSrc={categoryCoverImage(cat.slug)}
+                        alt={cat.name}
+                        fill
+                        className="object-cover"
+                        sizes="48px"
+                        unoptimized
+                      />
+                    </div>
+                  </td>
                   <td className="px-5 py-3.5 text-charcoal">{cat.name}</td>
                   <td className="px-5 py-3.5 font-mono text-xs text-stone">{cat.slug}</td>
                   <td className="px-5 py-3.5 text-stone">{parent?.name ?? "—"}</td>

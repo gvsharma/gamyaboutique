@@ -38,3 +38,16 @@ export async function submitInterest(
   );
   return data.data;
 }
+
+export async function submitProductInterest(body: {
+  productId: string;
+  customerName: string;
+  phone: string;
+  whatsapp?: string;
+  size?: string;
+  color?: string;
+  message?: string;
+}): Promise<{ id: string }> {
+  const { data } = await apiClient.post<ApiResponse<{ id: string }>>("/interests", body);
+  return data.data;
+}

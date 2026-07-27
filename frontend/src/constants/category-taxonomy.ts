@@ -22,6 +22,15 @@ export function isAllowedRootSlug(slug: string): boolean {
   return (ALLOWED_ROOT_SLUGS as readonly string[]).includes(slug.toLowerCase());
 }
 
+/** e.g. "girls-kurtas" → "Girls Kurtas" */
+export function slugToDisplayName(slug: string): string {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export function isProductAssignableSlug(slug: string): slug is ProductAssignableSlug {
   return (PRODUCT_ASSIGNABLE_SLUGS as readonly string[]).includes(slug.toLowerCase());
 }

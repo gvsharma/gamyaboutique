@@ -57,6 +57,8 @@ export const API = {
   adminInterests: "/admin/interests",
   adminInterestStatus: (id: string) => `/admin/interests/${id}/status`,
   crmLeads: "/crm/leads",
+  crmLead: (id: string) => `/crm/leads/${id}`,
+  crmLeadStatus: (id: string) => `/crm/leads/${id}/status`,
   policy: (key: string) => `/policies/${key}`,
   adminPolicies: "/admin/policies",
   adminPolicy: (key: string) => `/admin/policies/${key}`,

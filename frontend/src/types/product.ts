@@ -56,6 +56,11 @@ export interface ProductSummary {
 
 export type ProductStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
 
+export interface ProductColor {
+  name: string;
+  hex?: string | null;
+}
+
 export interface ProductDetail extends ProductSummary {
   description: string | null;
   status: ProductStatus;
@@ -66,4 +71,6 @@ export interface ProductDetail extends ProductSummary {
   stockQuantity?: number | null;
   lowStockThreshold?: number | null;
   lowStock?: boolean;
+  availableSizes?: string[];
+  availableColors?: ProductColor[];
 }

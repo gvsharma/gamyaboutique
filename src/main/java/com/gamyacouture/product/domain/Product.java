@@ -101,6 +101,14 @@ public class Product extends BaseSoftDeletableEntity {
     @Column(name = "video_url", length = 500)
     private String videoUrl;
 
+    /** Comma-separated size codes, e.g. XS,S,M,L */
+    @Column(name = "available_sizes", length = 200)
+    private String availableSizes;
+
+    /** JSON array of {name, hex} color options */
+    @Column(name = "available_colors", columnDefinition = "TEXT")
+    private String availableColors;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "product_categories",

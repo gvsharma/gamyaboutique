@@ -1,8 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/constants/routes";
 import { fetchAdminCustomers } from "@/lib/api/services/admin.service";
 
 function formatDate(iso: string) {
@@ -37,6 +39,7 @@ export default function AdminCustomersPage() {
               <th className="px-5 py-3.5">Phone</th>
               <th className="px-5 py-3.5">User linked</th>
               <th className="px-5 py-3.5">Joined</th>
+              <th className="px-5 py-3.5">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -51,6 +54,13 @@ export default function AdminCustomersPage() {
                   <span className="chip">{customer.userId ? "Yes" : "No"}</span>
                 </td>
                 <td className="px-5 py-3.5 text-stone">{formatDate(customer.createdAt)}</td>
+                <td className="px-5 py-3.5">
+                  <Link href={ROUTES.admin.customerDetail(customer.id)}>
+                    <Button size="sm" variant="outline">
+                      View
+                    </Button>
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -8,10 +8,16 @@ export async function fetchCart(): Promise<Cart> {
   return data.data;
 }
 
-export async function addToCart(productId: string, quantity = 1): Promise<Cart> {
+export async function addToCart(
+  productId: string,
+  quantity = 1,
+  options?: { selectedSize?: string | null; selectedColor?: string | null },
+): Promise<Cart> {
   const { data } = await apiClient.post<ApiResponse<Cart>>(API.cartItems, {
     productId,
     quantity,
+    selectedSize: options?.selectedSize ?? undefined,
+    selectedColor: options?.selectedColor ?? undefined,
   });
   return data.data;
 }
