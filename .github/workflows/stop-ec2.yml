@@ -7,6 +7,11 @@ on:
         description: Type "stop" to shut down the dev EC2 API instance
         required: true
         type: string
+  push:
+    branches:
+      - main
+    paths:
+      - .github/stop-ec2.trigger
 
 concurrency:
   group: stop-ec2-dev
@@ -27,6 +32,7 @@ jobs:
 
     steps:
       - name: Confirm shutdown
+        if: github.event_name == 'workflow_dispatch'
         run: |
           if [[ "${{ github.event.inputs.confirm }}" != "stop" ]]; then
             echo "::error::Confirmation failed. Re-run the workflow and enter stop in the confirm field." >&2
@@ -125,24 +131,37 @@ jobs:
 
           echo "Target EC2 instance: ${EC2_INSTANCE_ID} (state=${STATE})"
 
-          case "${STATE}" in
-            stopped)
-              echo "EC2 ${EC2_INSTANCE_ID} is already stopped."
-              exit 0
-              ;;
-            stopping)
-              echo "EC2 ${EC2_INSTANCE_ID} is already stopping; waiting for stopped..."
-              aws ec2 wait instance-stopped --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
-              echo "EC2 ${EC2_INSTANCE_ID} is now stopped."
-              exit 0
-              ;;
-            running)
-              ;;
-            *)
-              echo "::error::EC2 ${EC2_INSTANCE_ID} is in unexpected state: ${STATE}" >&2
-              exit 1
-              ;;
-          esac
+          for wait_attempt in $(seq 1 60); do
+            case "${STATE}" in
+              stopped)
+                echo "EC2 ${EC2_INSTANCE_ID} is already stopped."
+                exit 0
+                ;;
+              stopping)
+                echo "EC2 ${EC2_INSTANCE_ID} is already stopping; waiting for stopped..."
+                aws ec2 wait instance-stopped --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+                echo "EC2 ${EC2_INSTANCE_ID} is now stopped."
+                exit 0
+                ;;
+              running)
+                break
+                ;;
+              pending)
+                echo "EC2 ${EC2_INSTANCE_ID} is pending (attempt ${wait_attempt}/60); waiting..."
+                sleep 10
+                STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+                ;;
+              *)
+                echo "::error::EC2 ${EC2_INSTANCE_ID} is in unexpected state: ${STATE}" >&2
+                exit 1
+                ;;
+            esac
+          done
+
+          if [[ "${STATE}" != "running" ]]; then
+            echo "::error::Timed out waiting for EC2 ${EC2_INSTANCE_ID} to become running or stopped (last state=${STATE})." >&2
+            exit 1
+          fi
 
           if aws ec2 stop-instances --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}" >/dev/null 2>/tmp/stop-ec2.err; then
             echo "Issued ec2:StopInstances for ${EC2_INSTANCE_ID}"
