@@ -48,6 +48,13 @@ main() {
   log "Downloading JAR from S3"
   aws s3 cp "s3://${DEPLOY_BUCKET}/${JAR_KEY}" "${APP_PATH}/incoming/gamya-couture.jar.new"
 
+  log "Downloading Supabase schema patches from S3"
+  mkdir -p "${APP_PATH}/incoming/sql/supabase"
+  aws s3 sync "s3://${DEPLOY_BUCKET}/incoming/sql/supabase/" "${APP_PATH}/incoming/sql/supabase/" || true
+  aws s3 cp "s3://${DEPLOY_BUCKET}/incoming/apply-supabase-schema-patches.sh" \
+    "${APP_PATH}/incoming/apply-supabase-schema-patches.sh" || true
+  chmod 755 "${APP_PATH}/incoming/apply-supabase-schema-patches.sh" 2>/dev/null || true
+
   # Skips RDS overwrite when application.env targets Supabase (profile/URL/DB_PROVIDER).
   log "Syncing DB credentials into application.env (RDS or Supabase-aware)"
   sudo bash "${APP_PATH}/scripts/sync-rds-env-from-ssm.sh" "${APP_PATH}/config/application.env"

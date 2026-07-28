@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
   group: deploy-backend-production
@@ -17,6 +18,7 @@ env:
   DEPLOY_SCRIPT_KEY: incoming/remote-deploy.sh
   DEPLOY_SYNC_SCRIPT_KEY: incoming/sync-rds-env-from-ssm.sh
   DEPLOY_KICKOFF_SCRIPT_KEY: incoming/ssm-kickoff-deploy.sh
+  DEPLOY_SCHEMA_PATCHES_PREFIX: incoming/sql/supabase/
 
 jobs:
   validate:
@@ -332,6 +334,8 @@ jobs:
           aws s3 cp deploy/scripts/remote-deploy.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_SCRIPT_KEY}"
           aws s3 cp deploy/scripts/sync-rds-env-from-ssm.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_SYNC_SCRIPT_KEY}"
           aws s3 cp deploy/scripts/ssm-kickoff-deploy.sh "s3://${DEPLOY_BUCKET}/${DEPLOY_KICKOFF_SCRIPT_KEY}"
+          aws s3 cp deploy/scripts/apply-supabase-schema-patches.sh "s3://${DEPLOY_BUCKET}/incoming/apply-supabase-schema-patches.sh"
+          aws s3 sync deploy/sql/supabase/ "s3://${DEPLOY_BUCKET}/${DEPLOY_SCHEMA_PATCHES_PREFIX}" --delete
 
       - name: Deploy on EC2 via SSM
         run: |
