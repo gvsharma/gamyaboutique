@@ -1,11 +1,15 @@
 package com.gamyacouture.product.api.web;
 
 import com.gamyacouture.product.api.dto.AdminProductListFilter;
+import com.gamyacouture.product.api.dto.BulkProductImportRequest;
+import com.gamyacouture.product.api.dto.BulkProductImportResultDto;
+import com.gamyacouture.product.api.dto.BulkProductPreviewResponse;
 import com.gamyacouture.product.api.dto.ProductDetailDto;
 import com.gamyacouture.product.api.dto.ProductSummaryDto;
 import com.gamyacouture.product.api.dto.UpdateProductStatusRequest;
 import com.gamyacouture.product.api.dto.UpsertProductRequest;
 import com.gamyacouture.product.application.AdminProductQueryService;
+import com.gamyacouture.product.application.ProductBulkImportService;
 import com.gamyacouture.product.application.ProductCommandService;
 import com.gamyacouture.shared.web.ApiResponse;
 import com.gamyacouture.shared.web.PageResponse;
@@ -30,9 +34,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static com.gamyacouture.shared.config.OpenApiConfig.BEARER_AUTH;
@@ -48,6 +55,7 @@ public class AdminProductController {
 
     private final AdminProductQueryService adminProductQueryService;
     private final ProductCommandService productCommandService;
+    private final ProductBulkImportService productBulkImportService;
 
     @GetMapping
     @Operation(summary = "List products for admin (all statuses)")
@@ -93,5 +101,21 @@ public class AdminProductController {
     @Operation(summary = "Soft-delete a product")
     public void delete(@PathVariable UUID id) {
         productCommandService.delete(id);
+    }
+
+    @PostMapping("/bulk/preview")
+    @Operation(summary = "Parse and validate a product CSV file for bulk import")
+    public ApiResponse<BulkProductPreviewResponse> previewBulkImport(@RequestPart("file") MultipartFile file)
+            throws IOException {
+        return ApiResponse.ok(productBulkImportService.preview(file), "CSV parsed");
+    }
+
+    @PostMapping("/bulk/import")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Import validated products from a bulk CSV preview")
+    public ApiResponse<BulkProductImportResultDto> importBulk(@Valid @RequestBody BulkProductImportRequest request) {
+        return ApiResponse.ok(
+                productBulkImportService.importProducts(request.products()),
+                "Bulk import completed");
     }
 }
