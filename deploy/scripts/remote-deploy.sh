@@ -230,6 +230,18 @@ ensure_s3_env_vars
 
 ensure_nginx_upload_limit
 
+apply_supabase_schema_patches() {
+  local patches_script="${APP_PATH}/incoming/apply-supabase-schema-patches.sh"
+  if [[ ! -f "${patches_script}" ]]; then
+    log "WARN: ${patches_script} missing — skip Supabase schema patches"
+    return 0
+  fi
+  chmod 755 "${patches_script}"
+  APP_PATH="${APP_PATH}" bash "${patches_script}"
+}
+
+apply_supabase_schema_patches
+
 mkdir -p "${APP_PATH}/incoming" "${APP_PATH}/app" "${BACKUP_DIR}" "${APP_PATH}/logs"
 chown -R gamya:gamya "${APP_PATH}/logs"
 
