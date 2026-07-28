@@ -31,6 +31,8 @@ import type {
   UpsertPrintPayload,
   UpsertProductPayload,
   UpsertTagPayload,
+  BulkProductPreviewResponse,
+  BulkProductImportResult,
 } from "@/types/admin";
 import type { PolicyKey, SitePolicy, UpdateSitePolicyPayload } from "@/types/site-policy";
 
@@ -82,6 +84,26 @@ export async function updateProductStatus(id: string, status: ProductStatus): Pr
 
 export async function deleteProduct(id: string): Promise<void> {
   await apiClient.delete(API.adminProduct(id));
+}
+
+export async function previewBulkProductImport(file: File): Promise<BulkProductPreviewResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await apiClient.post<ApiResponse<BulkProductPreviewResponse>>(
+    API.adminProductsBulkPreview,
+    formData,
+  );
+  return unwrap(res);
+}
+
+export async function importBulkProducts(
+  products: UpsertProductPayload[],
+): Promise<BulkProductImportResult> {
+  const res = await apiClient.post<ApiResponse<BulkProductImportResult>>(
+    API.adminProductsBulkImport,
+    { products },
+  );
+  return unwrap(res);
 }
 
 async function uploadMediaImage(file: File, folder: string): Promise<MediaUploadResponse> {

@@ -31,6 +31,8 @@ export const API = {
   adminProducts: "/admin/products",
   adminProduct: (id: string) => `/admin/products/${id}`,
   adminProductStatus: (id: string) => `/admin/products/${id}/status`,
+  adminProductsBulkPreview: "/admin/products/bulk/preview",
+  adminProductsBulkImport: "/admin/products/bulk/import",
   adminCategories: "/admin/categories",
   adminCategory: (id: string) => `/admin/categories/${id}`,
   adminMediaUpload: "/admin/media/upload",

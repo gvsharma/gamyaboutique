@@ -65,9 +65,14 @@ export default function AdminProductsPage() {
           <h1 className="mt-2 font-display text-section-title text-charcoal">Products</h1>
           <p className="mt-1 text-sm text-stone">Stored in RDS · images in S3</p>
         </div>
-        <Link href={ROUTES.admin.productNew}>
-          <Button>Add product</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href={ROUTES.admin.productImport}>
+            <Button variant="outline">Import CSV</Button>
+          </Link>
+          <Link href={ROUTES.admin.productNew}>
+            <Button>Add product</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">

@@ -273,4 +273,47 @@ export interface UpsertOfferPayload {
   active?: boolean;
 }
 
+export interface BulkProductRowPreview {
+  rowNumber: number;
+  sku: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  compareAtPrice: number | null;
+  currency: string;
+  status: ProductStatus;
+  categorySlug: string;
+  fabricSlug: string | null;
+  printSlug: string | null;
+  stockQuantity: number | null;
+  lowStockThreshold: number | null;
+  sizes: string | null;
+  colors: string | null;
+  imageUrls: string | null;
+  videoUrl: string | null;
+  valid: boolean;
+  errors: string[];
+  product: UpsertProductPayload | null;
+}
+
+export interface BulkProductPreviewResponse {
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  requiredColumns: string[];
+  rows: BulkProductRowPreview[];
+}
+
+export interface BulkProductImportFailure {
+  sku: string;
+  message: string;
+}
+
+export interface BulkProductImportResult {
+  requested: number;
+  created: number;
+  failed: number;
+  failures: BulkProductImportFailure[];
+}
+
 export type { ProductDetail, ProductSummary };

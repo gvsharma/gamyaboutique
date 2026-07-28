@@ -25,6 +25,7 @@ export const ROUTES = {
     home: "/admin",
     products: "/admin/products",
     productNew: "/admin/products/new",
+    productImport: "/admin/products/import",
     productEdit: (id: string) => `/admin/products/${id}/edit`,
     categories: "/admin/categories",
     users: "/admin/users",
