@@ -1,3 +1,3 @@
 sku,name,description,price,compare_at_price,currency,status,category_slug,fabric_slug,print_slug,stock_quantity,low_stock_threshold,sizes,colors,image_urls,video_url
 GC-CSV-001,Royal Banarasi Saree,Handwoven silk saree with zari border,28999.00,32999.00,INR,DRAFT,sarees,banarasi-silk,floral-jaal,5,2,S|M|L,Maroon:#722F37|Gold:#D4AF37,https://images.unsplash.com/photo-1583391734527-658aeeef0f35?w=1200&q=80,
-GC-CSV-002,Designer Kurta Set,Embroidered kurta with dupatta,12999.00,,INR,DRAFT,kurtas,cotton-silk,,,5,S|M|L,Red:#B91C1C,https://images.unsplash.com/photo-1610037122467-438a1a088b3c?w=1200&q=80,
+GC-CSV-002,Designer Kurta Set,Embroidered kurta with dupatta,12999.00,,INR,DRAFT,kurtas,chanderi-cotton,,,5,S|M|L,Red:#B91C1C,https://images.unsplash.com/photo-1610037122467-438a1a088b3c?w=1200&q=80,

@@ -122,7 +122,9 @@ class ProductBulkImportServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "products.csv", "text/csv", csv.getBytes());
         BulkProductPreviewResponse response = productBulkImportService.preview(file);
 
-        assertThat(response.validRows()).isZero();
+        assertThat(response.validRows()).isEqualTo(1);
+        assertThat(response.rows().get(0).valid()).isTrue();
+        assertThat(response.rows().get(1).valid()).isFalse();
         assertThat(response.rows().get(1).errors()).anyMatch(error -> error.contains("duplicate sku"));
     }
 
