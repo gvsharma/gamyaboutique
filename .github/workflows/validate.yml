@@ -2,6 +2,12 @@ name: Validate
 
 on:
   workflow_call:
+    inputs:
+      run_e2e_smoke:
+        description: Run Playwright smoke suite
+        required: false
+        type: boolean
+        default: true
 
 env:
   JAVA_VERSION: "21"
@@ -90,6 +96,7 @@ jobs:
 
   e2e-smoke:
     name: E2E smoke (Playwright)
+    if: ${{ inputs.run_e2e_smoke }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: [backend]
