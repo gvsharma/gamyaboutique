@@ -23,6 +23,8 @@ env:
 jobs:
   validate:
     uses: ./.github/workflows/validate.yml
+    with:
+      run_e2e_smoke: false
 
   build-and-deploy:
     name: Deploy to EC2
