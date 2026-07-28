@@ -1,0 +1,216 @@
+name: Stop EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type "stop" to shut down the dev EC2 API instance
+        required: true
+        type: string
+
+concurrency:
+  group: stop-ec2-dev
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  stop-ec2:
+    name: Stop dev EC2 API instance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Confirm shutdown
+        run: |
+          if [[ "${{ github.event.inputs.confirm }}" != "stop" ]]; then
+            echo "::error::Confirmation failed. Re-run the workflow and enter stop in the confirm field." >&2
+            exit 1
+          fi
+
+      - name: Resolve deploy configuration
+        id: deploy_cfg
+        env:
+          AWS_BACKEND_DEPLOY_ROLE_ARN: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
+          DEPLOY_BUCKET_VAR: ${{ vars.DEPLOY_BUCKET }}
+          DEPLOY_BUCKET_SECRET: ${{ secrets.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID_VAR: ${{ vars.EC2_INSTANCE_ID }}
+          EC2_INSTANCE_ID_SECRET: ${{ secrets.EC2_INSTANCE_ID }}
+        run: |
+          set -euo pipefail
+          pick_non_empty() {
+            if [[ -n "${1//[[:space:]]/}" ]]; then
+              echo "$1"
+            else
+              echo "$2"
+            fi
+          }
+
+          DEPLOY_BUCKET="$(pick_non_empty "$DEPLOY_BUCKET_VAR" "$DEPLOY_BUCKET_SECRET")"
+          EC2_INSTANCE_ID="$(pick_non_empty "$EC2_INSTANCE_ID_VAR" "$EC2_INSTANCE_ID_SECRET")"
+
+          missing=()
+          [[ -z "${AWS_BACKEND_DEPLOY_ROLE_ARN//[[:space:]]/}" ]] && missing+=(AWS_BACKEND_DEPLOY_ROLE_ARN)
+          [[ -z "${DEPLOY_BUCKET//[[:space:]]/}" ]] && missing+=(DEPLOY_BUCKET)
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error title=Missing deploy config::Set AWS_BACKEND_DEPLOY_ROLE_ARN and DEPLOY_BUCKET in GitHub Actions secrets/variables." >&2
+            exit 1
+          fi
+
+          echo "deploy_bucket=${DEPLOY_BUCKET}" >> "$GITHUB_OUTPUT"
+          echo "ec2_instance_id=${EC2_INSTANCE_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve and stop EC2 instance
+        env:
+          DEPLOY_BUCKET: ${{ steps.deploy_cfg.outputs.deploy_bucket }}
+          CONFIGURED_INSTANCE_ID: ${{ steps.deploy_cfg.outputs.ec2_instance_id }}
+        run: |
+          set -euo pipefail
+          EC2_INSTANCE_ID="${CONFIGURED_INSTANCE_ID//[[:space:]]/}"
+          NAME_PREFIX="${DEPLOY_BUCKET%-backend-deploy}"
+          if [[ "${NAME_PREFIX}" == "${DEPLOY_BUCKET}" ]]; then
+            NAME_PREFIX="${DEPLOY_BUCKET%-deploy}"
+          fi
+          EC2_NAME_TAG="${NAME_PREFIX}-api"
+
+          instance_state() {
+            aws ec2 describe-instances \
+              --region "${AWS_REGION}" \
+              --instance-ids "$1" \
+              --query 'Reservations[0].Instances[0].State.Name' \
+              --output text 2>/dev/null || echo "missing"
+          }
+
+          resolve_by_name_tag() {
+            aws ec2 describe-instances \
+              --region "${AWS_REGION}" \
+              --filters \
+                "Name=tag:Name,Values=${EC2_NAME_TAG}" \
+                "Name=instance-state-name,Values=pending,running,stopping,stopped" \
+              --query 'sort_by(Reservations[].Instances[], &LaunchTime)[-1].InstanceId' \
+              --output text
+          }
+
+          if [[ -z "${EC2_INSTANCE_ID}" ]]; then
+            echo "Resolving EC2 instance by tag Name=${EC2_NAME_TAG}"
+            EC2_INSTANCE_ID="$(resolve_by_name_tag)"
+            if [[ -z "${EC2_INSTANCE_ID}" || "${EC2_INSTANCE_ID}" == "None" ]]; then
+              echo "::error::No EC2 instance found with tag Name=${EC2_NAME_TAG}." >&2
+              exit 1
+            fi
+          fi
+
+          STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+          if [[ "${STATE}" == "missing" || "${STATE}" == "None" || "${STATE}" == "terminated" ]]; then
+            echo "Configured EC2_INSTANCE_ID ${EC2_INSTANCE_ID} is ${STATE}; resolving latest instance with tag Name=${EC2_NAME_TAG}"
+            RESOLVED="$(resolve_by_name_tag)"
+            if [[ -z "${RESOLVED}" || "${RESOLVED}" == "None" ]]; then
+              echo "::error::No EC2 instance found with tag Name=${EC2_NAME_TAG}." >&2
+              exit 1
+            fi
+            EC2_INSTANCE_ID="${RESOLVED}"
+            STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+          fi
+
+          echo "Target EC2 instance: ${EC2_INSTANCE_ID} (state=${STATE})"
+
+          case "${STATE}" in
+            stopped)
+              echo "EC2 ${EC2_INSTANCE_ID} is already stopped."
+              exit 0
+              ;;
+            stopping)
+              echo "EC2 ${EC2_INSTANCE_ID} is already stopping; waiting for stopped..."
+              aws ec2 wait instance-stopped --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+              echo "EC2 ${EC2_INSTANCE_ID} is now stopped."
+              exit 0
+              ;;
+            running)
+              ;;
+            *)
+              echo "::error::EC2 ${EC2_INSTANCE_ID} is in unexpected state: ${STATE}" >&2
+              exit 1
+              ;;
+          esac
+
+          if aws ec2 stop-instances --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}" >/dev/null 2>/tmp/stop-ec2.err; then
+            echo "Issued ec2:StopInstances for ${EC2_INSTANCE_ID}"
+            aws ec2 wait instance-stopped --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+            echo "EC2 ${EC2_INSTANCE_ID} is now stopped."
+            exit 0
+          fi
+
+          if ! grep -qiE 'AccessDenied|not authorized|UnauthorizedOperation' /tmp/stop-ec2.err; then
+            cat /tmp/stop-ec2.err >&2
+            exit 1
+          fi
+
+          echo "Deploy role lacks ec2:StopInstances; falling back to SSM graceful shutdown."
+
+          PING_STATUS="$(aws ssm describe-instance-information \
+            --region "${AWS_REGION}" \
+            --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
+            --query 'InstanceInformationList[0].PingStatus' \
+            --output text 2>/dev/null || echo "Unknown")"
+          if [[ "${PING_STATUS}" != "Online" ]]; then
+            echo "::error::Cannot stop ${EC2_INSTANCE_ID}: ec2:StopInstances denied and SSM PingStatus=${PING_STATUS}." >&2
+            exit 1
+          fi
+
+          python3 -c 'import json; print(json.dumps({"commands": [
+            "set -euxo pipefail",
+            "sudo systemctl stop gamya-couture.service 2>/dev/null || true",
+            "sudo systemctl stop nginx 2>/dev/null || true",
+            "sudo shutdown -h +1 \"Stopping EC2 via GitHub Actions\"",
+            "echo SHUTDOWN_SCHEDULED"
+          ]}))' > /tmp/ssm-stop-ec2.json
+
+          COMMAND_ID="$(aws ssm send-command \
+            --region "${AWS_REGION}" \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "GitHub Actions stop EC2" \
+            --timeout-seconds 120 \
+            --parameters "file:///tmp/ssm-stop-ec2.json" \
+            --query 'Command.CommandId' \
+            --output text)"
+          echo "SSM shutdown command id: ${COMMAND_ID}"
+
+          for attempt in $(seq 1 24); do
+            STATUS="$(aws ssm get-command-invocation \
+              --region "${AWS_REGION}" \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'Status' \
+              --output text 2>/dev/null || echo Pending)"
+            echo "SSM shutdown status: ${STATUS} (attempt ${attempt}/24)"
+            case "${STATUS}" in
+              Success)
+                break
+                ;;
+              Failed|Cancelled|TimedOut)
+                aws ssm get-command-invocation \
+                  --region "${AWS_REGION}" \
+                  --command-id "${COMMAND_ID}" \
+                  --instance-id "${EC2_INSTANCE_ID}" \
+                  --output json
+                exit 1
+                ;;
+            esac
+            sleep 5
+          done
+
+          echo "Waiting for EC2 ${EC2_INSTANCE_ID} to reach stopped..."
+          aws ec2 wait instance-stopped --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+          echo "EC2 ${EC2_INSTANCE_ID} is now stopped."
