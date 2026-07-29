@@ -146,7 +146,7 @@ export function QuickProductForm() {
         </Link>
         <Link href={ROUTES.admin.productImport}>
           <Button type="button" variant="outline">
-            Import CSV / Excel
+            Import CSV
           </Button>
         </Link>
       </div>
