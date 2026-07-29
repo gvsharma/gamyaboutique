@@ -156,19 +156,20 @@ Scripts: [deploy/scripts/](../deploy/scripts/)
 
 ## Cost scheduler
 
-Dev environment uses EventBridge Scheduler rules (timezone `Asia/Kolkata`) to reduce compute costs:
+Dev EC2 API uptime is limited to **1 hour per day** via GitHub Actions (timezone **Asia/Kolkata / IST**):
 
-| Day | Running window (IST) | Stop rules | Start rules |
-|-----|----------------------|------------|-------------|
-| **Mon–Fri** | 06:00–11:00 (5 h) | 11:00 | 06:00 |
-| **Saturday** | 18:00–00:00 (6 h) | 00:00 Sun | 18:00 Sat |
-| **Sunday** | 06:00–00:00 (18 h) | 00:00 Mon | 06:00 Sun |
+| Event | Time (IST) | Time (UTC cron) | Workflow |
+|-------|------------|-----------------|----------|
+| **Start EC2** | 06:00 daily | `30 0 * * *` | [start-ec2.yml](../.github/workflows/start-ec2.yml) |
+| **Stop EC2** | 07:00 daily | `30 1 * * *` | [stop-ec2.yml](../.github/workflows/stop-ec2.yml) |
 
-**Impact:** Storefront and API are down outside the windows above unless manually started or a deploy cold-starts resources.
+**Impact:** Storefront API is down ~23 hours/day unless you start EC2 manually or a deploy cold-starts the instance.
 
-**Deploy handles stopped resources:** The deploy workflow starts stopped RDS and EC2 before deploying and waits for SSM to come online (extended timeout after cold start).
+**Note:** If EventBridge rules still exist in [gamya-couture-infra](https://github.com/gvsharma/gamya-couture-infra), disable or align them with this window to avoid conflicting start/stop times.
 
-Manual start (AWS Console or CLI):
+**Deploy handles stopped resources:** The deploy workflow starts stopped EC2 before deploying (merges to `main` only — not trigger-file pushes). Pushes that only touch `.github/stop-ec2.trigger` or `.github/start-ec2.trigger` do **not** run deploy.
+
+Manual start (AWS Console, GitHub Actions **Start EC2**, or CLI):
 
 ```bash
 aws ec2 start-instances --instance-ids <id> --region ap-south-1
