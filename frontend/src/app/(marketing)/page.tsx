@@ -25,12 +25,16 @@ export default async function HomePage() {
   let promoVideos: PromoVideo[] = [];
 
   try {
-    [categories, featured, trending, promoVideos] = await Promise.all([
+    const [categoriesResult, featuredResult, trendingResult, promoResult] = await Promise.allSettled([
       serverFetch<CategoryTreeNode[]>(API.categoriesTree),
       serverFetch<PageResponse<ProductSummary>>("/products?page=0&size=8").then((p) => p.content),
       serverFetch<PageResponse<ProductSummary>>("/products?page=0&size=12").then((p) => p.content),
-      serverFetch<PromoVideo[]>(API.promoVideos).catch(() => []),
+      serverFetch<PromoVideo[]>(API.promoVideos),
     ]);
+    if (categoriesResult.status === "fulfilled") categories = categoriesResult.value;
+    if (featuredResult.status === "fulfilled") featured = featuredResult.value;
+    if (trendingResult.status === "fulfilled") trending = trendingResult.value;
+    if (promoResult.status === "fulfilled") promoVideos = promoResult.value;
   } catch {
     // API offline — page still renders
   }
