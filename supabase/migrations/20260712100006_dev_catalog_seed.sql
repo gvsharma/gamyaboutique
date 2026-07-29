@@ -1,5 +1,4 @@
--- Dev-only synthetic data (~10 rows per table). Idempotent: clears prior seed UUIDs then re-inserts.
--- Test user password (all seeded users): Admin@123  (same bcrypt hash as admin seed)
+-- Dev-only synthetic catalog data (~10 rows per catalog table). Idempotent: clears prior seed UUIDs then re-inserts.
 
 -- roles: schema allows only ADMIN, STAFF, CUSTOMER (3 rows from V2) — not expanded here.
 

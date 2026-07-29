@@ -200,7 +200,7 @@ export function ProductForm({ product }: ProductFormProps) {
   );
 
   const buildPayload = useCallback((): UpsertProductPayload => ({
-    sku,
+    sku: sku.trim(),
     name,
     description: description || undefined,
     price: Number(price),
@@ -287,7 +287,13 @@ export function ProductForm({ product }: ProductFormProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelClass}>SKU</label>
-            <input className={inputClass} value={sku} onChange={(e) => setSku(e.target.value)} required />
+            <input
+              className={inputClass}
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+              required={isEdit}
+              placeholder={isEdit ? undefined : "Leave blank to auto-generate"}
+            />
           </div>
           <div>
             <label className={labelClass}>Status</label>

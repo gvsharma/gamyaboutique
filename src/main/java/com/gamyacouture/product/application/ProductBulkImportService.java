@@ -39,7 +39,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductBulkImportService {
 
-    static final List<String> REQUIRED_COLUMNS = List.of("sku", "name", "price", "category_slug");
+    static final List<String> MINIMAL_REQUIRED_COLUMNS = List.of("name", "price");
+    static final List<String> FULL_REQUIRED_COLUMNS = List.of("sku", "name", "price", "category_slug");
+    static final List<String> DOCUMENTED_COLUMNS = List.of(
+            "name", "product_type", "description", "price", "sku", "category_slug");
 
     private final CategoryJpaRepository categoryRepository;
     private final FabricJpaRepository fabricRepository;
@@ -78,7 +81,7 @@ public class ProductBulkImportService {
                 rows.size(),
                 validCount,
                 rows.size() - validCount,
-                REQUIRED_COLUMNS,
+                DOCUMENTED_COLUMNS,
                 rows);
     }
 
@@ -103,18 +106,25 @@ public class ProductBulkImportService {
     }
 
     private void validateHeaders(List<String> headers) {
-        List<String> missing = REQUIRED_COLUMNS.stream()
+        List<String> missingMinimal = MINIMAL_REQUIRED_COLUMNS.stream()
                 .filter(required -> !headers.contains(required))
                 .toList();
-        if (!missing.isEmpty()) {
-            throw new IllegalArgumentException("Missing required CSV columns: " + String.join(", ", missing));
+        if (!missingMinimal.isEmpty()) {
+            throw new IllegalArgumentException("Missing required CSV columns: " + String.join(", ", missingMinimal));
+        }
+        boolean hasCategoryColumn = headers.contains("category_slug") || headers.contains("product_type");
+        if (!hasCategoryColumn) {
+            throw new IllegalArgumentException(
+                    "Missing product type column: add product_type or category_slug (e.g. sarees, kurtas, lehengas)");
         }
     }
 
     private TaxonomyLookups loadLookups() {
         Map<String, Category> categoriesBySlug = new LinkedHashMap<>();
+        Map<String, Category> categoriesByName = new LinkedHashMap<>();
         for (Category category : categoryRepository.findByActiveTrueOrderByDisplayOrderAscNameAsc()) {
             categoriesBySlug.put(category.getSlug().toLowerCase(Locale.ROOT), category);
+            categoriesByName.put(category.getName().trim().toLowerCase(Locale.ROOT), category);
         }
 
         Map<String, Fabric> fabricsBySlug = new LinkedHashMap<>();
@@ -127,7 +137,7 @@ public class ProductBulkImportService {
             printsBySlug.put(print.getSlug().toLowerCase(Locale.ROOT), print);
         }
 
-        return new TaxonomyLookups(categoriesBySlug, fabricsBySlug, printsBySlug);
+        return new TaxonomyLookups(categoriesBySlug, categoriesByName, fabricsBySlug, printsBySlug);
     }
 
     private RowValidation validateRow(
@@ -137,14 +147,15 @@ public class ProductBulkImportService {
             Set<String> csvSkus) {
         List<String> errors = new ArrayList<>();
 
-        String sku = value(row, "sku");
+        String sku = blankToNull(value(row, "sku"));
         String name = value(row, "name");
         String description = blankToNull(value(row, "description"));
         String priceRaw = value(row, "price");
         String compareAtPriceRaw = blankToNull(value(row, "compare_at_price"));
         String currency = blankToNull(value(row, "currency"));
         String statusRaw = blankToNull(value(row, "status"));
-        String categorySlug = value(row, "category_slug").toLowerCase(Locale.ROOT);
+        String categoryInput = resolveCategoryInput(row);
+        String categorySlug = categoryInput != null ? categoryInput.toLowerCase(Locale.ROOT) : "";
         String fabricSlug = blankToNull(value(row, "fabric_slug"));
         if (fabricSlug != null) {
             fabricSlug = fabricSlug.toLowerCase(Locale.ROOT);
@@ -159,14 +170,6 @@ public class ProductBulkImportService {
         String colorsRaw = blankToNull(value(row, "colors"));
         String imageUrlsRaw = blankToNull(value(row, "image_urls"));
         String videoUrl = blankToNull(value(row, "video_url"));
-
-        if (sku.isBlank()) {
-            errors.add("sku is required");
-        } else if (!csvSkus.add(sku.toLowerCase(Locale.ROOT))) {
-            errors.add("duplicate sku in CSV: " + sku);
-        } else if (productRepository.existsBySku(sku)) {
-            errors.add("sku already exists in database: " + sku);
-        }
 
         if (name.isBlank()) {
             errors.add("name is required");
@@ -208,20 +211,31 @@ public class ProductBulkImportService {
         }
 
         UUID categoryId = null;
-        if (categorySlug.isBlank()) {
-            errors.add("category_slug is required");
+        if (categoryInput == null || categoryInput.isBlank()) {
+            errors.add("product_type is required (e.g. sarees, kurtas, lehengas)");
         } else {
-            Category category = lookups.categoriesBySlug().get(categorySlug);
+            Category category = resolveCategory(categoryInput, lookups);
             if (category == null) {
-                errors.add("unknown category_slug: " + categorySlug);
+                errors.add("unknown product_type: " + categoryInput
+                        + " (use sarees, kurtas, lehengas, blouses, girls-kurtas, girls-lehengas)");
             } else {
                 try {
                     CategoryTaxonomy.validateProductCategory(category);
                     categoryId = category.getId();
+                    categorySlug = category.getSlug().toLowerCase(Locale.ROOT);
                 } catch (BusinessException ex) {
                     errors.add(ex.getMessage());
                 }
             }
+        }
+
+        if (sku == null || sku.isBlank()) {
+            sku = ProductSkuGenerator.buildBase(name, categorySlug.isBlank() ? null : categorySlug);
+            sku = ensureUniqueGeneratedSku(sku, rowNumber, csvSkus);
+        } else if (!csvSkus.add(sku.toLowerCase(Locale.ROOT))) {
+            errors.add("duplicate sku in CSV: " + sku);
+        } else if (productRepository.existsBySku(sku)) {
+            errors.add("sku already exists in database: " + sku);
         }
 
         UUID fabricId = null;
@@ -259,7 +273,7 @@ public class ProductBulkImportService {
             }
         }
 
-        boolean valid = errors.isEmpty() && price != null && categoryId != null && !sku.isBlank() && !name.isBlank();
+        boolean valid = errors.isEmpty() && price != null && categoryId != null && !name.isBlank() && sku != null && !sku.isBlank();
         UpsertProductRequest product = null;
         if (valid) {
             product = new UpsertProductRequest(
@@ -376,6 +390,37 @@ public class ProductBulkImportService {
         return images;
     }
 
+    private static String resolveCategoryInput(Map<String, String> row) {
+        String fromSlug = blankToNull(value(row, "category_slug"));
+        if (fromSlug != null) {
+            return fromSlug;
+        }
+        return blankToNull(value(row, "product_type"));
+    }
+
+    private static Category resolveCategory(String input, TaxonomyLookups lookups) {
+        String normalizedSlug = input.trim().toLowerCase(Locale.ROOT).replace(' ', '-');
+        Category bySlug = lookups.categoriesBySlug().get(normalizedSlug);
+        if (bySlug != null) {
+            return bySlug;
+        }
+        return lookups.categoriesByName().get(input.trim().toLowerCase(Locale.ROOT));
+    }
+
+    private String ensureUniqueGeneratedSku(String baseSku, int rowNumber, Set<String> csvSkus) {
+        String candidate = baseSku + "-R" + rowNumber;
+        int attempt = 0;
+        while (!csvSkus.add(candidate.toLowerCase(Locale.ROOT)) || productRepository.existsBySku(candidate)) {
+            attempt++;
+            candidate = baseSku + "-R" + rowNumber + "-" + attempt;
+            if (attempt > 99) {
+                candidate = baseSku + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(Locale.ROOT);
+                break;
+            }
+        }
+        return candidate;
+    }
+
     private static String value(Map<String, String> row, String key) {
         return row.getOrDefault(key, "").trim();
     }
@@ -386,6 +431,7 @@ public class ProductBulkImportService {
 
     private record TaxonomyLookups(
             Map<String, Category> categoriesBySlug,
+            Map<String, Category> categoriesByName,
             Map<String, Fabric> fabricsBySlug,
             Map<String, Print> printsBySlug) {
     }
