@@ -29,6 +29,7 @@
 | [../deploy/README.md](../deploy/README.md) | EC2 bootstrap, SSM deploy scripts |
 | [../frontend/.env.local.example](../frontend/.env.local.example) | Frontend env template |
 | [../deploy/env/application.env.example](../deploy/env/application.env.example) | EC2 backend env template |
+| [../.cursor/CLOUD.md](../.cursor/CLOUD.md) | Cursor Cloud Agents — VM setup, terminals, guardrails |
 
 ### Production operations
 
