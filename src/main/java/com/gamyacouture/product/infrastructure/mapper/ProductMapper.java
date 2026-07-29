@@ -4,8 +4,10 @@ import com.gamyacouture.catalog.domain.Category;
 import com.gamyacouture.catalog.domain.Fabric;
 import com.gamyacouture.catalog.domain.Offer;
 import com.gamyacouture.catalog.domain.Print;
+import com.gamyacouture.catalog.domain.SeasonalCollection;
 import com.gamyacouture.catalog.domain.Tag;
 import com.gamyacouture.product.api.dto.CategorySummaryDto;
+import com.gamyacouture.product.api.dto.CollectionSummaryDto;
 import com.gamyacouture.product.api.dto.FabricDto;
 import com.gamyacouture.product.api.dto.OfferSummaryDto;
 import com.gamyacouture.product.api.dto.PrintDto;
@@ -49,6 +51,7 @@ public interface ProductMapper {
     @Mapping(target = "images", source = "product.images")
     @Mapping(target = "primaryCategoryId", source = "product.primaryCategory.id")
     @Mapping(target = "tags", expression = "java(mapTags(product.getTags()))")
+    @Mapping(target = "collections", expression = "java(mapCollections(product.getSeasonalCollections()))")
     @Mapping(target = "categories", source = "categories")
     @Mapping(target = "effectivePrice", source = "product", qualifiedByName = "effectivePrice")
     @Mapping(target = "onOffer", source = "product", qualifiedByName = "onOffer")
@@ -66,6 +69,20 @@ public interface ProductMapper {
         return tags.stream()
                 .map(this::toTagDto)
                 .sorted(Comparator.comparing(TagDto::name))
+                .toList();
+    }
+
+    default List<CollectionSummaryDto> mapCollections(Set<SeasonalCollection> collections) {
+        if (collections == null || collections.isEmpty()) {
+            return List.of();
+        }
+        return collections.stream()
+                .map(sc -> new CollectionSummaryDto(
+                        sc.getId(),
+                        sc.getName(),
+                        sc.getSlug(),
+                        sc.getCollectionType()))
+                .sorted(Comparator.comparing(CollectionSummaryDto::name))
                 .toList();
     }
 

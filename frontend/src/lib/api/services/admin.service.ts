@@ -5,6 +5,7 @@ import type {
   AdminCartDetail,
   AdminCartSummary,
   AdminCategory,
+  AdminCollection,
   AdminCustomerDetail,
   AdminCustomerSummary,
   AdminFabric,
@@ -25,6 +26,7 @@ import type {
   ProductSummary,
   TaxonomyOption,
   UpsertCategoryPayload,
+  UpsertCollectionPayload,
   UpsertFabricPayload,
   UpsertLeadPayload,
   UpsertOfferPayload,
@@ -121,6 +123,10 @@ export async function uploadProductImage(file: File): Promise<MediaUploadRespons
 
 export async function uploadCategoryImage(file: File): Promise<MediaUploadResponse> {
   return uploadMediaImage(file, "categories");
+}
+
+export async function uploadCollectionImage(file: File): Promise<MediaUploadResponse> {
+  return uploadMediaImage(file, "collections");
 }
 
 export async function uploadProductVideo(file: File): Promise<MediaUploadResponse> {
@@ -397,4 +403,26 @@ export async function updatePromoVideo(id: string, payload: UpsertPromoVideoPayl
 
 export async function deletePromoVideo(id: string): Promise<void> {
   await apiClient.delete(API.adminPromoVideo(id));
+}
+
+export async function fetchAdminCollections(): Promise<AdminCollection[]> {
+  const res = await apiClient.get<ApiResponse<AdminCollection[]>>(API.adminCollections);
+  return unwrap(res);
+}
+
+export async function createCollection(payload: UpsertCollectionPayload): Promise<AdminCollection> {
+  const res = await apiClient.post<ApiResponse<AdminCollection>>(API.adminCollections, payload);
+  return unwrap(res);
+}
+
+export async function updateCollection(
+  id: string,
+  payload: UpsertCollectionPayload,
+): Promise<AdminCollection> {
+  const res = await apiClient.put<ApiResponse<AdminCollection>>(API.adminCollection(id), payload);
+  return unwrap(res);
+}
+
+export async function deactivateCollection(id: string): Promise<void> {
+  await apiClient.delete(API.adminCollection(id));
 }

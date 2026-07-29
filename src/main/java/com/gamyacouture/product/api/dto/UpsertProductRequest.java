@@ -28,6 +28,8 @@ public record UpsertProductRequest(
         Integer stockQuantity,
         Integer lowStockThreshold,
         List<@Size(max = 10) String> availableSizes,
-        @Valid List<ProductColorDto> availableColors
+        @Valid List<ProductColorDto> availableColors,
+        List<UUID> tagIds,
+        List<UUID> collectionIds
 ) {
 }

@@ -16,6 +16,7 @@ import {
   Layers,
   FileText,
   Video,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
@@ -33,6 +34,7 @@ const nav = [
   { href: ROUTES.admin.wishlists, label: "Wishlists", icon: Heart },
   { href: ROUTES.admin.interests, label: "Interests", icon: Sparkles },
   { href: ROUTES.admin.leads, label: "Leads", icon: Inbox },
+  { href: ROUTES.admin.collections, label: "Collections", icon: FolderOpen },
   { href: ROUTES.admin.taxonomy, label: "Taxonomy", icon: Layers },
   { href: ROUTES.admin.promoVideos, label: "Promo videos", icon: Video },
   { href: ROUTES.admin.policies, label: "Policies", icon: FileText },

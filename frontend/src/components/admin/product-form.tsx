@@ -17,6 +17,8 @@ import { ROUTES } from "@/constants/routes";
 import {
   createProduct,
   fetchAdminCategories,
+  fetchAdminCollections,
+  fetchAdminTags,
   fetchFabrics,
   fetchPrints,
   updateProduct,
@@ -28,6 +30,8 @@ import type {
   ProductStatus,
   TaxonomyOption,
   UpsertProductPayload,
+  AdminTag,
+  AdminCollection,
 } from "@/types/admin";
 import type { ProductColor } from "@/types/product";
 
@@ -51,6 +55,8 @@ interface ProductDraft {
   videoUrl: string | null;
   availableSizes: string[];
   availableColors: ProductColor[];
+  tagIds: string[];
+  collectionIds: string[];
 }
 
 interface ProductFormProps {
@@ -66,6 +72,8 @@ export function ProductForm({ product }: ProductFormProps) {
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [fabrics, setFabrics] = useState<TaxonomyOption[]>([]);
   const [prints, setPrints] = useState<TaxonomyOption[]>([]);
+  const [tags, setTags] = useState<AdminTag[]>([]);
+  const [collections, setCollections] = useState<AdminCollection[]>([]);
 
   const [sku, setSku] = useState(product?.sku ?? "");
   const [name, setName] = useState(product?.name ?? "");
@@ -100,6 +108,10 @@ export function ProductForm({ product }: ProductFormProps) {
   const [availableColors, setAvailableColors] = useState<ProductColor[]>(
     product?.availableColors ?? [],
   );
+  const [tagIds, setTagIds] = useState<string[]>(product?.tags?.map((t) => t.id) ?? []);
+  const [collectionIds, setCollectionIds] = useState<string[]>(
+    product?.collections?.map((c) => c.id) ?? [],
+  );
 
   useEffect(() => {
     if (isEdit) return;
@@ -122,6 +134,8 @@ export function ProductForm({ product }: ProductFormProps) {
       setVideoUrl(draft.videoUrl ?? null);
       setAvailableSizes(draft.availableSizes ?? []);
       setAvailableColors(draft.availableColors ?? []);
+      setTagIds(draft.tagIds ?? []);
+      setCollectionIds(draft.collectionIds ?? []);
     } catch {
       /* ignore corrupt draft */
     }
@@ -146,6 +160,8 @@ export function ProductForm({ product }: ProductFormProps) {
         videoUrl,
         availableSizes,
         availableColors,
+        tagIds,
+        collectionIds,
       };
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     }, 800);
@@ -167,15 +183,20 @@ export function ProductForm({ product }: ProductFormProps) {
     videoUrl,
     availableSizes,
     availableColors,
+    tagIds,
+    collectionIds,
   ]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [catsResult, fabricsResult, printsResult] = await Promise.allSettled([
+      const [catsResult, fabricsResult, printsResult, tagsResult, collectionsResult] =
+      await Promise.allSettled([
         fetchAdminCategories(),
         fetchFabrics(),
         fetchPrints(),
+        fetchAdminTags(),
+        fetchAdminCollections(),
       ]);
       if (cancelled) return;
       const failures: string[] = [];
@@ -185,6 +206,11 @@ export function ProductForm({ product }: ProductFormProps) {
       else failures.push("fabrics");
       if (printsResult.status === "fulfilled") setPrints(printsResult.value);
       else failures.push("prints");
+      if (tagsResult.status === "fulfilled") setTags(tagsResult.value);
+      else failures.push("tags");
+      if (collectionsResult.status === "fulfilled") {
+        setCollections(collectionsResult.value.filter((c) => c.active));
+      } else failures.push("collections");
       if (failures.length > 0) {
         setError(`Failed to load form options: ${failures.join(", ")}. Try refreshing.`);
       }
@@ -217,6 +243,8 @@ export function ProductForm({ product }: ProductFormProps) {
     lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : null,
     availableSizes: availableSizes.length ? availableSizes : undefined,
     availableColors: availableColors.length ? availableColors : undefined,
+    tagIds,
+    collectionIds,
   }), [
     sku,
     name,
@@ -233,7 +261,12 @@ export function ProductForm({ product }: ProductFormProps) {
     lowStockThreshold,
     availableSizes,
     availableColors,
+    tagIds,
+    collectionIds,
   ]);
+
+  const toggleId = (ids: string[], id: string): string[] =>
+    ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -396,6 +429,64 @@ export function ProductForm({ product }: ProductFormProps) {
             <div className="mt-2">
               <ColorPicker value={availableColors} onChange={setAvailableColors} />
             </div>
+          </div>
+        </div>
+      </FormSection>
+
+      <FormSection
+        title="Merchandising"
+        description="Events, trends, and collections — how this piece is promoted"
+      >
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div>
+            <label className={labelClass}>Collections</label>
+            {collections.length === 0 ? (
+              <p className="mt-2 text-sm text-stone">
+                No active collections. Create one under Admin → Collections.
+              </p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {collections.map((collection) => (
+                  <li key={collection.id}>
+                    <label className="flex items-start gap-2 text-sm text-charcoal">
+                      <input
+                        type="checkbox"
+                        checked={collectionIds.includes(collection.id)}
+                        onChange={() => setCollectionIds(toggleId(collectionIds, collection.id))}
+                      />
+                      <span>
+                        {collection.name}
+                        <span className="ml-1 text-xs text-stone">({collection.collectionType})</span>
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <label className={labelClass}>Tags</label>
+            {tags.length === 0 ? (
+              <p className="mt-2 text-sm text-stone">No tags yet. Add tags under Admin → Taxonomy.</p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {tags.map((tag) => (
+                  <li key={tag.id}>
+                    <label className="flex items-start gap-2 text-sm text-charcoal">
+                      <input
+                        type="checkbox"
+                        checked={tagIds.includes(tag.id)}
+                        onChange={() => setTagIds(toggleId(tagIds, tag.id))}
+                      />
+                      <span>
+                        {tag.name}
+                        <span className="ml-1 text-xs text-stone">({tag.tagType})</span>
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </FormSection>

@@ -8,6 +8,9 @@ export const API = {
   categoriesTree: "/categories/tree",
   catalogCategories: "/catalog/categories",
   categoryProducts: (slug: string) => `/catalog/categories/${slug}/products`,
+  collections: "/catalog/collections",
+  collection: (slug: string) => `/catalog/collections/${slug}`,
+  collectionProducts: (slug: string) => `/catalog/collections/${slug}/products`,
   authLogin: "/auth/login",
   authRegister: "/auth/register",
   authRefresh: "/auth/refresh",
@@ -67,4 +70,6 @@ export const API = {
   adminPolicy: (key: string) => `/admin/policies/${key}`,
   adminPromoVideos: "/admin/promo-videos",
   adminPromoVideo: (id: string) => `/admin/promo-videos/${id}`,
+  adminCollections: "/admin/collections",
+  adminCollection: (id: string) => `/admin/collections/${id}`,
 } as const;

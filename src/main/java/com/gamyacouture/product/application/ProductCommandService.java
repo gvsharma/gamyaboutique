@@ -4,9 +4,13 @@ import com.gamyacouture.catalog.application.CategoryTaxonomy;
 import com.gamyacouture.catalog.domain.Category;
 import com.gamyacouture.catalog.domain.Fabric;
 import com.gamyacouture.catalog.domain.Print;
+import com.gamyacouture.catalog.domain.SeasonalCollection;
+import com.gamyacouture.catalog.domain.Tag;
 import com.gamyacouture.catalog.infrastructure.CategoryJpaRepository;
 import com.gamyacouture.catalog.infrastructure.FabricJpaRepository;
 import com.gamyacouture.catalog.infrastructure.PrintJpaRepository;
+import com.gamyacouture.catalog.infrastructure.SeasonalCollectionJpaRepository;
+import com.gamyacouture.catalog.infrastructure.TagJpaRepository;
 import com.gamyacouture.product.api.dto.ProductDetailDto;
 import com.gamyacouture.product.api.dto.ProductImageInput;
 import com.gamyacouture.product.api.dto.UpsertProductRequest;
@@ -46,6 +50,8 @@ public class ProductCommandService {
     private final FabricJpaRepository fabricRepository;
     private final PrintJpaRepository printRepository;
     private final ProductCategoryLinkJpaRepository categoryLinkRepository;
+    private final TagJpaRepository tagRepository;
+    private final SeasonalCollectionJpaRepository collectionRepository;
     private final ProductMapper productMapper;
     private final AdminProductQueryService adminProductQueryService;
 
@@ -118,6 +124,8 @@ public class ProductCommandService {
         product.setAvailableColors(ProductOptionsCodec.encodeColors(request.availableColors()));
         applyImages(product, request.images());
         applyVideoUrl(product, request.videoUrl());
+        applyTags(product, request.tagIds());
+        applyCollections(product, request.collectionIds());
     }
 
     private void applyVideoUrl(Product product, String videoUrl) {
@@ -148,6 +156,42 @@ public class ProductCommandService {
                     .build();
             product.getImages().add(image);
         }
+    }
+
+    private void applyTags(Product product, List<UUID> tagIds) {
+        if (tagIds == null) {
+            return;
+        }
+        product.getTags().clear();
+        if (tagIds.isEmpty()) {
+            return;
+        }
+        List<Tag> tags = tagRepository.findAllById(tagIds);
+        if (tags.size() != tagIds.size()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "One or more tags were not found");
+        }
+        product.getTags().addAll(tags);
+    }
+
+    private void applyCollections(Product product, List<UUID> collectionIds) {
+        if (collectionIds == null) {
+            return;
+        }
+        product.getSeasonalCollections().clear();
+        if (collectionIds.isEmpty()) {
+            return;
+        }
+        List<SeasonalCollection> collections = collectionRepository.findAllById(collectionIds);
+        if (collections.size() != collectionIds.size()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "One or more collections were not found");
+        }
+        for (SeasonalCollection collection : collections) {
+            if (!collection.isActive()) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                        "Collection not found or inactive: " + collection.getSlug());
+            }
+        }
+        product.getSeasonalCollections().addAll(collections);
     }
 
     private void syncCategoryLinks(Product product, UpsertProductRequest request) {
@@ -229,6 +273,8 @@ public class ProductCommandService {
                 request.stockQuantity(),
                 request.lowStockThreshold(),
                 request.availableSizes(),
-                request.availableColors());
+                request.availableColors(),
+                request.tagIds(),
+                request.collectionIds());
     }
 }

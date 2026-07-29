@@ -19,6 +19,8 @@ export type CartStatus = "ACTIVE" | "MERGED" | "ABANDONED";
 
 export type TagType = "GENERAL" | "OFFER" | "SEASONAL" | "FEATURE" | "COLLECTION";
 
+export type CollectionType = "EVENT" | "TREND" | "SEASON" | "FEATURED";
+
 export type DiscountType = "PERCENT" | "FIXED";
 
 export interface DashboardSummary {
@@ -66,6 +68,8 @@ export interface UpsertProductPayload {
   lowStockThreshold?: number | null;
   availableSizes?: string[];
   availableColors?: ProductColor[];
+  tagIds?: string[];
+  collectionIds?: string[];
 }
 
 export interface UpsertCategoryPayload {
@@ -271,6 +275,35 @@ export interface UpsertOfferPayload {
   discountValue: number;
   startsAt?: string | null;
   endsAt?: string | null;
+  active?: boolean;
+}
+
+export interface AdminCollection {
+  id: string;
+  name: string;
+  slug: string;
+  collectionType: CollectionType;
+  season: string;
+  year: number;
+  description: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  imageUrl: string | null;
+  displayOrder: number;
+  active: boolean;
+}
+
+export interface UpsertCollectionPayload {
+  name: string;
+  slug?: string;
+  collectionType: CollectionType;
+  season?: string;
+  year?: number;
+  description?: string;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  imageUrl?: string | null;
+  displayOrder?: number;
   active?: boolean;
 }
 
