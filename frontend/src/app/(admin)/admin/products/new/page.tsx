@@ -37,7 +37,7 @@ export default async function NewProductPage({
             </Link>
           )}
           <Link href={ROUTES.admin.productImport}>
-            <Button variant="outline">Import CSV / Excel</Button>
+            <Button variant="outline">Import CSV</Button>
           </Link>
         </div>
       </div>

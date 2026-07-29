@@ -116,10 +116,10 @@ export default function AdminProductImportPage() {
         <div>
           <p className="text-eyebrow">Catalog</p>
           <h1 className="mt-2 font-display text-section-title text-charcoal">
-            Import products (CSV or Excel)
+            Import products from CSV
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-stone">
-            Upload a spreadsheet with name, product type, description, and price. SKUs are generated
+            Upload a CSV with name, product type, description, and price. SKUs are generated
             automatically. Add photos and videos later by editing each product.
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function AdminProductImportPage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            accept=".csv,text/csv"
             className="hidden"
             onChange={handleFileChange}
           />
@@ -142,7 +142,7 @@ export default function AdminProductImportPage() {
             onClick={() => fileInputRef.current?.click()}
             disabled={loadingPreview || importing}
           >
-            {loadingPreview ? "Parsing file…" : "Choose CSV or Excel file"}
+            {loadingPreview ? "Parsing CSV…" : "Choose CSV file"}
           </Button>
           <a
             href="/templates/products-import-simple-template.csv"
@@ -175,8 +175,8 @@ export default function AdminProductImportPage() {
             image_urls, video_url
           </p>
           <p className="mt-3">
-            Excel (.xlsx) is converted automatically. After import, open each product to upload
-            images and video.
+            Using Excel? Save the sheet as <strong>CSV (.csv)</strong> first, then upload here.
+            After import, open each product to upload images and video.
           </p>
         </div>
       </div>
