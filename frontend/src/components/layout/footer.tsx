@@ -7,7 +7,7 @@ import { CONTACT, SITE_NAME, SITE_TAGLINE } from "@/constants/site";
 export function Footer() {
   return (
     <footer className="relative z-10 mt-auto border-t border-rose/25 bg-gradient-to-b from-pink-soft via-rose-soft/80 to-pink-mist text-charcoal">
-      <div className="container-premium grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-5 lg:gap-8 lg:py-20">
+      <div className="container-premium grid gap-10 py-12 md:grid-cols-2 md:gap-8 lg:grid-cols-5 lg:gap-8 lg:py-16">
         <div className="lg:col-span-1">
           <p className="font-display text-2xl tracking-tight text-maroon">{SITE_NAME}</p>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-charcoal/70">{SITE_TAGLINE}</p>
@@ -150,7 +150,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-rose/20">
-        <div className="container-premium flex flex-col items-center justify-between gap-3 py-6 text-xs text-charcoal/50 sm:flex-row">
+        <div className="container-premium flex flex-col items-center justify-between gap-2 py-5 text-xs text-charcoal/50 sm:flex-row sm:py-6">
           <p>© {new Date().getFullYear()} {SITE_NAME}. Crafted with care in Hyderabad.</p>
           <p className="tracking-wide">Luxury Indian couture for women &amp; girls</p>
         </div>

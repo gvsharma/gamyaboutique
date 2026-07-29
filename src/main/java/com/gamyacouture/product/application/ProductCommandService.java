@@ -109,12 +109,13 @@ public class ProductCommandService {
         product.setSku(request.sku().trim());
         product.setName(request.name().trim());
         product.setDescription(request.description());
-        product.setPrice(request.price());
+        product.setPrice(resolvePrice(request.price()));
         product.setCompareAtPrice(request.compareAtPrice());
         product.setCurrency(request.currency() != null && !request.currency().isBlank()
                 ? request.currency().trim().toUpperCase()
                 : "INR");
         product.setStatus(request.status() != null ? request.status() : ProductStatus.DRAFT);
+        validatePublishRequirements(product, request);
         product.setFabric(resolveFabric(request.fabricId()));
         product.setPrint(resolvePrint(request.printId()));
         product.setPrimaryCategory(resolveCategory(request.primaryCategoryId()));
@@ -155,6 +156,32 @@ public class ProductCommandService {
                     .displayOrder(input.displayOrder())
                     .build();
             product.getImages().add(image);
+        }
+    }
+
+    private BigDecimal resolvePrice(BigDecimal price) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ONE;
+        }
+        return price;
+    }
+
+    private void validatePublishRequirements(Product product, UpsertProductRequest request) {
+        ProductStatus status = request.status() != null ? request.status() : product.getStatus();
+        if (status != ProductStatus.ACTIVE) {
+            return;
+        }
+        UUID categoryId = request.primaryCategoryId() != null
+                ? request.primaryCategoryId()
+                : product.getPrimaryCategory() != null ? product.getPrimaryCategory().getId() : null;
+        if (categoryId == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "Select a product type before publishing.");
+        }
+        BigDecimal price = request.price() != null ? request.price() : product.getPrice();
+        if (price == null || price.compareTo(BigDecimal.ONE) < 0) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "Set a price before publishing.");
         }
     }
 

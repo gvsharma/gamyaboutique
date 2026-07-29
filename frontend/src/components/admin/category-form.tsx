@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { FieldLabel } from "@/components/admin/field-label";
 import { Button } from "@/components/ui/button";
 import { CoverImageUploader } from "@/components/admin/cover-image-uploader";
 import {
@@ -13,7 +14,6 @@ import { createCategory, uploadCategoryImage } from "@/lib/api/services/admin.se
 import type { AdminCategory, UpsertCategoryPayload } from "@/types/admin";
 
 const inputClass = "admin-input";
-const labelClass = "text-eyebrow text-stone";
 
 interface CategoryFormProps {
   categories: AdminCategory[];
@@ -57,6 +57,10 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
       setError("Select Women or Girls, then a product type.");
       return;
     }
+    if (!name.trim()) {
+      setError("Add a display name.");
+      return;
+    }
     if (existingChild) {
       setError("This category already exists.");
       return;
@@ -66,7 +70,7 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
     const payload: UpsertCategoryPayload = {
       name: name.trim(),
       slug: childSlug,
-      description: description || undefined,
+      description: description.trim() || undefined,
       parentId,
       displayOrder: Number(displayOrder),
       active: true,
@@ -92,12 +96,11 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
     <form onSubmit={handleSubmit} className="admin-card space-y-4">
       <h3 className="font-display text-lg text-charcoal">Add category</h3>
       <p className="text-sm text-stone">
-        Taxonomy is limited to Women (sarees, kurtas, lehengas, blouses) and Girls (kurtas,
-        lehengas).
+        Pick Women or Girls and a type. Cover image is optional — drag from your Mac or add later.
       </p>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Group</label>
+          <FieldLabel>Group</FieldLabel>
           <select
             className={inputClass}
             value={parentId}
@@ -105,7 +108,6 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
               setParentId(e.target.value);
               setChildSlug("");
             }}
-            required
           >
             <option value="">— Women or Girls —</option>
             {visibleRoots.map((cat) => (
@@ -116,7 +118,7 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
           </select>
         </div>
         <div>
-          <label className={labelClass}>Type</label>
+          <FieldLabel>Type</FieldLabel>
           <select
             className={inputClass}
             value={childSlug}
@@ -127,7 +129,6 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
                 setName(slugToDisplayName(nextSlug));
               }
             }}
-            required
             disabled={!parentId}
           >
             <option value="">— Select type —</option>
@@ -138,17 +139,23 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
               return (
                 <option key={slug} value={slug} disabled={taken}>
                   {slug.replace(/-/g, " ")}
+                  {taken ? " (exists)" : ""}
                 </option>
               );
             })}
           </select>
         </div>
         <div>
-          <label className={labelClass}>Display name</label>
-          <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} required />
+          <FieldLabel>Display name</FieldLabel>
+          <input
+            className={inputClass}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Sarees"
+          />
         </div>
         <div>
-          <label className={labelClass}>Display order</label>
+          <FieldLabel optional>Display order</FieldLabel>
           <input
             className={inputClass}
             type="number"
@@ -157,11 +164,16 @@ export function CategoryForm({ categories, onCreated }: CategoryFormProps) {
           />
         </div>
         <div className="sm:col-span-2">
-          <label className={labelClass}>Description</label>
-          <input className={inputClass} value={description} onChange={(e) => setDescription(e.target.value)} />
+          <FieldLabel optional>Description</FieldLabel>
+          <input
+            className={inputClass}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Short description for navigation"
+          />
         </div>
         <div className="sm:col-span-2">
-          <label className={labelClass}>Cover image</label>
+          <FieldLabel optional>Cover image</FieldLabel>
           <div className="mt-2">
             <CoverImageUploader
               imageUrl={imageUrl}

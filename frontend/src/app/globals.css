@@ -148,7 +148,21 @@
   }
 
   .admin-card {
-    @apply rounded-2xl bg-pearl p-6 shadow-soft;
+    @apply rounded-2xl bg-pearl p-4 shadow-soft sm:p-6;
+  }
+
+  .admin-dropzone {
+    @apply border border-charcoal bg-pearl/80;
+    --tw-border-opacity: 0.12;
+  }
+
+  .admin-mobile-nav {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .admin-mobile-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .admin-input {

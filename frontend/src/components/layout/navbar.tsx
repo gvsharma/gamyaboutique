@@ -240,7 +240,7 @@ export function Navbar() {
             scrolled && "shadow-soft backdrop-blur-xl",
           )}
         >
-          <div className="container-premium flex h-14 items-center gap-3 lg:h-[4.25rem] lg:gap-4">
+          <div className="container-premium flex h-14 items-center gap-2 sm:gap-3 lg:h-[4rem] lg:gap-4">
             <Link
               href={ROUTES.home}
               className="relative z-10 shrink-0 font-sans text-sm font-bold uppercase tracking-[0.18em] text-charcoal transition-colors hover:text-maroon sm:text-[15px] lg:mr-1"
