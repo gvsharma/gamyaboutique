@@ -39,7 +39,8 @@ public class SecurityConfig {
             "/api/v1/categories/**",
             "/api/v1/cart/**",
             "/api/v1/policies/**",
-            "/api/v1/promo-videos/**"
+            "/api/v1/promo-videos/**",
+            "/api/v1/site/**"
     };
 
     private static final String[] PUBLIC_MUTATING = {

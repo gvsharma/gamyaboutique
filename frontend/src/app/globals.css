@@ -165,6 +165,14 @@
     display: none;
   }
 
+  .section-luxury {
+    @apply py-20 sm:py-28;
+  }
+
+  .section-luxury-tight {
+    @apply py-12 sm:py-16;
+  }
+
   .admin-input {
     @apply relative z-[1] mt-1 w-full rounded-xl border border-charcoal bg-pearl px-3 py-2.5 text-sm outline-none transition-all duration-300 focus:border-maroon focus:ring-2 focus:ring-maroon;
     --tw-border-opacity: 0.1;

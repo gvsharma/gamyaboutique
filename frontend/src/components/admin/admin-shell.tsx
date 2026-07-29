@@ -17,6 +17,7 @@ import {
   FileText,
   Video,
   FolderOpen,
+  LayoutTemplate,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
@@ -29,6 +30,7 @@ const nav = [
   { href: ROUTES.admin.products, label: "Products", icon: Package },
   { href: ROUTES.admin.categories, label: "Categories", icon: Tags },
   { href: ROUTES.admin.collections, label: "Collections", icon: FolderOpen },
+  { href: ROUTES.admin.homepage, label: "Homepage", icon: LayoutTemplate },
   { href: ROUTES.admin.users, label: "Users", icon: Users },
   { href: ROUTES.admin.customers, label: "Customers", icon: UserCircle },
   { href: ROUTES.admin.carts, label: "Carts", icon: ShoppingCart },

@@ -16,10 +16,10 @@ export function CollectionPageClient({ slug }: { slug: string }) {
     staleTime: 0,
   });
 
-  if (isLoading) return <p className="mt-10 text-center text-stone">Loading…</p>;
+  if (isLoading) return <p className="mt-8 text-center text-stone">Loading…</p>;
   if (isError || !data) {
     return (
-      <p className="mt-10 text-center text-stone">
+      <p className="mt-8 text-center text-stone">
         This collection could not be loaded. Browse our{" "}
         <a href="/shop" className="font-medium text-maroon underline-offset-2 hover:underline">
           full shop
@@ -33,7 +33,7 @@ export function CollectionPageClient({ slug }: { slug: string }) {
 
   if (products.length === 0) {
     return (
-      <p className="mt-10 text-center text-stone">
+      <p className="mt-8 text-center text-stone">
         Pieces for this collection are coming soon. Browse our{" "}
         <a href="/shop" className="font-medium text-maroon underline-offset-2 hover:underline">
           full shop
@@ -45,12 +45,12 @@ export function CollectionPageClient({ slug }: { slug: string }) {
 
   return (
     <div>
-      <p className="mb-6 text-sm text-stone">
-        {data.totalElements} piece{data.totalElements !== 1 ? "s" : ""}
+      <p className="mb-8 text-sm text-stone">
+        {data.totalElements} piece{data.totalElements !== 1 ? "s" : ""} in this edit
       </p>
       <ProductGrid products={products} />
       {data.totalPages > 1 && (
-        <div className="mt-12 flex justify-center gap-4">
+        <div className="mt-14 flex justify-center gap-4">
           <Button variant="outline" disabled={data.first} onClick={() => setPage((p) => p - 1)}>
             Previous
           </Button>

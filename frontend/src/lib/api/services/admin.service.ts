@@ -38,6 +38,11 @@ import type {
 } from "@/types/admin";
 import type { PolicyKey, SitePolicy, UpdateSitePolicyPayload } from "@/types/site-policy";
 import type { PromoVideo, UpsertPromoVideoPayload } from "@/types/promo-video";
+import type {
+  HomepageSlotDto,
+  HomepageSlotKey,
+  UpsertHomepageSlotPayload,
+} from "@/types/homepage";
 
 function unwrap<T>(response: { data: ApiResponse<T> }): T {
   if (!response.data.success) {
@@ -425,4 +430,20 @@ export async function updateCollection(
 
 export async function deactivateCollection(id: string): Promise<void> {
   await apiClient.delete(API.adminCollection(id));
+}
+
+export async function fetchAdminHomepageSlots(): Promise<HomepageSlotDto[]> {
+  const res = await apiClient.get<ApiResponse<HomepageSlotDto[]>>(API.adminHomepageSlots);
+  return unwrap(res);
+}
+
+export async function updateAdminHomepageSlot(
+  key: HomepageSlotKey,
+  payload: UpsertHomepageSlotPayload,
+): Promise<HomepageSlotDto> {
+  const res = await apiClient.put<ApiResponse<HomepageSlotDto>>(
+    API.adminHomepageSlot(key),
+    payload,
+  );
+  return unwrap(res);
 }

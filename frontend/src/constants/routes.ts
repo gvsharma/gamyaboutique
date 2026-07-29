@@ -18,6 +18,7 @@ export const ROUTES = {
   category: (slug: string) => `/category/${slug}`,
   collection: (slug: string) => `/collections/${slug}`,
   shopNewArrivals: "/shop?sort=new",
+  shopCollections: "/collections",
   aboutStory: "/about#our-story",
   customStitching: (service?: string) =>
     service ? `/contact?service=${encodeURIComponent(service)}` : "/contact",
@@ -40,6 +41,7 @@ export const ROUTES = {
     leads: "/admin/leads",
     taxonomy: "/admin/taxonomy",
     collections: "/admin/collections",
+    homepage: "/admin/homepage",
     policies: "/admin/policies",
     promoVideos: "/admin/promo-videos",
   },

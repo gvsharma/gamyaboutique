@@ -11,6 +11,7 @@ export const API = {
   collections: "/catalog/collections",
   collection: (slug: string) => `/catalog/collections/${slug}`,
   collectionProducts: (slug: string) => `/catalog/collections/${slug}/products`,
+  siteHomepage: "/site/homepage",
   authLogin: "/auth/login",
   authRegister: "/auth/register",
   authRefresh: "/auth/refresh",
@@ -72,4 +73,6 @@ export const API = {
   adminPromoVideo: (id: string) => `/admin/promo-videos/${id}`,
   adminCollections: "/admin/collections",
   adminCollection: (id: string) => `/admin/collections/${id}`,
+  adminHomepageSlots: "/admin/homepage/slots",
+  adminHomepageSlot: (key: string) => `/admin/homepage/slots/${key}`,
 } as const;
