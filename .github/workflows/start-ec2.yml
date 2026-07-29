@@ -1,0 +1,147 @@
+name: Start EC2
+
+# Daily dev uptime: 06:00–07:00 IST (1 hour). GitHub cron uses UTC.
+# 06:00 IST = 00:30 UTC | 07:00 stop is in stop-ec2.yml at 01:30 UTC
+
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: start-ec2-dev
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  start-ec2:
+    name: Start dev EC2 API instance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Resolve deploy configuration
+        id: deploy_cfg
+        env:
+          AWS_BACKEND_DEPLOY_ROLE_ARN: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
+          DEPLOY_BUCKET_VAR: ${{ vars.DEPLOY_BUCKET }}
+          DEPLOY_BUCKET_SECRET: ${{ secrets.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID_VAR: ${{ vars.EC2_INSTANCE_ID }}
+          EC2_INSTANCE_ID_SECRET: ${{ secrets.EC2_INSTANCE_ID }}
+        run: |
+          set -euo pipefail
+          pick_non_empty() {
+            if [[ -n "${1//[[:space:]]/}" ]]; then
+              echo "$1"
+            else
+              echo "$2"
+            fi
+          }
+
+          DEPLOY_BUCKET="$(pick_non_empty "$DEPLOY_BUCKET_VAR" "$DEPLOY_BUCKET_SECRET")"
+          EC2_INSTANCE_ID="$(pick_non_empty "$EC2_INSTANCE_ID_VAR" "$EC2_INSTANCE_ID_SECRET")"
+
+          missing=()
+          [[ -z "${AWS_BACKEND_DEPLOY_ROLE_ARN//[[:space:]]/}" ]] && missing+=(AWS_BACKEND_DEPLOY_ROLE_ARN)
+          [[ -z "${DEPLOY_BUCKET//[[:space:]]/}" ]] && missing+=(DEPLOY_BUCKET)
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error title=Missing deploy config::Set AWS_BACKEND_DEPLOY_ROLE_ARN and DEPLOY_BUCKET in GitHub Actions secrets/variables." >&2
+            exit 1
+          fi
+
+          echo "deploy_bucket=${DEPLOY_BUCKET}" >> "$GITHUB_OUTPUT"
+          echo "ec2_instance_id=${EC2_INSTANCE_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_BACKEND_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve and start EC2 instance
+        env:
+          DEPLOY_BUCKET: ${{ steps.deploy_cfg.outputs.deploy_bucket }}
+          CONFIGURED_INSTANCE_ID: ${{ steps.deploy_cfg.outputs.ec2_instance_id }}
+        run: |
+          set -euo pipefail
+          EC2_INSTANCE_ID="${CONFIGURED_INSTANCE_ID//[[:space:]]/}"
+          NAME_PREFIX="${DEPLOY_BUCKET%-backend-deploy}"
+          if [[ "${NAME_PREFIX}" == "${DEPLOY_BUCKET}" ]]; then
+            NAME_PREFIX="${DEPLOY_BUCKET%-deploy}"
+          fi
+          EC2_NAME_TAG="${NAME_PREFIX}-api"
+
+          instance_state() {
+            aws ec2 describe-instances \
+              --region "${AWS_REGION}" \
+              --instance-ids "$1" \
+              --query 'Reservations[0].Instances[0].State.Name' \
+              --output text 2>/dev/null || echo "missing"
+          }
+
+          resolve_by_name_tag() {
+            aws ec2 describe-instances \
+              --region "${AWS_REGION}" \
+              --filters \
+                "Name=tag:Name,Values=${EC2_NAME_TAG}" \
+                "Name=instance-state-name,Values=pending,running,stopping,stopped" \
+              --query 'sort_by(Reservations[].Instances[], &LaunchTime)[-1].InstanceId' \
+              --output text
+          }
+
+          if [[ -z "${EC2_INSTANCE_ID}" ]]; then
+            echo "Resolving EC2 instance by tag Name=${EC2_NAME_TAG}"
+            EC2_INSTANCE_ID="$(resolve_by_name_tag)"
+            if [[ -z "${EC2_INSTANCE_ID}" || "${EC2_INSTANCE_ID}" == "None" ]]; then
+              echo "::error::No EC2 instance found with tag Name=${EC2_NAME_TAG}." >&2
+              exit 1
+            fi
+          fi
+
+          STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+          if [[ "${STATE}" == "missing" || "${STATE}" == "None" || "${STATE}" == "terminated" ]]; then
+            RESOLVED="$(resolve_by_name_tag)"
+            if [[ -z "${RESOLVED}" || "${RESOLVED}" == "None" ]]; then
+              echo "::error::No EC2 instance found with tag Name=${EC2_NAME_TAG}." >&2
+              exit 1
+            fi
+            EC2_INSTANCE_ID="${RESOLVED}"
+            STATE="$(instance_state "${EC2_INSTANCE_ID}")"
+          fi
+
+          echo "Target EC2 instance: ${EC2_INSTANCE_ID} (state=${STATE})"
+
+          case "${STATE}" in
+            running)
+              echo "EC2 ${EC2_INSTANCE_ID} is already running."
+              exit 0
+              ;;
+            pending)
+              echo "EC2 ${EC2_INSTANCE_ID} is already starting."
+              ;;
+            stopped)
+              echo "Starting stopped instance ${EC2_INSTANCE_ID}..."
+              aws ec2 start-instances --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}" >/dev/null
+              ;;
+            stopping)
+              echo "EC2 ${EC2_INSTANCE_ID} is stopping; waiting before start..."
+              aws ec2 wait instance-stopped --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+              aws ec2 start-instances --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}" >/dev/null
+              ;;
+            *)
+              echo "::error::EC2 ${EC2_INSTANCE_ID} is in unexpected state: ${STATE}" >&2
+              exit 1
+              ;;
+          esac
+
+          echo "Waiting for EC2 ${EC2_INSTANCE_ID} to become running..."
+          aws ec2 wait instance-running --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+          echo "Waiting for EC2 status checks (instance-status-ok)..."
+          aws ec2 wait instance-status-ok --region "${AWS_REGION}" --instance-ids "${EC2_INSTANCE_ID}"
+          echo "EC2 ${EC2_INSTANCE_ID} is running."
