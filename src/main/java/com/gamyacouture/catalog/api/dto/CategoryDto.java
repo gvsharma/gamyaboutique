@@ -9,6 +9,7 @@ public record CategoryDto(
         String description,
         int displayOrder,
         UUID parentId,
-        String imageUrl
+        String imageUrl,
+        boolean active
 ) {
 }

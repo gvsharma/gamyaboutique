@@ -175,7 +175,8 @@ public class CategoryCommandService {
                 category.getDescription(),
                 category.getDisplayOrder(),
                 category.getParent() != null ? category.getParent().getId() : null,
-                category.getImageUrl()
+                category.getImageUrl(),
+                category.isActive()
         );
     }
 
