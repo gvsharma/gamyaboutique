@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HeroBanner } from "@/components/home/hero-banner";
+import { PromoVideoShowcase } from "@/components/home/promo-video-showcase";
 import { categoryCoverImage } from "@/lib/category-images";
 import { filterWomenGirlsProducts, pickHomepageCategories } from "@/lib/catalog-filters";
 import { EditorialFeatures } from "@/components/home/editorial-features";
@@ -15,17 +16,20 @@ import { API } from "@/lib/api/endpoints";
 import type { PageResponse } from "@/types/api";
 import type { CategoryTreeNode } from "@/types/catalog";
 import type { ProductSummary } from "@/types/product";
+import type { PromoVideo } from "@/types/promo-video";
 
 export default async function HomePage() {
   let categories: CategoryTreeNode[] = [];
   let featured: ProductSummary[] = [];
   let trending: ProductSummary[] = [];
+  let promoVideos: PromoVideo[] = [];
 
   try {
-    [categories, featured, trending] = await Promise.all([
+    [categories, featured, trending, promoVideos] = await Promise.all([
       serverFetch<CategoryTreeNode[]>(API.categoriesTree),
       serverFetch<PageResponse<ProductSummary>>("/products?page=0&size=8").then((p) => p.content),
       serverFetch<PageResponse<ProductSummary>>("/products?page=0&size=12").then((p) => p.content),
+      serverFetch<PromoVideo[]>(API.promoVideos).catch(() => []),
     ]);
   } catch {
     // API offline — page still renders
@@ -38,6 +42,8 @@ export default async function HomePage() {
   return (
     <>
       <HeroBanner />
+
+      {promoVideos.length > 0 && <PromoVideoShowcase videos={promoVideos} />}
 
       {spotlightCategories.length > 0 && (
         <section className="container-premium py-20 sm:py-24">

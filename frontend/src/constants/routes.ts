@@ -39,5 +39,6 @@ export const ROUTES = {
     leads: "/admin/leads",
     taxonomy: "/admin/taxonomy",
     policies: "/admin/policies",
+    promoVideos: "/admin/promo-videos",
   },
 } as const;
