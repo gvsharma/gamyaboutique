@@ -285,6 +285,16 @@ export async function updateCrmLeadStatus(
   return unwrap(res);
 }
 
+export async function updateCrmLeadStylistNotes(
+  id: string,
+  stylistNotes: string | null,
+): Promise<CrmLead> {
+  const res = await apiClient.patch<ApiResponse<CrmLead>>(API.crmLeadStylistNotes(id), {
+    stylistNotes,
+  });
+  return unwrap(res);
+}
+
 export async function deleteCrmLead(id: string): Promise<void> {
   await apiClient.delete(API.crmLead(id));
 }

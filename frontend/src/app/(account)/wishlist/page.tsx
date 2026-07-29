@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ProductGridSkeleton } from "@/components/ui/skeleton";
 import { SectionHeader } from "@/components/ui/section-header";
 import { WishlistGrid } from "@/components/wishlist/wishlist-grid";
+import { WishlistInquireBar } from "@/components/wishlist/wishlist-inquire-bar";
 import { ROUTES } from "@/constants/routes";
 import { fetchWishlist } from "@/lib/api/services/wishlist.service";
 import { tokenStorage } from "@/lib/auth/token-storage";
@@ -66,7 +67,12 @@ export default function WishlistPage() {
           </Link>
         </div>
       )}
-      {!isLoading && items.length > 0 && <WishlistGrid products={items} />}
+      {!isLoading && items.length > 0 && (
+        <>
+          <WishlistGrid products={items} />
+          <WishlistInquireBar products={items} />
+        </>
+      )}
     </div>
   );
 }

@@ -13,7 +13,13 @@ export type CustomerInterestStatus =
 
 export type LeadStatus = "NEW" | "CONTACTED" | "QUALIFIED" | "LOST" | "WON";
 
-export type LeadSource = "WEBSITE" | "CUSTOMER_INTEREST" | "REFERRAL" | "WALK_IN" | "OTHER";
+export type LeadSource =
+  | "WEBSITE"
+  | "CUSTOMER_INTEREST"
+  | "CONSULTATION"
+  | "REFERRAL"
+  | "WALK_IN"
+  | "OTHER";
 
 export type CartStatus = "ACTIVE" | "MERGED" | "ABANDONED";
 
@@ -202,7 +208,13 @@ export interface CrmLead {
   source: LeadSource;
   status: LeadStatus;
   notes: string | null;
+  occasion: string | null;
+  budgetBand: string | null;
+  timeline: string | null;
+  serviceType: string | null;
+  stylistNotes: string | null;
   productId: string | null;
+  productName: string | null;
   customerId: string | null;
   createdAt: string;
   updatedAt: string;

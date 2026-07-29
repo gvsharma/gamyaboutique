@@ -40,19 +40,16 @@ Strategic phases for Gamya Couture storefront, admin, and platform — written f
 2. Products from `collection_slug` if set
 3. Latest active shop products (fallback)
 
-## Phase C — Relationship layer (next)
+## Phase C — Relationship layer (implemented)
 
 **Goal:** Revenue through conversation, especially custom stitching.
 
-- Consultation request entity (occasion, budget band, timeline, reference images)
-- Product-aware WhatsApp deep links from PDP and wishlist
-- Wishlist → inquiry flow for made-to-order pieces
-- Stylist notes on leads in admin
-
-**Best practices:**
-
-- Never block checkout with popups; offer consultation as elevation, not interruption
-- Capture phone/WhatsApp early for high-AOV ethnic wear
+- `POST /api/v1/consultations` — public consultation requests (occasion, budget, timeline)
+- Extended `crm_leads` with consultation fields + `stylist_notes`
+- Contact page consultation form; admin leads drawer with stylist notes
+- Product-aware WhatsApp links on PDP (size, color, price, URL)
+- Wishlist → WhatsApp stylist bar
+- Removed auto-popup support dialog (luxury = no interruption)
 
 ## Phase D — Performance & polish (next)
 
