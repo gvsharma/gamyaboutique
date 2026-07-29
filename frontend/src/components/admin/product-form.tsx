@@ -14,6 +14,7 @@ import {
   productAssignableCategories,
 } from "@/constants/category-taxonomy";
 import { ROUTES } from "@/constants/routes";
+import { formatApiErrorMessage } from "@/lib/api/error-message";
 import {
   createProduct,
   fetchAdminCategories,
@@ -254,9 +255,13 @@ export function ProductForm({ product }: ProductFormProps) {
         toast("Product created");
       }
       router.push(ROUTES.admin.products);
-    } catch {
-      setError("Failed to save product. Check SKU uniqueness and required fields.");
-      toast("Failed to save product", "error");
+    } catch (err) {
+      const message = formatApiErrorMessage(
+        err,
+        "Failed to save product. Check SKU uniqueness and required fields.",
+      );
+      setError(message);
+      toast(message, "error");
     } finally {
       setSaving(false);
     }

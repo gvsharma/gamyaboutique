@@ -10,6 +10,7 @@ import {
   productAssignableCategories,
 } from "@/constants/category-taxonomy";
 import { ROUTES } from "@/constants/routes";
+import { formatApiErrorMessage } from "@/lib/api/error-message";
 import { createProduct, fetchAdminCategories } from "@/lib/api/services/admin.service";
 import type { AdminCategory } from "@/types/admin";
 
@@ -62,9 +63,13 @@ export function QuickProductForm() {
       });
       toast("Product created — add photos and video next");
       router.push(ROUTES.admin.productEdit(created.id));
-    } catch {
-      setError("Failed to create product. Check the price and try again.");
-      toast("Failed to create product", "error");
+    } catch (err) {
+      const message = formatApiErrorMessage(
+        err,
+        "Failed to create product. Check the price and try again.",
+      );
+      setError(message);
+      toast(message, "error");
     } finally {
       setSaving(false);
     }
