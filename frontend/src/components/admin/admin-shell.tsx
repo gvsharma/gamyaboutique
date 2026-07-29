@@ -15,6 +15,7 @@ import {
   Inbox,
   Layers,
   FileText,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants/routes";
@@ -33,6 +34,7 @@ const nav = [
   { href: ROUTES.admin.interests, label: "Interests", icon: Sparkles },
   { href: ROUTES.admin.leads, label: "Leads", icon: Inbox },
   { href: ROUTES.admin.taxonomy, label: "Taxonomy", icon: Layers },
+  { href: ROUTES.admin.promoVideos, label: "Promo videos", icon: Video },
   { href: ROUTES.admin.policies, label: "Policies", icon: FileText },
 ];
 

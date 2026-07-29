@@ -62,6 +62,9 @@ export const API = {
   crmLead: (id: string) => `/crm/leads/${id}`,
   crmLeadStatus: (id: string) => `/crm/leads/${id}/status`,
   policy: (key: string) => `/policies/${key}`,
+  promoVideos: "/promo-videos",
   adminPolicies: "/admin/policies",
   adminPolicy: (key: string) => `/admin/policies/${key}`,
+  adminPromoVideos: "/admin/promo-videos",
+  adminPromoVideo: (id: string) => `/admin/promo-videos/${id}`,
 } as const;

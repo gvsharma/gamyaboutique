@@ -35,6 +35,7 @@ import type {
   BulkProductImportResult,
 } from "@/types/admin";
 import type { PolicyKey, SitePolicy, UpdateSitePolicyPayload } from "@/types/site-policy";
+import type { PromoVideo, UpsertPromoVideoPayload } from "@/types/promo-video";
 
 function unwrap<T>(response: { data: ApiResponse<T> }): T {
   if (!response.data.success) {
@@ -369,4 +370,31 @@ export async function updateAdminPolicy(
 ): Promise<SitePolicy> {
   const res = await apiClient.put<ApiResponse<SitePolicy>>(API.adminPolicy(key), payload);
   return unwrap(res);
+}
+
+export async function uploadPromoVideo(file: File): Promise<MediaUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("folder", "promo-videos");
+  const res = await apiClient.post<ApiResponse<MediaUploadResponse>>(API.adminMediaUploadVideo, formData);
+  return unwrap(res);
+}
+
+export async function fetchAdminPromoVideos(): Promise<PromoVideo[]> {
+  const res = await apiClient.get<ApiResponse<PromoVideo[]>>(API.adminPromoVideos);
+  return unwrap(res);
+}
+
+export async function createPromoVideo(payload: UpsertPromoVideoPayload): Promise<PromoVideo> {
+  const res = await apiClient.post<ApiResponse<PromoVideo>>(API.adminPromoVideos, payload);
+  return unwrap(res);
+}
+
+export async function updatePromoVideo(id: string, payload: UpsertPromoVideoPayload): Promise<PromoVideo> {
+  const res = await apiClient.put<ApiResponse<PromoVideo>>(API.adminPromoVideo(id), payload);
+  return unwrap(res);
+}
+
+export async function deletePromoVideo(id: string): Promise<void> {
+  await apiClient.delete(API.adminPromoVideo(id));
 }
