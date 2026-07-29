@@ -10,7 +10,9 @@ import {
   productAssignableCategories,
 } from "@/constants/category-taxonomy";
 import { ROUTES } from "@/constants/routes";
+import { extractApiErrorMessage } from "@/lib/api/error-message";
 import { createProduct, fetchAdminCategories } from "@/lib/api/services/admin.service";
+import { generateProductSku } from "@/lib/generate-product-sku";
 import type { AdminCategory } from "@/types/admin";
 
 const inputClass = "admin-input";
@@ -44,14 +46,19 @@ export function QuickProductForm() {
       setError("Select a product type (e.g. Sarees, Kurtas).");
       return;
     }
+    const parsedPrice = Number(price);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0.01) {
+      setError("Enter a valid price (minimum ₹0.01).");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
       const created = await createProduct({
-        sku: "",
-        name,
+        sku: generateProductSku(name, primaryCategoryId, categories),
+        name: name.trim(),
         description: description || undefined,
-        price: Number(price),
+        price: parsedPrice,
         currency: "INR",
         status: "DRAFT",
         primaryCategoryId,
@@ -62,9 +69,10 @@ export function QuickProductForm() {
       });
       toast("Product created — add photos and video next");
       router.push(ROUTES.admin.productEdit(created.id));
-    } catch {
-      setError("Failed to create product. Check the price and try again.");
-      toast("Failed to create product", "error");
+    } catch (err) {
+      const message = extractApiErrorMessage(err, "Failed to create product.");
+      setError(message);
+      toast(message, "error");
     } finally {
       setSaving(false);
     }

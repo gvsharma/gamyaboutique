@@ -14,6 +14,7 @@ import {
   productAssignableCategories,
 } from "@/constants/category-taxonomy";
 import { ROUTES } from "@/constants/routes";
+import { extractApiErrorMessage } from "@/lib/api/error-message";
 import {
   createProduct,
   fetchAdminCategories,
@@ -21,6 +22,7 @@ import {
   fetchPrints,
   updateProduct,
 } from "@/lib/api/services/admin.service";
+import { generateProductSku } from "@/lib/generate-product-sku";
 import type {
   AdminCategory,
   ProductDetail,
@@ -199,25 +201,35 @@ export function ProductForm({ product }: ProductFormProps) {
     [categories],
   );
 
-  const buildPayload = useCallback((): UpsertProductPayload => ({
-    sku: sku.trim(),
-    name,
-    description: description || undefined,
-    price: Number(price),
-    compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
-    currency: "INR",
-    status,
-    primaryCategoryId: primaryCategoryId || null,
-    fabricId: fabricId || null,
-    printId: printId || null,
-    categoryIds: primaryCategoryId ? [primaryCategoryId] : [],
-    images,
-    videoUrl: videoUrl || null,
-    stockQuantity: stockQuantity ? Number(stockQuantity) : null,
-    lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : null,
-    availableSizes: availableSizes.length ? availableSizes : undefined,
-    availableColors: availableColors.length ? availableColors : undefined,
-  }), [
+  const buildPayload = useCallback((): UpsertProductPayload => {
+    const trimmedSku = sku.trim();
+    const resolvedSku =
+      isEdit || trimmedSku
+        ? trimmedSku
+        : generateProductSku(name, primaryCategoryId, categories);
+    const parsedPrice = Number(price);
+
+    return {
+      sku: resolvedSku,
+      name: name.trim(),
+      description: description || undefined,
+      price: parsedPrice,
+      compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
+      currency: "INR",
+      status,
+      primaryCategoryId: primaryCategoryId || null,
+      fabricId: fabricId || null,
+      printId: printId || null,
+      categoryIds: primaryCategoryId ? [primaryCategoryId] : [],
+      images,
+      videoUrl: videoUrl || null,
+      stockQuantity: stockQuantity ? Number(stockQuantity) : null,
+      lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : null,
+      availableSizes: availableSizes.length ? availableSizes : undefined,
+      availableColors: availableColors.length ? availableColors : undefined,
+    };
+  }, [
+    isEdit,
     sku,
     name,
     description,
@@ -233,12 +245,18 @@ export function ProductForm({ product }: ProductFormProps) {
     lowStockThreshold,
     availableSizes,
     availableColors,
+    categories,
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!primaryCategoryId) {
       setError("Select a product type under Women or Girls (e.g. Sarees, Kurtas).");
+      return;
+    }
+    const parsedPrice = Number(price);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0.01) {
+      setError("Enter a valid price (minimum ₹0.01).");
       return;
     }
     setSaving(true);
@@ -254,9 +272,10 @@ export function ProductForm({ product }: ProductFormProps) {
         toast("Product created");
       }
       router.push(ROUTES.admin.products);
-    } catch {
-      setError("Failed to save product. Check SKU uniqueness and required fields.");
-      toast("Failed to save product", "error");
+    } catch (err) {
+      const message = extractApiErrorMessage(err, "Failed to save product.");
+      setError(message);
+      toast(message, "error");
     } finally {
       setSaving(false);
     }
