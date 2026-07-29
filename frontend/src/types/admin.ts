@@ -48,7 +48,7 @@ export interface ProductImageInput {
 }
 
 export interface UpsertProductPayload {
-  sku: string;
+  sku?: string;
   name: string;
   description?: string;
   price: number;

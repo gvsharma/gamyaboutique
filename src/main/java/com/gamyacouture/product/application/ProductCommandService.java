@@ -51,13 +51,14 @@ public class ProductCommandService {
 
     @CacheEvict(value = ProductCacheNames.CATEGORY_TREE, allEntries = true)
     public ProductDetailDto create(UpsertProductRequest request) {
-        if (productRepository.existsBySku(request.sku())) {
-            throw new BusinessException(ErrorCode.CONFLICT, "SKU already exists: " + request.sku());
+        String sku = resolveSkuForCreate(request);
+        if (productRepository.existsBySku(sku)) {
+            throw new BusinessException(ErrorCode.CONFLICT, "SKU already exists: " + sku);
         }
 
         Product product = new Product();
         product.setId(UUID.randomUUID());
-        applyRequest(product, request);
+        applyRequest(product, withSku(request, sku));
         productRepository.save(product);
         syncCategoryLinks(product, request);
         return adminProductQueryService.findById(product.getId());
@@ -67,6 +68,10 @@ public class ProductCommandService {
     public ProductDetailDto update(UUID id, UpsertProductRequest request) {
         Product product = productRepository.findDetailedById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+
+        if (request.sku() == null || request.sku().isBlank()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "SKU is required when updating a product");
+        }
 
         if (productRepository.existsBySkuAndIdNot(request.sku(), id)) {
             throw new BusinessException(ErrorCode.CONFLICT, "SKU already exists: " + request.sku());
@@ -191,5 +196,39 @@ public class ProductCommandService {
         return printRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.VALIDATION_ERROR,
                         "Print not found or inactive: " + id));
+    }
+
+    private String resolveSkuForCreate(UpsertProductRequest request) {
+        if (request.sku() != null && !request.sku().isBlank()) {
+            return request.sku().trim();
+        }
+        String categorySlug = null;
+        if (request.primaryCategoryId() != null) {
+            categorySlug = categoryRepository.findByIdAndActiveTrue(request.primaryCategoryId())
+                    .map(Category::getSlug)
+                    .orElse(null);
+        }
+        return ProductSkuGenerator.generate(productRepository, request.name(), categorySlug);
+    }
+
+    private static UpsertProductRequest withSku(UpsertProductRequest request, String sku) {
+        return new UpsertProductRequest(
+                sku,
+                request.name(),
+                request.description(),
+                request.price(),
+                request.compareAtPrice(),
+                request.currency(),
+                request.status(),
+                request.primaryCategoryId(),
+                request.fabricId(),
+                request.printId(),
+                request.categoryIds(),
+                request.images(),
+                request.videoUrl(),
+                request.stockQuantity(),
+                request.lowStockThreshold(),
+                request.availableSizes(),
+                request.availableColors());
     }
 }

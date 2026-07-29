@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record UpsertProductRequest(
-        @NotBlank @Size(max = 100) String sku,
+        @Size(max = 100) String sku,
         @NotBlank @Size(max = 300) String name,
         String description,
         @NotNull @DecimalMin("0.01") BigDecimal price,

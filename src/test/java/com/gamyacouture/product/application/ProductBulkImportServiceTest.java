@@ -134,11 +134,32 @@ class ProductBulkImportServiceTest {
                 "file",
                 "products.csv",
                 "text/csv",
-                "sku,name\nGC-1,Test".getBytes());
+                "name,price\nTest,1000".getBytes());
 
         assertThatThrownBy(() -> productBulkImportService.preview(file))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("price");
+                .hasMessageContaining("product_type");
+    }
+
+    @Test
+    void preview_acceptsMinimalColumnsAndGeneratesSku() throws Exception {
+        when(categoryRepository.findByActiveTrueOrderByDisplayOrderAscNameAsc())
+                .thenReturn(List.of(sareesCategory));
+        when(fabricRepository.findByActiveTrueOrderByNameAsc()).thenReturn(List.of());
+        when(printRepository.findByActiveTrueOrderByNameAsc()).thenReturn(List.of());
+        when(productRepository.existsBySku(org.mockito.ArgumentMatchers.anyString())).thenReturn(false);
+
+        String csv = """
+                name,product_type,description,price
+                Royal Saree,sarees,Handwoven silk,28999.00
+                """;
+
+        MockMultipartFile file = new MockMultipartFile("file", "products.csv", "text/csv", csv.getBytes());
+        BulkProductPreviewResponse response = productBulkImportService.preview(file);
+
+        assertThat(response.validRows()).isEqualTo(1);
+        assertThat(response.rows().getFirst().sku()).isNotBlank();
+        assertThat(response.rows().getFirst().product()).isNotNull();
     }
 
     @Test

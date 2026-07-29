@@ -67,10 +67,10 @@ export default function AdminProductsPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href={ROUTES.admin.productImport}>
-            <Button variant="outline">Import CSV</Button>
+            <Button variant="outline">Import CSV / Excel</Button>
           </Link>
           <Link href={ROUTES.admin.productNew}>
-            <Button>Add product</Button>
+            <Button>Quick add product</Button>
           </Link>
         </div>
       </div>

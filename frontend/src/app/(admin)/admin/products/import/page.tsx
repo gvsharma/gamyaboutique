@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { ROUTES } from "@/constants/routes";
 import { importBulkProducts, previewBulkProductImport } from "@/lib/api/services/admin.service";
+import { spreadsheetFileToCsvFile } from "@/lib/spreadsheet-to-csv";
 import { formatPrice } from "@/lib/utils";
 import type { BulkProductPreviewResponse, BulkProductRowPreview } from "@/types/admin";
 
@@ -37,12 +38,13 @@ export default function AdminProductImportPage() {
     setLoadingPreview(true);
 
     try {
-      const result = await previewBulkProductImport(file);
+      const csvFile = await spreadsheetFileToCsvFile(file);
+      const result = await previewBulkProductImport(csvFile);
       setPreview(result);
       setSelectedRows(new Set(result.rows.filter((row) => row.valid).map((row) => row.rowNumber)));
       toast(`Parsed ${result.totalRows} rows (${result.validRows} valid)`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to parse CSV";
+      const message = err instanceof Error ? err.message : "Failed to parse file";
       setError(message);
       toast(message, "error");
     } finally {
@@ -113,9 +115,12 @@ export default function AdminProductImportPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-eyebrow">Catalog</p>
-          <h1 className="mt-2 font-display text-section-title text-charcoal">Import products from CSV</h1>
+          <h1 className="mt-2 font-display text-section-title text-charcoal">
+            Import products (CSV or Excel)
+          </h1>
           <p className="mt-1 max-w-2xl text-sm text-stone">
-            Upload a CSV file, review each row, then import valid products into the database.
+            Upload a spreadsheet with name, product type, description, and price. SKUs are generated
+            automatically. Add photos and videos later by editing each product.
           </p>
         </div>
         <Link href={ROUTES.admin.products}>
@@ -128,7 +133,7 @@ export default function AdminProductImportPage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,text/csv"
+            accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             className="hidden"
             onChange={handleFileChange}
           />
@@ -137,31 +142,41 @@ export default function AdminProductImportPage() {
             onClick={() => fileInputRef.current?.click()}
             disabled={loadingPreview || importing}
           >
-            {loadingPreview ? "Parsing CSV…" : "Choose CSV file"}
+            {loadingPreview ? "Parsing file…" : "Choose CSV or Excel file"}
           </Button>
+          <a
+            href="/templates/products-import-simple-template.csv"
+            download
+            className="link-subtle text-sm"
+          >
+            Simple template (4 columns)
+          </a>
           <a
             href="/templates/products-import-template.csv"
             download
             className="link-subtle text-sm"
           >
-            Download template
+            Full template
           </a>
           {fileName && <span className="text-sm text-stone">{fileName}</span>}
         </div>
 
         <div className="rounded-xl bg-ivory/80 p-4 text-sm text-stone">
-          <p className="font-medium text-charcoal">Required columns</p>
+          <p className="font-medium text-charcoal">Minimum columns</p>
+          <p className="mt-1 font-mono text-xs">name, product_type, price</p>
+          <p className="mt-1">Optional: <span className="font-mono text-xs">description</span></p>
+          <p className="mt-3 font-medium text-charcoal">Product type values</p>
           <p className="mt-1 font-mono text-xs">
-            sku, name, price, category_slug
+            sarees, kurtas, lehengas, blouses, girls-kurtas, girls-lehengas
           </p>
-          <p className="mt-3 font-medium text-charcoal">Optional columns</p>
+          <p className="mt-3 font-medium text-charcoal">Advanced optional columns</p>
           <p className="mt-1 font-mono text-xs">
-            description, compare_at_price, currency, status, fabric_slug, print_slug,
-            stock_quantity, low_stock_threshold, sizes, colors, image_urls, video_url
+            sku, category_slug, compare_at_price, status, fabric_slug, print_slug, sizes, colors,
+            image_urls, video_url
           </p>
           <p className="mt-3">
-            Use leaf category slugs such as <code>sarees</code>, <code>kurtas</code>,{" "}
-            <code>lehengas</code>. Separate multiple sizes/colors/images with <code>|</code>.
+            Excel (.xlsx) is converted automatically. After import, open each product to upload
+            images and video.
           </p>
         </div>
       </div>
