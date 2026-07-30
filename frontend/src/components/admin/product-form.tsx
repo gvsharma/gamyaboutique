@@ -15,6 +15,7 @@ import {
   productAssignableCategories,
 } from "@/constants/category-taxonomy";
 import { ROUTES } from "@/constants/routes";
+import { getApiErrorMessage } from "@/lib/api/errors";
 import {
   createProduct,
   fetchAdminCategories,
@@ -229,7 +230,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const isPlaceholderPrice = !price.trim() || resolvedPrice <= 1;
 
   const buildPayload = useCallback((): UpsertProductPayload => ({
-    sku: isEdit ? sku.trim() : sku.trim(),
+    sku: sku.trim() || product?.sku || undefined,
     name: name.trim(),
     description: description.trim() || undefined,
     price: resolvedPrice,
@@ -266,7 +267,7 @@ export function ProductForm({ product }: ProductFormProps) {
     availableColors,
     tagIds,
     collectionIds,
-    isEdit,
+    product?.sku,
   ]);
 
   const toggleId = (ids: string[], id: string): string[] =>
@@ -314,9 +315,13 @@ export function ProductForm({ product }: ProductFormProps) {
         );
       }
       router.push(ROUTES.admin.products);
-    } catch {
-      setError("Failed to save product. Check SKU uniqueness and required fields.");
-      toast("Failed to save product", "error");
+    } catch (err) {
+      const message = getApiErrorMessage(
+        err,
+        "Failed to save product. Check SKU uniqueness and required fields.",
+      );
+      setError(message);
+      toast(message, "error");
     } finally {
       setSaving(false);
     }
@@ -341,9 +346,10 @@ export function ProductForm({ product }: ProductFormProps) {
         toast("Draft saved — add photos and details anytime");
         router.push(ROUTES.admin.products);
       }
-    } catch {
-      setError("Failed to save draft.");
-      toast("Failed to save draft", "error");
+    } catch (err) {
+      const message = getApiErrorMessage(err, "Failed to save draft.");
+      setError(message);
+      toast(message, "error");
     } finally {
       setSaving(false);
     }
