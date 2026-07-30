@@ -22,9 +22,24 @@ public final class MediaUrlValidator {
         if (url == null || url.isBlank()) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Media URL is required");
         }
+        String trimmed = url.trim();
+        if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
+            validateSiteRelativePath(trimmed);
+            return;
+        }
+        validateHttpsUrl(trimmed);
+    }
+
+    private static void validateSiteRelativePath(String path) {
+        if (path.contains("://") || path.contains("..")) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Invalid media URL");
+        }
+    }
+
+    private static void validateHttpsUrl(String url) {
         URI uri;
         try {
-            uri = new URI(url.trim());
+            uri = new URI(url);
         } catch (URISyntaxException ex) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Invalid media URL");
         }
