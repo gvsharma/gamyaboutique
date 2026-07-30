@@ -22,6 +22,7 @@ public record ProductDetailDto(
         PrintDto print,
         OfferSummaryDto offer,
         List<TagDto> tags,
+        List<CollectionSummaryDto> collections,
         List<CategorySummaryDto> categories,
         List<ProductImageDto> images,
         String videoUrl,

@@ -14,7 +14,13 @@ public record CrmLeadDto(
         LeadSource source,
         LeadStatus status,
         String notes,
+        String occasion,
+        String budgetBand,
+        String timeline,
+        String serviceType,
+        String stylistNotes,
         UUID productId,
+        String productName,
         UUID customerId,
         Instant createdAt,
         Instant updatedAt

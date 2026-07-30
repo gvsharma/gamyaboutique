@@ -39,7 +39,8 @@ public class SecurityConfig {
             "/api/v1/categories/**",
             "/api/v1/cart/**",
             "/api/v1/policies/**",
-            "/api/v1/promo-videos/**"
+            "/api/v1/promo-videos/**",
+            "/api/v1/site/**"
     };
 
     private static final String[] PUBLIC_MUTATING = {
@@ -48,6 +49,7 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_POST = {
             "/api/v1/auth/**",
+            "/api/v1/consultations",
             "/api/v1/interests",
             "/api/v1/products/*/interest"
     };

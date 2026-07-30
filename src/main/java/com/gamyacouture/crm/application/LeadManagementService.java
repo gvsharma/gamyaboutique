@@ -46,6 +46,23 @@ public class LeadManagementService {
         CrmLead lead = leadMapper.toEntity(request);
         lead.setPhone(blankToNull(request.phone()));
         lead.setNotes(blankToNull(request.notes()));
+        lead.setOccasion(blankToNull(request.occasion()));
+        lead.setBudgetBand(blankToNull(request.budgetBand()));
+        lead.setTimeline(blankToNull(request.timeline()));
+        lead.setServiceType(blankToNull(request.serviceType()));
+        if (request.productId() != null) {
+            lead.setProduct(productRepository.getReferenceById(request.productId()));
+        }
+        if (request.customerId() != null) {
+            lead.setCustomer(customerRepository.getReferenceById(request.customerId()));
+        }
+        return leadMapper.toDto(leadRepository.save(lead));
+    }
+
+    @Transactional
+    public CrmLeadDto updateStylistNotes(UUID id, String stylistNotes) {
+        CrmLead lead = findLead(id);
+        lead.setStylistNotes(blankToNull(stylistNotes));
         return leadMapper.toDto(leadRepository.save(lead));
     }
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Upload, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useState } from "react";
+import { FileDropZone } from "@/components/admin/file-drop-zone";
 import { CatalogImage } from "@/components/ui/catalog-image";
 import { uploadProductImage } from "@/lib/api/services/admin.service";
 import {
@@ -21,15 +22,13 @@ function reorderImages(images: ProductImageInput[]): ProductImageInput[] {
 }
 
 export function ImageUploader({ images, onChange, productName }: ImageUploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFiles = async (files: FileList | null) => {
-    if (!files?.length) return;
+  const handleFiles = async (files: FileList) => {
+    if (!files.length) return;
     const fileList = Array.from(files);
     setUploading(true);
     setError(null);
@@ -56,20 +55,18 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
         }
       });
 
-      setUploadProgress(`Uploading ${fileList.length} of ${fileList.length}…`);
-
       if (uploaded.length) {
         onChange(reorderImages([...images, ...uploaded]));
       }
       if (failures.length) {
         setError(
           failures.length === fileList.length
-            ? "All uploads failed. Check S3 config on the backend."
+            ? "Upload failed. Check S3 configuration."
             : `${failures.length} file(s) failed: ${failures.join(", ")}`,
         );
       }
     } catch {
-      setError("Image upload failed. Check S3 config on the backend.");
+      setError("Image upload failed. Check S3 configuration.");
     } finally {
       setUploading(false);
       setUploadProgress(null);
@@ -96,25 +93,17 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
     onChange(reorderImages(updated));
   };
 
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(true);
-  };
-
-  const onDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-  };
-
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    if (uploading) return;
-    void handleFiles(e.dataTransfer.files);
-  };
-
   return (
-    <div className="space-y-3">
+    <FileDropZone
+      accept="image/jpeg,image/png,image/webp,image/gif"
+      multiple
+      disabled={uploading}
+      uploading={uploading}
+      uploadLabel={uploadProgress ?? "Uploading…"}
+      idleLabel="Drop images from your Mac, or click to browse"
+      hint="JPEG, PNG, WebP, GIF · optional · add anytime"
+      onFiles={(files) => void handleFiles(files)}
+    >
       {images.length > 0 && (
         <div className="flex flex-wrap gap-3">
           {images.map((image, index) => (
@@ -129,11 +118,11 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
                 if (dragIndex !== null) reorderByDrag(dragIndex, index);
                 setDragIndex(null);
               }}
-              className="relative h-32 w-32 cursor-grab overflow-hidden rounded-xl border border-charcoal/10 bg-pearl active:cursor-grabbing"
+              className="relative h-28 w-28 cursor-grab overflow-hidden rounded-xl border border-charcoal/10 bg-pearl active:cursor-grabbing sm:h-32 sm:w-32"
             >
               {index === 0 && (
                 <span className="absolute left-1.5 top-1.5 z-10 rounded bg-maroon/90 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cream">
-                  Primary
+                  Cover
                 </span>
               )}
               <CatalogImage
@@ -177,43 +166,10 @@ export function ImageUploader({ images, onChange, productName }: ImageUploaderPr
           ))}
         </div>
       )}
-
-      <div
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-        }}
-        onClick={() => !uploading && inputRef.current?.click()}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        className={`inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-4 text-sm transition-colors ${
-          dragging
-            ? "border-maroon bg-maroon/5 text-maroon"
-            : "border-charcoal/15 text-maroon hover:border-maroon/30 hover:bg-ivory/60"
-        }`}
-      >
-        <Upload className="h-4 w-4" />
-        {uploading ? (uploadProgress ?? "Uploading to S3…") : "Drop images here or click to upload"}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          multiple
-          className="hidden"
-          disabled={uploading}
-          onChange={(e) => {
-            void handleFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
-      </div>
-
       {error && <p className="text-xs text-maroon">{error}</p>}
-      <p className="text-xs text-stone">
-        Drag thumbnails to reorder. First image is the storefront primary.
-      </p>
-    </div>
+      {images.length > 0 && (
+        <p className="text-xs text-stone">Drag thumbnails to reorder. First image is the shop cover.</p>
+      )}
+    </FileDropZone>
   );
 }

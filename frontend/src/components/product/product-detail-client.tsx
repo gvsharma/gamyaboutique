@@ -13,13 +13,13 @@ import { ShareProduct } from "@/components/product/share-product";
 import { PRODUCT_SIZES, SizeChartModal } from "@/components/product/size-chart-modal";
 import { InterestForm } from "@/components/interest/interest-form";
 import { ROUTES } from "@/constants/routes";
-import { CONTACT } from "@/constants/site";
 import { useWishlistActions } from "@/hooks/use-wishlist";
 import { addToCart } from "@/lib/api/services/cart.service";
 import { recordProductView } from "@/lib/api/services/recently-viewed.service";
 import { queryKeys } from "@/lib/query/query-keys";
 import { formatPrice, cn } from "@/lib/utils";
 import { productPlaceholderImage } from "@/lib/category-images";
+import { productWhatsAppHref, WHATSAPP_BRAND_COLOR } from "@/lib/whatsapp";
 import type { ProductDetail } from "@/types/product";
 
 export function ProductDetailClient({ product }: { product: ProductDetail }) {
@@ -72,6 +72,16 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
     : addCartMutation.isPending
       ? "Adding…"
       : "Add to bag";
+
+  const whatsappHref = productWhatsAppHref({
+    id: product.id,
+    name: product.name,
+    price: product.effectivePrice,
+    currency: product.currency,
+    size: selectedSize,
+    color: selectedColor,
+    productUrl: shareUrl || undefined,
+  });
 
   return (
     <>
@@ -231,18 +241,15 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
                 <ShoppingBag className="h-4 w-4" />
                 {addToCartLabel}
               </Button>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="flex-1 opacity-60 sm:min-w-[10rem]"
-                disabled
-                title="Buy now — coming soon"
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-editorial flex-1 items-center gap-2 border border-charcoal/15 bg-pearl text-charcoal hover:border-maroon/30 sm:min-w-[10rem]"
               >
-                Buy now
-                <span className="text-[10px] font-normal uppercase tracking-wider opacity-80">
-                  Soon
-                </span>
-              </Button>
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp inquire
+              </a>
               <Button
                 variant={inWishlist ? "soft" : "outline"}
                 size="lg"
@@ -297,17 +304,18 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
       />
 
       <a
-        href={`https://wa.me/91${CONTACT.phone}?text=${encodeURIComponent(`Hi, I'm interested in ${product.name}`)}`}
+        href={whatsappHref}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-[5.5rem] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-elevated transition-transform duration-300 hover:scale-105 lg:bottom-8"
+        className="fixed bottom-[5.5rem] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-elevated transition-transform duration-300 hover:scale-105 lg:bottom-8"
+        style={{ backgroundColor: WHATSAPP_BRAND_COLOR }}
         aria-label="WhatsApp inquiry"
       >
         <MessageCircle className="h-5 w-5" />
       </a>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-charcoal/8 bg-pearl/95 backdrop-blur-xl lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
           <div className="min-w-0 shrink">
             <p className="truncate text-xs text-stone">{product.name}</p>
             <p className="font-display text-lg text-maroon">
@@ -315,18 +323,23 @@ export function ProductDetailClient({ product }: { product: ProductDetail }) {
             </p>
           </div>
           <div className="flex flex-1 items-center justify-end gap-2">
-            <QuantitySelector
-              value={quantity}
-              onChange={setQuantity}
-              className="hidden min-[400px]:flex"
-            />
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 min-w-[5rem] items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold uppercase tracking-wide text-white"
+              style={{ backgroundColor: WHATSAPP_BRAND_COLOR }}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Inquire
+            </a>
             <Button
-              className="min-w-[7.5rem] flex-1 sm:flex-none"
+              className="min-w-[5.5rem] flex-1"
               size="lg"
               onClick={handleAddToCart}
               disabled={addCartMutation.isPending || (sizeOptions.length > 0 && !selectedSize)}
             >
-              {added ? "Added" : "Add to bag"}
+              {added ? "Added" : "Bag"}
             </Button>
             <Button
               variant={inWishlist ? "soft" : "outline"}

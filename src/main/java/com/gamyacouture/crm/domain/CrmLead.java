@@ -54,6 +54,21 @@ public class CrmLead extends BaseSoftDeletableEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(length = 120)
+    private String occasion;
+
+    @Column(name = "budget_band", length = 50)
+    private String budgetBand;
+
+    @Column(length = 100)
+    private String timeline;
+
+    @Column(name = "service_type", length = 100)
+    private String serviceType;
+
+    @Column(name = "stylist_notes", columnDefinition = "TEXT")
+    private String stylistNotes;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;

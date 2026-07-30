@@ -5,6 +5,7 @@ import type {
   AdminCartDetail,
   AdminCartSummary,
   AdminCategory,
+  AdminCollection,
   AdminCustomerDetail,
   AdminCustomerSummary,
   AdminFabric,
@@ -25,6 +26,7 @@ import type {
   ProductSummary,
   TaxonomyOption,
   UpsertCategoryPayload,
+  UpsertCollectionPayload,
   UpsertFabricPayload,
   UpsertLeadPayload,
   UpsertOfferPayload,
@@ -36,6 +38,11 @@ import type {
 } from "@/types/admin";
 import type { PolicyKey, SitePolicy, UpdateSitePolicyPayload } from "@/types/site-policy";
 import type { PromoVideo, UpsertPromoVideoPayload } from "@/types/promo-video";
+import type {
+  HomepageSlotDto,
+  HomepageSlotKey,
+  UpsertHomepageSlotPayload,
+} from "@/types/homepage";
 
 function unwrap<T>(response: { data: ApiResponse<T> }): T {
   if (!response.data.success) {
@@ -121,6 +128,10 @@ export async function uploadProductImage(file: File): Promise<MediaUploadRespons
 
 export async function uploadCategoryImage(file: File): Promise<MediaUploadResponse> {
   return uploadMediaImage(file, "categories");
+}
+
+export async function uploadCollectionImage(file: File): Promise<MediaUploadResponse> {
+  return uploadMediaImage(file, "collections");
 }
 
 export async function uploadProductVideo(file: File): Promise<MediaUploadResponse> {
@@ -274,6 +285,16 @@ export async function updateCrmLeadStatus(
   return unwrap(res);
 }
 
+export async function updateCrmLeadStylistNotes(
+  id: string,
+  stylistNotes: string | null,
+): Promise<CrmLead> {
+  const res = await apiClient.patch<ApiResponse<CrmLead>>(API.crmLeadStylistNotes(id), {
+    stylistNotes,
+  });
+  return unwrap(res);
+}
+
 export async function deleteCrmLead(id: string): Promise<void> {
   await apiClient.delete(API.crmLead(id));
 }
@@ -397,4 +418,42 @@ export async function updatePromoVideo(id: string, payload: UpsertPromoVideoPayl
 
 export async function deletePromoVideo(id: string): Promise<void> {
   await apiClient.delete(API.adminPromoVideo(id));
+}
+
+export async function fetchAdminCollections(): Promise<AdminCollection[]> {
+  const res = await apiClient.get<ApiResponse<AdminCollection[]>>(API.adminCollections);
+  return unwrap(res);
+}
+
+export async function createCollection(payload: UpsertCollectionPayload): Promise<AdminCollection> {
+  const res = await apiClient.post<ApiResponse<AdminCollection>>(API.adminCollections, payload);
+  return unwrap(res);
+}
+
+export async function updateCollection(
+  id: string,
+  payload: UpsertCollectionPayload,
+): Promise<AdminCollection> {
+  const res = await apiClient.put<ApiResponse<AdminCollection>>(API.adminCollection(id), payload);
+  return unwrap(res);
+}
+
+export async function deactivateCollection(id: string): Promise<void> {
+  await apiClient.delete(API.adminCollection(id));
+}
+
+export async function fetchAdminHomepageSlots(): Promise<HomepageSlotDto[]> {
+  const res = await apiClient.get<ApiResponse<HomepageSlotDto[]>>(API.adminHomepageSlots);
+  return unwrap(res);
+}
+
+export async function updateAdminHomepageSlot(
+  key: HomepageSlotKey,
+  payload: UpsertHomepageSlotPayload,
+): Promise<HomepageSlotDto> {
+  const res = await apiClient.put<ApiResponse<HomepageSlotDto>>(
+    API.adminHomepageSlot(key),
+    payload,
+  );
+  return unwrap(res);
 }

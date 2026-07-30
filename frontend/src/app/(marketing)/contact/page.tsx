@@ -1,7 +1,5 @@
-import Link from "next/link";
 import {
   Clock,
-  ExternalLink,
   Instagram,
   Mail,
   MapPin,
@@ -10,9 +8,9 @@ import {
   Youtube,
 } from "lucide-react";
 import { StoreMap } from "@/components/contact/store-map";
+import { ConsultationForm } from "@/components/consultation/consultation-form";
 import { SupportDialogLink } from "@/components/layout/contact-support-dialog";
 import { CONTACT, SITE_NAME, SITE_TAGLINE, whatsappHref } from "@/constants/site";
-import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Contact" };
@@ -173,6 +171,22 @@ export default function ContactPage() {
         </div>
       </section>
 
+      <section className="container-premium section-luxury">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          <ConsultationForm
+            defaultServiceType="appointment"
+            title="Request a consultation"
+            description="Bridal, festive, or custom stitching — tell us your occasion and we'll follow up on WhatsApp."
+          />
+          <div>
+            <p className="text-eyebrow">Visit the atelier</p>
+            <h2 className="mt-3 font-display text-2xl text-charcoal sm:text-3xl">Find us in Hyderabad</h2>
+            <p className="mt-4 text-body">{CONTACT.addressShort}</p>
+            <StoreMap className="mt-8" />
+          </div>
+        </div>
+      </section>
+
       <section className="border-y border-rose/15 bg-pink-soft/50 py-6">
         <div className="container-premium">
           <p className="mx-auto max-w-3xl text-center text-sm leading-relaxed text-charcoal/75">
@@ -188,36 +202,6 @@ export default function ContactPage() {
             .
           </p>
         </div>
-      </section>
-
-      <section className="container-premium py-16 sm:py-20">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-start lg:gap-16">
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-stone">Find us</p>
-            <h2 className="mt-3 font-display text-2xl text-charcoal sm:text-3xl">Visit {SITE_NAME}</h2>
-            <p className="mt-4 text-body">{CONTACT.addressShort}</p>
-            <a
-              href={CONTACT.mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-maroon transition-colors hover:text-maroon-deep"
-            >
-              Open in Google Maps
-              <ExternalLink className="h-4 w-4" strokeWidth={1.5} />
-            </a>
-          </div>
-
-          <StoreMap />
-        </div>
-
-        <p className="mx-auto mt-12 max-w-2xl text-center text-body">
-          For a specific piece, use <strong className="font-medium text-charcoal">Express your interest</strong> on
-          the product page — or{" "}
-          <Link href={ROUTES.customStitching("appointment")} className="text-maroon hover:underline">
-            book a stitching appointment
-          </Link>
-          .
-        </p>
       </section>
     </div>
   );

@@ -1,8 +1,10 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Trash2, Upload } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { FieldLabel } from "@/components/admin/field-label";
+import { FileDropZone } from "@/components/admin/file-drop-zone";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import {
@@ -16,7 +18,6 @@ import {
 import type { PromoVideo, UpsertPromoVideoPayload } from "@/types/promo-video";
 
 const inputClass = "admin-input";
-const labelClass = "text-eyebrow text-stone";
 
 const emptyForm = (): UpsertPromoVideoPayload & { id?: string } => ({
   title: "",
@@ -122,13 +123,15 @@ export default function AdminPromoVideosPage() {
     setError(null);
   };
 
+  const canSave = form.title.trim() && form.videoUrl;
+
   return (
     <div className="space-y-6">
       <div>
         <p className="text-eyebrow">Content</p>
         <h1 className="mt-2 font-display text-section-title text-charcoal">Homepage promo videos</h1>
         <p className="mt-1 text-sm text-stone">
-          Upload short videos promoting Gamya Couture. Active videos appear on the homepage.
+          Add a title, drag a video from your Mac, then save. Poster image is optional.
         </p>
       </div>
 
@@ -138,17 +141,16 @@ export default function AdminPromoVideosPage() {
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className={labelClass}>Title</label>
+            <FieldLabel>Title</FieldLabel>
             <input
               className={inputClass}
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="Bridal collection showcase"
-              required
             />
           </div>
           <div className="sm:col-span-2">
-            <label className={labelClass}>Description (optional)</label>
+            <FieldLabel optional>Description</FieldLabel>
             <textarea
               className={`${inputClass} min-h-20`}
               value={form.description ?? ""}
@@ -157,7 +159,7 @@ export default function AdminPromoVideosPage() {
             />
           </div>
           <div>
-            <label className={labelClass}>Display order</label>
+            <FieldLabel optional>Display order</FieldLabel>
             <input
               className={inputClass}
               type="number"
@@ -180,58 +182,70 @@ export default function AdminPromoVideosPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div>
-            <label className={labelClass}>Video</label>
-            {form.videoUrl && (
-              <video
-                src={form.videoUrl}
-                controls
-                className="mt-2 max-h-48 w-full rounded-xl border border-charcoal/10 bg-charcoal"
-              />
-            )}
-            <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-charcoal/15 px-4 py-3 text-sm text-maroon">
-              <Upload className="h-4 w-4" />
-              {uploadingVideo ? "Uploading…" : form.videoUrl ? "Replace video" : "Upload video"}
-              <input
-                type="file"
+            <FieldLabel>Video</FieldLabel>
+            <div className="mt-2">
+              <FileDropZone
                 accept="video/mp4,video/webm,video/quicktime"
-                className="hidden"
                 disabled={uploadingVideo}
-                onChange={(e) => handleVideoUpload(e.target.files?.[0])}
-              />
-            </label>
-            <p className="mt-1 text-xs text-stone">MP4, WebM, or MOV · max 50 MB</p>
+                uploading={uploadingVideo}
+                uploadLabel="Uploading video…"
+                idleLabel={
+                  form.videoUrl
+                    ? "Drop a new video to replace"
+                    : "Drop video from your Mac, or click to browse"
+                }
+                hint="MP4, WebM, MOV · max 50 MB"
+                onFiles={(files) => void handleVideoUpload(files[0])}
+              >
+                {form.videoUrl && (
+                  <video
+                    src={form.videoUrl}
+                    controls
+                    className="max-h-48 w-full rounded-xl border border-charcoal/10 bg-charcoal"
+                  />
+                )}
+              </FileDropZone>
+            </div>
           </div>
           <div>
-            <label className={labelClass}>Poster image (optional)</label>
-            {form.posterUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.posterUrl}
-                alt="Poster preview"
-                className="mt-2 max-h-48 w-full rounded-xl border border-charcoal/10 object-cover"
-              />
-            )}
-            <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-charcoal/15 px-4 py-3 text-sm text-maroon">
-              <Upload className="h-4 w-4" />
-              {uploadingPoster ? "Uploading…" : form.posterUrl ? "Replace poster" : "Upload poster"}
-              <input
-                type="file"
+            <FieldLabel optional>Poster image</FieldLabel>
+            <div className="mt-2">
+              <FileDropZone
                 accept="image/jpeg,image/png,image/webp"
-                className="hidden"
                 disabled={uploadingPoster}
-                onChange={(e) => handlePosterUpload(e.target.files?.[0])}
-              />
-            </label>
+                uploading={uploadingPoster}
+                uploadLabel="Uploading poster…"
+                idleLabel={
+                  form.posterUrl
+                    ? "Drop a new poster to replace"
+                    : "Drop poster from your Mac, or click to browse"
+                }
+                hint="JPEG, PNG, WebP · optional"
+                onFiles={(files) => void handlePosterUpload(files[0])}
+              >
+                {form.posterUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={form.posterUrl}
+                    alt="Poster preview"
+                    className="max-h-48 w-full rounded-xl border border-charcoal/10 object-cover"
+                  />
+                )}
+              </FileDropZone>
+            </div>
           </div>
         </div>
 
         {error && <p className="text-sm text-maroon">{error}</p>}
+        {!canSave && form.title.trim() && !form.videoUrl && (
+          <p className="text-sm text-stone">Upload a video to save this promo.</p>
+        )}
 
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !form.title.trim() || !form.videoUrl}
+            disabled={saveMutation.isPending || !canSave}
           >
             {saveMutation.isPending ? "Saving…" : form.id ? "Update video" : "Add video"}
           </Button>

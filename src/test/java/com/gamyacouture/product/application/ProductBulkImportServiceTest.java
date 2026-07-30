@@ -181,6 +181,8 @@ class ProductBulkImportServiceTest {
                 null,
                 5,
                 null,
+                null,
+                null,
                 null);
 
         when(productCommandService.create(any())).thenReturn(
@@ -199,6 +201,7 @@ class ProductBulkImportServiceTest {
                         null,
                         null,
                         null,
+                        List.of(),
                         List.of(),
                         List.of(),
                         List.of(),
@@ -235,6 +238,8 @@ class ProductBulkImportServiceTest {
                 null,
                 5,
                 null,
+                null,
+                null,
                 null);
         UpsertProductRequest second = new UpsertProductRequest(
                 "GC-FAIL",
@@ -252,6 +257,8 @@ class ProductBulkImportServiceTest {
                 null,
                 null,
                 5,
+                null,
+                null,
                 null,
                 null);
 
@@ -271,6 +278,7 @@ class ProductBulkImportServiceTest {
                         null,
                         null,
                         null,
+                        List.of(),
                         List.of(),
                         List.of(),
                         List.of(),
