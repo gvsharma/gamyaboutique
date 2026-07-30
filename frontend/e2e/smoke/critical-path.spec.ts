@@ -11,7 +11,12 @@ test.describe("Smoke — critical storefront path", () => {
   test("home and shop navigation load", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("link", { name: "Gamya Couture", exact: true })).toBeVisible();
-    await page.getByRole("link", { name: /shop/i }).first().click();
+
+    // Desktop nav dropdown (Collections → Full shop) is visible at 2xl+
+    await page.setViewportSize({ width: 1536, height: 900 });
+    const nav = page.getByRole("navigation", { name: "Main navigation" });
+    await nav.getByRole("link", { name: "Collections", exact: true }).hover();
+    await nav.getByRole("link", { name: "Full shop", exact: true }).click();
     await expect(page).toHaveURL(/\/shop/);
   });
 

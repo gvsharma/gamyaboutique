@@ -13,6 +13,10 @@ public record CreateLeadRequest(
         @Size(max = 30) String phone,
         LeadSource source,
         String notes,
+        @Size(max = 120) String occasion,
+        @Size(max = 50) String budgetBand,
+        @Size(max = 100) String timeline,
+        @Size(max = 100) String serviceType,
         UUID productId,
         UUID customerId
 ) {

@@ -3,6 +3,7 @@ package com.gamyacouture.crm.api.web;
 import com.gamyacouture.crm.api.dto.CreateLeadRequest;
 import com.gamyacouture.crm.api.dto.CrmLeadDto;
 import com.gamyacouture.crm.api.dto.UpdateLeadStatusRequest;
+import com.gamyacouture.crm.api.dto.UpdateStylistNotesRequest;
 import com.gamyacouture.crm.application.LeadManagementService;
 import com.gamyacouture.shared.web.ApiResponse;
 import com.gamyacouture.shared.web.PageResponse;
@@ -65,6 +66,15 @@ public class CrmLeadController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateLeadStatusRequest request) {
         return ApiResponse.ok(leadManagementService.updateStatus(id, request));
+    }
+
+    @PatchMapping("/{id}/stylist-notes")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @Operation(summary = "Update internal stylist notes on a lead")
+    public ApiResponse<CrmLeadDto> updateStylistNotes(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateStylistNotesRequest request) {
+        return ApiResponse.ok(leadManagementService.updateStylistNotes(id, request.stylistNotes()));
     }
 
     @DeleteMapping("/{id}")

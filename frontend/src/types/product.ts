@@ -22,6 +22,13 @@ export interface TagDto {
   slug: string;
 }
 
+export interface CollectionSummaryDto {
+  id: string;
+  name: string;
+  slug: string;
+  collectionType: "EVENT" | "TREND" | "SEASON" | "FEATURED";
+}
+
 export interface CategorySummaryDto {
   id: string;
   name: string;
@@ -66,6 +73,7 @@ export interface ProductDetail extends ProductSummary {
   status: ProductStatus;
   primaryCategoryId: string | null;
   categories: CategorySummaryDto[];
+  collections: CollectionSummaryDto[];
   images: ProductImageDto[];
   videoUrl?: string | null;
   stockQuantity?: number | null;

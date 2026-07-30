@@ -15,7 +15,7 @@ public record UpsertProductRequest(
         @Size(max = 100) String sku,
         @NotBlank @Size(max = 300) String name,
         String description,
-        @NotNull @DecimalMin("0.01") BigDecimal price,
+        BigDecimal price,
         @DecimalMin("0.01") BigDecimal compareAtPrice,
         @Size(max = 3) String currency,
         ProductStatus status,
@@ -28,6 +28,8 @@ public record UpsertProductRequest(
         Integer stockQuantity,
         Integer lowStockThreshold,
         List<@Size(max = 10) String> availableSizes,
-        @Valid List<ProductColorDto> availableColors
+        @Valid List<ProductColorDto> availableColors,
+        List<UUID> tagIds,
+        List<UUID> collectionIds
 ) {
 }

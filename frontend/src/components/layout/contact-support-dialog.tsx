@@ -108,10 +108,9 @@ export function SupportDialogProvider({ children }: { children: React.ReactNode 
   const closeDialog = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
+    // Luxury UX: do not auto-popup support dialog on first visit.
     if (typeof window === "undefined") return;
-    if (sessionStorage.getItem(SESSION_KEY)) return;
     sessionStorage.setItem(SESSION_KEY, "1");
-    setOpen(true);
   }, []);
 
   return (

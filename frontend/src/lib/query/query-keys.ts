@@ -5,6 +5,8 @@ export const queryKeys = {
   categoryTree: ["categoryTree"] as const,
   categoryProducts: (slug: string, page?: number) =>
     ["categoryProducts", slug, page] as const,
+  collectionProducts: (slug: string, page?: number) =>
+    ["collectionProducts", slug, page] as const,
   me: ["me"] as const,
   cart: ["cart"] as const,
   wishlist: ["wishlist"] as const,

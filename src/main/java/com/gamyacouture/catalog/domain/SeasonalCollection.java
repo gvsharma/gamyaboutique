@@ -3,6 +3,8 @@ package com.gamyacouture.catalog.domain;
 import com.gamyacouture.shared.domain.BaseSoftDeletableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -46,6 +48,18 @@ public class SeasonalCollection extends BaseSoftDeletableEntity {
 
     @Column(name = "ends_at")
     private LocalDate endsAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "collection_type", nullable = false, length = 30)
+    @Builder.Default
+    private CollectionType collectionType = CollectionType.SEASON;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "display_order", nullable = false)
+    @Builder.Default
+    private int displayOrder = 0;
 
     @Column(nullable = false)
     @Builder.Default

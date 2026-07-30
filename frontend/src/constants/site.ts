@@ -23,6 +23,6 @@ export const CONTACT = {
   supportEmail: "gamyacouture9@gmail.com",
 } as const;
 
-export function whatsappHref(message = CONTACT.whatsappMessage) {
+export function whatsappHref(message: string = CONTACT.whatsappMessage) {
   return `https://wa.me/91${CONTACT.phone}?text=${encodeURIComponent(message)}`;
 }

@@ -18,3 +18,15 @@ export interface CategoryTreeNode {
   imageUrl?: string | null;
   children: CategoryTreeNode[];
 }
+
+export interface CollectionDto {
+  id: string;
+  name: string;
+  slug: string;
+  collectionType: "EVENT" | "TREND" | "SEASON" | "FEATURED";
+  description: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  imageUrl: string | null;
+  displayOrder: number;
+}

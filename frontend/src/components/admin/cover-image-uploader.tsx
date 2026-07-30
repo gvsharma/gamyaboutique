@@ -1,7 +1,8 @@
 "use client";
 
-import { ImagePlus, Upload, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { X } from "lucide-react";
+import { useState } from "react";
+import { FileDropZone } from "@/components/admin/file-drop-zone";
 import { CatalogImage } from "@/components/ui/catalog-image";
 import { categoryCoverImage } from "@/lib/category-images";
 import type { MediaUploadResponse } from "@/types/admin";
@@ -21,9 +22,7 @@ export function CoverImageUploader({
   slug,
   alt = "Category cover",
 }: CoverImageUploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const previewSrc = imageUrl?.trim()
@@ -47,32 +46,19 @@ export function CoverImageUploader({
     }
   };
 
-  const handleFiles = async (files: FileList | null) => {
-    await handleFile(files?.[0]);
-  };
-
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(true);
-  };
-
-  const onDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-  };
-
-  const onDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    if (uploading) return;
-    await handleFile(e.dataTransfer.files?.[0]);
-  };
-
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-start gap-4">
-        {previewSrc && (
-          <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-charcoal/10 bg-pearl">
+    <FileDropZone
+      accept="image/jpeg,image/png,image/webp,image/gif"
+      disabled={uploading}
+      uploading={uploading}
+      uploadLabel="Uploading…"
+      idleLabel="Drop cover image from your Mac, or click to browse"
+      hint="JPEG, PNG, WebP, GIF · optional"
+      onFiles={(files) => void handleFile(files[0])}
+    >
+      {previewSrc && (
+        <div className="flex flex-wrap items-start gap-4">
+          <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border border-charcoal/10 bg-pearl sm:h-32 sm:w-32">
             <CatalogImage
               src={previewSrc}
               fallbackSrc={slug ? categoryCoverImage(slug) : "/brand/hero-saree.jpg"}
@@ -93,55 +79,14 @@ export function CoverImageUploader({
               </button>
             )}
           </div>
-        )}
-
-        <div
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-          }}
-          onClick={() => !uploading && inputRef.current?.click()}
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          className={`flex min-h-32 min-w-[12rem] flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-6 text-center text-sm transition-colors ${
-            dragging
-              ? "border-maroon bg-maroon/5 text-maroon"
-              : "border-charcoal/15 text-stone hover:border-maroon/30 hover:bg-ivory/60"
-          }`}
-        >
-          {uploading ? (
-            <>
-              <Upload className="h-5 w-5 animate-pulse" />
-              <span>Uploading to S3…</span>
-            </>
-          ) : (
-            <>
-              <ImagePlus className="h-5 w-5" />
-              <span>{previewSrc && !imageUrl ? "Upload custom cover" : "Drop image or click to upload"}</span>
-              <span className="text-xs text-stone/80">JPEG, PNG, WebP, GIF</span>
-            </>
+          {!imageUrl && slug && (
+            <p className="text-xs text-stone self-center">
+              Showing brand default until you upload a custom cover.
+            </p>
           )}
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            className="hidden"
-            disabled={uploading}
-            onChange={(e) => {
-              void handleFiles(e.target.files);
-              e.target.value = "";
-            }}
-          />
         </div>
-      </div>
-
-      {error && <p className="text-xs text-maroon">{error}</p>}
-      {!imageUrl && slug && (
-        <p className="text-xs text-stone">Using brand default until you upload a custom cover.</p>
       )}
-    </div>
+      {error && <p className="text-xs text-maroon">{error}</p>}
+    </FileDropZone>
   );
-
 }

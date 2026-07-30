@@ -10,9 +10,7 @@ function escapeCsvCell(value: unknown): string {
 }
 
 function rowsToCsv(rows: unknown[][]): string {
-  return rows
-    .map((row) => row.map(escapeCsvCell).join(","))
-    .join("\n");
+  return rows.map((row) => row.map(escapeCsvCell).join(",")).join("\n");
 }
 
 /** Converts the first worksheet of an Excel file into a CSV File for bulk import. */

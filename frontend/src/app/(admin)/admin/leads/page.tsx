@@ -10,11 +10,19 @@ import {
   deleteCrmLead,
   fetchCrmLeads,
   updateCrmLeadStatus,
+  updateCrmLeadStylistNotes,
 } from "@/lib/api/services/admin.service";
 import type { CrmLead, LeadSource, LeadStatus, UpsertLeadPayload } from "@/types/admin";
 
 const STATUSES: LeadStatus[] = ["NEW", "CONTACTED", "QUALIFIED", "LOST", "WON"];
-const SOURCES: LeadSource[] = ["WEBSITE", "CUSTOMER_INTEREST", "REFERRAL", "WALK_IN", "OTHER"];
+const SOURCES: LeadSource[] = [
+  "WEBSITE",
+  "CUSTOMER_INTEREST",
+  "CONSULTATION",
+  "REFERRAL",
+  "WALK_IN",
+  "OTHER",
+];
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString();
@@ -23,6 +31,8 @@ function formatDate(iso: string) {
 export default function AdminLeadsPage() {
   const [page, setPage] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
+  const [stylistNotes, setStylistNotes] = useState("");
   const [form, setForm] = useState<UpsertLeadPayload>({
     name: "",
     email: "",
@@ -37,6 +47,11 @@ export default function AdminLeadsPage() {
     queryKey: ["admin", "leads", page],
     queryFn: () => fetchCrmLeads({ page, size: 20 }),
   });
+
+  const openLead = (lead: CrmLead) => {
+    setSelectedLead(lead);
+    setStylistNotes(lead.stylistNotes ?? "");
+  };
 
   const createMutation = useMutation({
     mutationFn: createCrmLead,
@@ -59,11 +74,23 @@ export default function AdminLeadsPage() {
     onError: () => toast("Failed to update lead", "error"),
   });
 
+  const stylistNotesMutation = useMutation({
+    mutationFn: ({ id, notes }: { id: string; notes: string | null }) =>
+      updateCrmLeadStylistNotes(id, notes),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "leads"] });
+      setSelectedLead(updated);
+      toast("Stylist notes saved");
+    },
+    onError: () => toast("Failed to save notes", "error"),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: deleteCrmLead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "leads"] });
       toast("Lead deleted");
+      setSelectedLead(null);
     },
     onError: () => toast("Failed to delete lead", "error"),
   });
@@ -78,8 +105,8 @@ export default function AdminLeadsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-eyebrow">CRM</p>
-          <h1 className="mt-2 font-display text-section-title text-charcoal">Leads</h1>
-          <p className="mt-1 text-sm text-stone">Manage sales leads and follow-ups</p>
+          <h1 className="mt-2 font-display text-section-title text-charcoal">Leads & consultations</h1>
+          <p className="mt-1 text-sm text-stone">Inquiries, consultations, and stylist follow-ups</p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>Add lead</Button>
       </div>
@@ -92,9 +119,9 @@ export default function AdminLeadsPage() {
           <thead className="border-b border-charcoal/5 text-eyebrow text-stone">
             <tr>
               <th className="px-5 py-3.5">Name</th>
-              <th className="px-5 py-3.5">Email</th>
               <th className="px-5 py-3.5">Phone</th>
               <th className="px-5 py-3.5">Source</th>
+              <th className="px-5 py-3.5">Context</th>
               <th className="px-5 py-3.5">Status</th>
               <th className="px-5 py-3.5">Created</th>
               <th className="px-5 py-3.5">Actions</th>
@@ -104,10 +131,18 @@ export default function AdminLeadsPage() {
             {data?.content.map((lead: CrmLead) => (
               <tr key={lead.id} className="border-b border-charcoal/5 last:border-0">
                 <td className="px-5 py-3.5 text-charcoal">{lead.name}</td>
-                <td className="px-5 py-3.5 text-stone">{lead.email ?? "—"}</td>
                 <td className="px-5 py-3.5 text-stone">{lead.phone ?? "—"}</td>
                 <td className="px-5 py-3.5">
-                  <span className="chip">{lead.source}</span>
+                  <span className="chip">{lead.source.replace(/_/g, " ")}</span>
+                </td>
+                <td className="px-5 py-3.5 text-stone">
+                  {lead.productName ? (
+                    <span className="text-charcoal">{lead.productName}</span>
+                  ) : lead.occasion ? (
+                    lead.occasion
+                  ) : (
+                    "—"
+                  )}
                 </td>
                 <td className="px-5 py-3.5">
                   <select
@@ -118,22 +153,14 @@ export default function AdminLeadsPage() {
                     }
                   >
                     {STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
+                      <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 </td>
                 <td className="px-5 py-3.5 text-stone">{formatDate(lead.createdAt)}</td>
                 <td className="px-5 py-3.5">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      if (confirm("Delete this lead?")) deleteMutation.mutate(lead.id);
-                    }}
-                  >
-                    Delete
+                  <Button size="sm" variant="ghost" onClick={() => openLead(lead)}>
+                    View
                   </Button>
                 </td>
               </tr>
@@ -152,6 +179,72 @@ export default function AdminLeadsPage() {
           </Button>
         </div>
       )}
+
+      <AdminDrawer
+        open={Boolean(selectedLead)}
+        title={selectedLead?.name ?? "Lead"}
+        onClose={() => setSelectedLead(null)}
+      >
+        {selectedLead && (
+          <div className="space-y-5 text-sm">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <p><span className="text-stone">Email:</span> {selectedLead.email ?? "—"}</p>
+              <p><span className="text-stone">Phone:</span> {selectedLead.phone ?? "—"}</p>
+              <p><span className="text-stone">Source:</span> {selectedLead.source}</p>
+              <p><span className="text-stone">Status:</span> {selectedLead.status}</p>
+            </div>
+            {selectedLead.productName && (
+              <p><span className="text-stone">Product:</span> {selectedLead.productName}</p>
+            )}
+            {(selectedLead.occasion || selectedLead.budgetBand || selectedLead.timeline) && (
+              <div className="rounded-xl bg-ivory/60 p-4 text-stone">
+                {selectedLead.occasion && <p>Occasion: {selectedLead.occasion}</p>}
+                {selectedLead.budgetBand && <p>Budget: {selectedLead.budgetBand}</p>}
+                {selectedLead.timeline && <p>Timeline: {selectedLead.timeline}</p>}
+                {selectedLead.serviceType && <p>Service: {selectedLead.serviceType}</p>}
+              </div>
+            )}
+            {selectedLead.notes && (
+              <div>
+                <p className="text-eyebrow text-stone">Customer message</p>
+                <p className="mt-2 whitespace-pre-wrap text-charcoal">{selectedLead.notes}</p>
+              </div>
+            )}
+            <div>
+              <label className="text-eyebrow text-stone">Stylist notes (internal)</label>
+              <textarea
+                className="admin-input mt-1 min-h-28"
+                value={stylistNotes}
+                onChange={(e) => setStylistNotes(e.target.value)}
+                placeholder="Follow-up plan, measurements discussed, fabric suggestions…"
+              />
+              <Button
+                type="button"
+                size="sm"
+                className="mt-3"
+                disabled={stylistNotesMutation.isPending}
+                onClick={() =>
+                  stylistNotesMutation.mutate({
+                    id: selectedLead.id,
+                    notes: stylistNotes.trim() || null,
+                  })
+                }
+              >
+                {stylistNotesMutation.isPending ? "Saving…" : "Save stylist notes"}
+              </Button>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                if (confirm("Delete this lead?")) deleteMutation.mutate(selectedLead.id);
+              }}
+            >
+              Delete lead
+            </Button>
+          </div>
+        )}
+      </AdminDrawer>
 
       <AdminDrawer open={createOpen} title="New lead" onClose={() => setCreateOpen(false)}>
         <form onSubmit={handleCreate} className="space-y-4">
@@ -190,9 +283,7 @@ export default function AdminLeadsPage() {
               onChange={(e) => setForm({ ...form, source: e.target.value as LeadSource })}
             >
               {SOURCES.map((s) => (
-                <option key={s} value={s}>
-                  {s.replace(/_/g, " ")}
-                </option>
+                <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
               ))}
             </select>
           </div>

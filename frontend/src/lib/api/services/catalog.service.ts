@@ -7,7 +7,7 @@ import {
 } from "@/lib/catalog-filters";
 import { fetchProducts } from "@/lib/api/services/product.service";
 import type { ApiResponse, PageResponse } from "@/types/api";
-import type { CategoryDto, CategoryTreeNode } from "@/types/catalog";
+import type { CategoryDto, CategoryTreeNode, CollectionDto } from "@/types/catalog";
 import type { ProductSummary } from "@/types/product";
 
 export async function fetchCategoryTree(): Promise<CategoryTreeNode[]> {
@@ -27,6 +27,28 @@ export async function fetchCategoryProducts(
 ): Promise<PageResponse<ProductSummary>> {
   const { data } = await apiClient.get<ApiResponse<PageResponse<ProductSummary>>>(
     API.categoryProducts(slug),
+    { params: { page, size } },
+  );
+  return data.data;
+}
+
+export async function fetchCollections(): Promise<CollectionDto[]> {
+  const { data } = await apiClient.get<ApiResponse<CollectionDto[]>>(API.collections);
+  return data.data;
+}
+
+export async function fetchCollection(slug: string): Promise<CollectionDto> {
+  const { data } = await apiClient.get<ApiResponse<CollectionDto>>(API.collection(slug));
+  return data.data;
+}
+
+export async function fetchCollectionProducts(
+  slug: string,
+  page = 0,
+  size = 12,
+): Promise<PageResponse<ProductSummary>> {
+  const { data } = await apiClient.get<ApiResponse<PageResponse<ProductSummary>>>(
+    API.collectionProducts(slug),
     { params: { page, size } },
   );
   return data.data;

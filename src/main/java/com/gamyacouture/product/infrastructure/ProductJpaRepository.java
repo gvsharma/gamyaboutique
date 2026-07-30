@@ -38,7 +38,7 @@ public interface ProductJpaRepository extends JpaRepository<Product, UUID>, JpaS
             @Param("status") ProductStatus status,
             Pageable pageable);
 
-    @EntityGraph(attributePaths = {"images", "fabric", "print", "offer", "tags", "primaryCategory"})
+    @EntityGraph(attributePaths = {"images", "fabric", "print", "offer", "tags", "primaryCategory", "seasonalCollections"})
     Optional<Product> findDetailedById(UUID id);
 
     boolean existsBySku(String sku);
@@ -57,6 +57,21 @@ public interface ProductJpaRepository extends JpaRepository<Product, UUID>, JpaS
     java.util.List<Product> findActiveByCategoryExcluding(
             @Param("categoryId") UUID categoryId,
             @Param("excludeId") UUID excludeId,
+            @Param("status") ProductStatus status,
+            Pageable pageable);
+
+    @EntityGraph(attributePaths = {"images", "fabric", "print", "offer", "tags", "primaryCategory"})
+    @Query("""
+            SELECT p FROM Product p
+            JOIN p.seasonalCollections sc
+            WHERE sc.slug = :slug
+              AND sc.active = true
+              AND sc.deletedAt IS NULL
+              AND p.status = :status
+              AND p.deletedAt IS NULL
+            """)
+    Page<Product> findActiveByCollectionSlug(
+            @Param("slug") String slug,
             @Param("status") ProductStatus status,
             Pageable pageable);
 }

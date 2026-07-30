@@ -15,7 +15,15 @@ export type NavItem = {
 };
 
 export const MAIN_NAV: NavItem[] = [
-  { label: "Home", href: ROUTES.home },
+  {
+    label: "Collections",
+    href: ROUTES.shopCollections,
+    children: [
+      { label: "All collections", href: ROUTES.shopCollections },
+      { label: "New arrivals", href: ROUTES.shopNewArrivals },
+      { label: "Full shop", href: ROUTES.shop },
+    ],
+  },
   {
     label: "Women",
     href: ROUTES.category("women"),
@@ -35,32 +43,26 @@ export const MAIN_NAV: NavItem[] = [
     ],
   },
   {
-    label: "New Arrivals",
-    href: ROUTES.shopNewArrivals,
-    badge: "new",
-  },
-  {
-    label: "Custom Stitching",
+    label: "Custom stitching",
     href: ROUTES.customStitching(),
     highlight: true,
     children: [
-      { label: "Blouse Stitching", href: ROUTES.customStitching("blouse") },
-      { label: "Lehenga Alterations", href: ROUTES.customStitching("lehenga-alterations") },
-      { label: "Bridal Customization", href: ROUTES.customStitching("bridal") },
+      { label: "Blouse stitching", href: ROUTES.customStitching("blouse") },
+      { label: "Lehenga alterations", href: ROUTES.customStitching("lehenga-alterations") },
+      { label: "Bridal customization", href: ROUTES.customStitching("bridal") },
       {
-        label: "Book Appointment",
+        label: "Book appointment",
         href: ROUTES.customStitching("appointment"),
-        description: "Schedule a fitting at our boutique",
+        description: "Private fitting at our boutique",
       },
     ],
   },
   {
-    label: "About Us",
-    href: ROUTES.about,
+    label: "Our story",
+    href: ROUTES.aboutStory,
     children: [
       { label: "About Gamya Couture", href: ROUTES.about },
-      { label: "Our Story", href: ROUTES.aboutStory },
+      { label: "Contact", href: ROUTES.contact },
     ],
   },
-  { label: "Contact", href: ROUTES.contact },
 ];

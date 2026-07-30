@@ -293,7 +293,9 @@ public class ProductBulkImportService {
                     stockQuantity,
                     lowStockThreshold != null ? lowStockThreshold : 5,
                     sizes.isEmpty() ? null : sizes,
-                    colors.isEmpty() ? null : colors);
+                    colors.isEmpty() ? null : colors,
+                    null,
+                    null);
         }
 
         BulkProductRowPreviewDto preview = new BulkProductRowPreviewDto(
