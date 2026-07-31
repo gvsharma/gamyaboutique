@@ -1,11 +1,9 @@
 name: Start EC2
 
-# Daily dev uptime: 06:00–07:00 IST (1 hour). GitHub cron uses UTC.
-# 06:00 IST = 00:30 UTC | 07:00 stop is in stop-ec2.yml at 01:30 UTC
+# Manual only — use workflow_dispatch or deploy (which starts stopped EC2 before release).
+# Automatic daily start cron was removed; stop schedule remains in stop-ec2.yml.
 
 on:
-  schedule:
-    - cron: "30 0 * * *"
   workflow_dispatch:
 
 concurrency:

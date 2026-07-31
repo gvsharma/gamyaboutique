@@ -1,7 +1,7 @@
 name: Stop EC2
 
-# Daily dev uptime: 06:00–07:00 IST (1 hour). GitHub cron uses UTC.
-# 07:00 IST = 01:30 UTC | 06:00 start is in start-ec2.yml at 00:30 UTC
+# Daily dev stop: 07:00 IST. GitHub cron uses UTC (01:30 UTC).
+# EC2 is no longer auto-started on a schedule; start manually or via deploy.
 
 on:
   schedule:
