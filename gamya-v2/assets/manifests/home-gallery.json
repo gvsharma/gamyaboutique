@@ -1,0 +1,10 @@
+{
+  "items": [
+    { "file": "look-01.jpg", "src": "images/placeholder.svg", "title": "Silk saree drape", "alt": "Silk saree collection" },
+    { "file": "look-02.jpg", "src": "images/placeholder.svg", "title": "Bridal lehenga", "alt": "Bridal lehenga ensemble" },
+    { "file": "look-03.jpg", "src": "images/placeholder.svg", "title": "Designer blouse", "alt": "Designer blouse detail" },
+    { "file": "look-04.jpg", "src": "images/placeholder.svg", "title": "Festive ready", "alt": "Festive ethnic wear" },
+    { "file": "look-05.jpg", "src": "images/placeholder.svg", "title": "Party lehenga", "alt": "Party lehenga look" },
+    { "file": "look-06.jpg", "src": "images/placeholder.svg", "title": "Everyday elegance", "alt": "Everyday cotton saree" }
+  ]
+}

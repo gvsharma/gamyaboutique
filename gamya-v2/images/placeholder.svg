@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" fill="none" role="img" aria-label="Image placeholder">
+  <rect width="800" height="1000" fill="#EDE8E0"/>
+  <rect x="120" y="200" width="560" height="600" rx="12" fill="#FAF7F2" stroke="#C9A9A6" stroke-width="2"/>
+  <circle cx="400" cy="420" r="72" fill="#E8D5D0"/>
+  <path d="M180 720 L320 560 L440 680 L560 520 L620 720 Z" fill="#7A3E48" opacity="0.35"/>
+  <text x="400" y="880" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#7A3E48">Gamya Couture</text>
+  <text x="400" y="920" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#6B6560">Content from S3</text>
+</svg>
