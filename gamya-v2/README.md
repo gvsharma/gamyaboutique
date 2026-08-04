@@ -121,9 +121,85 @@ python3 -m http.server 8080
 
 When S3 is unreachable, the site falls back to local manifests in `assets/manifests/` (controlled by `CONFIG.useLocalFallback`). Image files referenced in manifests will 404 until uploaded to S3 — the hero shows a local placeholder SVG when no hero image loads.
 
-## Deployment
+## Deployment — Vercel (recommended for V2)
 
-Upload the **contents** of `gamya-v2/` to your production S3 bucket:
+Use a **separate Vercel project** from the legacy Next.js app (`frontend/`). Do not reuse the existing `gamyaboutique.vercel.app` project unless you intend to replace it.
+
+### One-time setup (Vercel Dashboard)
+
+1. Go to [vercel.com/new](https://vercel.com/new) → Import your GitHub repo.
+2. **Project name:** e.g. `gamya-v2` or `gamya-couture-v2`
+3. **Framework Preset:** Other
+4. **Root Directory:** `gamya-v2` ← important
+5. **Build Command:** leave empty (static site, no build)
+6. **Output Directory:** leave empty
+7. **Production Branch:** `feature/gamya-v2` (while V2 is isolated from `main`)
+8. Deploy
+
+Each push to `feature/gamya-v2` will produce a preview URL. Promote to production when ready.
+
+### CLI deploy (alternative)
+
+```bash
+cd gamya-v2
+npx vercel link          # create/link a new project (not the frontend one)
+npx vercel               # preview deployment
+npx vercel --prod        # production deployment
+```
+
+When linking, choose **Create new project** — do not link to the existing Next.js frontend project.
+
+### Clean URLs on Vercel
+
+With `vercel.json`, these work:
+
+| URL | Page |
+|-----|------|
+| `/` | Home |
+| `/women` | Women |
+| `/girls` | Girls |
+| `/about` | About |
+
+`.html` URLs still work too (`/women.html`).
+
+### S3 CORS (required when site is on Vercel)
+
+The site runs on `*.vercel.app` but fetches manifests/images from S3. Add CORS to your **content bucket** (`gamya-content`):
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedOrigins": [
+      "https://your-v2-project.vercel.app",
+      "https://your-custom-domain.com"
+    ],
+    "ExposeHeaders": []
+  }
+]
+```
+
+Without CORS, the browser blocks manifest fetches and the site falls back to local placeholders.
+
+If the content bucket is private, serve media through CloudFront and set in `js/config.js`:
+
+```javascript
+useCloudFront: true,
+cloudFrontDomain: "dxxxx.cloudfront.net",
+```
+
+### Test after Vercel deploy
+
+1. Open the Vercel preview/production URL.
+2. DevTools → **Network** → confirm `index.html`, `css/*`, `js/*` return 200.
+3. Check manifest requests to S3/CloudFront (should be 200, not CORS errors).
+4. Click through Home → Women → Girls → About.
+5. Test WhatsApp button and About page map.
+
+## Deployment — S3 (alternative)
+
+Upload the **contents** of `gamya-v2/` to a static website S3 bucket:
 
 ```bash
 aws s3 sync gamya-v2/ s3://your-production-bucket/ --delete
