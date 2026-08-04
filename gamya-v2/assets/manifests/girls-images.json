@@ -1,0 +1,10 @@
+{
+  "items": [
+    { "file": "girls-01.jpg", "src": "images/placeholder.svg", "title": "Birthday frocks", "alt": "Girls birthday frock" },
+    { "file": "girls-02.jpg", "src": "images/placeholder.svg", "title": "Lehenga sets", "alt": "Girls lehenga set" },
+    { "file": "girls-03.jpg", "src": "images/placeholder.svg", "title": "Festive looks", "alt": "Girls festive wear" },
+    { "file": "girls-04.jpg", "src": "images/placeholder.svg", "title": "Mother & daughter", "alt": "Matching mother daughter outfits" },
+    { "file": "girls-05.jpg", "src": "images/placeholder.svg", "title": "School festivals", "alt": "Girls school festival outfit" },
+    { "file": "girls-06.jpg", "src": "images/placeholder.svg", "title": "Party frocks", "alt": "Girls party frock" }
+  ]
+}

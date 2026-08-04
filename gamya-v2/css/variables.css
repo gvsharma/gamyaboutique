@@ -1,0 +1,28 @@
+:root {
+  /* Brand palette — aligned with Gamya Couture */
+  --color-cream: #faf7f2;
+  --color-pearl: #fffcf9;
+  --color-linen: #ede8e0;
+  --color-warm: #f5f0e8;
+  --color-charcoal: #1a1a1a;
+  --color-stone: #6b6560;
+  --color-maroon: #7a3e48;
+  --color-maroon-hover: #6a3540;
+  --color-maroon-deep: #5c2e36;
+  --color-gold-muted: #b89b5e;
+  --color-blush: #e8d5d0;
+  --color-rose: #c9a9a6;
+  --color-rose-soft: #f0e4e2;
+  --color-pink-soft: #fff5f7;
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  --container-max: 80rem;
+  --radius: 0.75rem;
+  --shadow-soft: 0 2px 24px rgba(26, 26, 26, 0.04);
+  --shadow-card: 0 4px 32px rgba(26, 26, 26, 0.06);
+  --shadow-elevated: 0 20px 56px rgba(26, 26, 26, 0.1);
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --transition: 400ms var(--ease-premium);
+}

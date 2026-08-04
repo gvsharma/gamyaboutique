@@ -1,0 +1,10 @@
+{
+  "items": [
+    { "file": "women-01.jpg", "src": "images/placeholder.svg", "title": "Silk sarees", "alt": "Women's silk saree collection" },
+    { "file": "women-02.jpg", "src": "images/placeholder.svg", "title": "Bridal lehengas", "alt": "Bridal lehenga collection" },
+    { "file": "women-03.jpg", "src": "images/placeholder.svg", "title": "Designer blouses", "alt": "Designer blouse collection" },
+    { "file": "women-04.jpg", "src": "images/placeholder.svg", "title": "Party wear", "alt": "Party wear lehenga" },
+    { "file": "women-05.jpg", "src": "images/placeholder.svg", "title": "Festive drapes", "alt": "Festive saree drape" },
+    { "file": "women-06.jpg", "src": "images/placeholder.svg", "title": "Custom stitching", "alt": "Custom stitched blouse" }
+  ]
+}
