@@ -305,3 +305,38 @@ Production-grade conceptual documentation for building lending dashboards agains
 | [01-domain/domain-model.mmd](01-domain/domain-model.mmd) | Mermaid entity-relationship diagram |
 
 **Primary source:** [Encompass Developer Connect](https://developer.icemortgagetechnology.com/developer-connect)
+
+---
+
+## Encompass API Reference (Developer Connect)
+
+Official API mapping for the domain model — endpoints, versions, webhooks, and integration patterns.
+
+| Document | Description |
+|----------|-------------|
+| [02-apis/API-INDEX.md](02-apis/API-INDEX.md) | Complete API matrix (domain → endpoint) |
+| [02-apis/loan-api.md](02-apis/loan-api.md) | Loan Management V3/V1 |
+| [02-apis/milestone-api.md](02-apis/milestone-api.md) | Milestones & associates |
+| [02-apis/task-api.md](02-apis/task-api.md) | Workflow tasks |
+| [02-apis/condition-api.md](02-apis/condition-api.md) | Standard conditions |
+| [02-apis/enhanced-condition-api.md](02-apis/enhanced-condition-api.md) | Enhanced conditions |
+| [02-apis/condition-template-api.md](02-apis/condition-template-api.md) | Condition settings |
+| [02-apis/document-api.md](02-apis/document-api.md) | eFolder documents |
+| [02-apis/attachment-api.md](02-apis/attachment-api.md) | Attachments |
+| [02-apis/document-order-api.md](02-apis/document-order-api.md) | Document orders |
+| [02-apis/document-delivery-api.md](02-apis/document-delivery-api.md) | Document delivery |
+| [02-apis/disclosure-api.md](02-apis/disclosure-api.md) | Disclosure tracking |
+| [02-apis/conversation-log-api.md](02-apis/conversation-log-api.md) | Conversation logs |
+| [02-apis/notes-api.md](02-apis/notes-api.md) | Entity-scoped notes |
+| [02-apis/field-change-api.md](02-apis/field-change-api.md) | Field change & EFC |
+| [02-apis/webhook-api.md](02-apis/webhook-api.md) | Webhook subscriptions |
+| [02-apis/users-organizations-api.md](02-apis/users-organizations-api.md) | Users & organizations |
+| [02-apis/scheduler-api.md](02-apis/scheduler-api.md) | Scheduler timers |
+| [02-apis/epc-api.md](02-apis/epc-api.md) | Partner Connect |
+| [02-apis/dda-api.md](02-apis/dda-api.md) | Data & Document Automation |
+| [02-apis/trades-api.md](02-apis/trades-api.md) | Secondary trades |
+| [02-apis/api-version-matrix.md](02-apis/api-version-matrix.md) | Version cross-reference |
+| [02-apis/api-authentication.md](02-apis/api-authentication.md) | OAuth 2.0 |
+| [02-apis/api-error-handling.md](02-apis/api-error-handling.md) | Error handling |
+| [02-apis/api-pagination.md](02-apis/api-pagination.md) | Pagination & filtering |
+| [02-apis/api-production-guidelines.md](02-apis/api-production-guidelines.md) | Production guidelines |
