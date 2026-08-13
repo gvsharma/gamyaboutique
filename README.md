@@ -277,3 +277,31 @@ tail -f /opt/gamya-couture/logs/application.log
 | [docs/AUTH_FLOW.md](docs/AUTH_FLOW.md) | Security & auth |
 | [docs/TESTING.md](docs/TESTING.md) | QA & test strategy |
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
+
+---
+
+## Encompass Domain Knowledge Base
+
+Production-grade conceptual documentation for building lending dashboards against **ICE Mortgage Technology Encompass** (Developer Connect). Domain model only — no API implementation in this phase.
+
+| Document | Description |
+|----------|-------------|
+| [01-domain/README.md](01-domain/README.md) | Knowledge base overview and navigation |
+| [01-domain/loan-domain.md](01-domain/loan-domain.md) | Loan aggregate, V3 schema entity types, views |
+| [01-domain/mortgage-lifecycle.md](01-domain/mortgage-lifecycle.md) | Mortgage lifecycle stages and example loan progression |
+| [01-domain/borrowers-applications.md](01-domain/borrowers-applications.md) | Borrowers, applications, property, financial data |
+| [01-domain/people-roles-associates.md](01-domain/people-roles-associates.md) | Users, personas, roles, loan associates |
+| [01-domain/milestones.md](01-domain/milestones.md) | Milestone logs, SLA metrics, history |
+| [01-domain/tasks.md](01-domain/tasks.md) | Workflow tasks vs milestone tasks |
+| [01-domain/conditions.md](01-domain/conditions.md) | Standard conditions domain |
+| [01-domain/enhanced-conditions.md](01-domain/enhanced-conditions.md) | Enhanced conditions, templates, automation |
+| [01-domain/documents-efolder.md](01-domain/documents-efolder.md) | eFolder, documents, attachments, document orders |
+| [01-domain/disclosures.md](01-domain/disclosures.md) | Disclosure tracking (2015), RESPA-TILA |
+| [01-domain/communications.md](01-domain/communications.md) | Conversation logs, email logs |
+| [01-domain/comments-notes-logs.md](01-domain/comments-notes-logs.md) | Comments vs notes vs logs comparison |
+| [01-domain/events.md](01-domain/events.md) | Webhooks, EFC, integration patterns |
+| [01-domain/domain-relationships.md](01-domain/domain-relationships.md) | Cross-object relationships and diagrams |
+| [01-domain/domain-glossary.md](01-domain/domain-glossary.md) | Term definitions |
+| [01-domain/domain-model.mmd](01-domain/domain-model.mmd) | Mermaid entity-relationship diagram |
+
+**Primary source:** [Encompass Developer Connect](https://developer.icemortgagetechnology.com/developer-connect)
