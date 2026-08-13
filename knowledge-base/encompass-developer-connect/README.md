@@ -15,6 +15,7 @@ It is designed to be **downloaded, shared, and used as onboarding material** for
 | Onboard an engineer | Start with this README, then [01](./01-purpose-and-core-model.md), [02](./02-four-key-definitions.md), and [17](./17-golden-rules.md) |
 | Design an integration | Read [12](./12-events-and-webhooks.md), [13](./13-enhanced-field-change.md), [14](./14-production-architecture.md), [16](./16-normalized-communications-timeline.md) |
 | Confirm API contracts | Always verify against [18](./18-official-documentation.md) and current ICE docs |
+| Research ICE APIs | Use [19](./19-api-research-matrix.md) and fill worksheets in [research/](./research/README.md) — do not guess |
 
 **Source of truth:** Official ICE Mortgage Technology Developer Connect documentation. These files are a domain model and integration seed. They must not replace current ICE docs.
 
@@ -42,6 +43,10 @@ It is designed to be **downloaded, shared, and used as onboarding material** for
 | [16-normalized-communications-timeline.md](./16-normalized-communications-timeline.md) | Aggregating notes, comments, and communications |
 | [17-golden-rules.md](./17-golden-rules.md) | Non-negotiable integration rules |
 | [18-official-documentation.md](./18-official-documentation.md) | ICE Developer Connect areas to keep linked |
+| [19-api-research-matrix.md](./19-api-research-matrix.md) | Living domain × API research matrix |
+| [20-per-resource-research-template.md](./20-per-resource-research-template.md) | Required fields to document for every resource |
+| [21-all-notes-and-comments-research.md](./21-all-notes-and-comments-research.md) | Special research: all notes/comments for one loan |
+| [research/README.md](./research/README.md) | Fill-in worksheets (one file per domain) |
 
 ## Core distinction (memorize this)
 
