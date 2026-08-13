@@ -340,3 +340,20 @@ Official API mapping for the domain model — endpoints, versions, webhooks, and
 | [02-apis/api-error-handling.md](02-apis/api-error-handling.md) | Error handling |
 | [02-apis/api-pagination.md](02-apis/api-pagination.md) | Pagination & filtering |
 | [02-apis/api-production-guidelines.md](02-apis/api-production-guidelines.md) | Production guidelines |
+
+---
+
+## Encompass Loan Communications & Timeline (Phase 3)
+
+Unified activity timeline design — comment source matrix, ingestion architecture, `LoanTimelineEvent` model, search strategy.
+
+| Document | Description |
+|----------|-------------|
+| [03-loan-communications/README.md](03-loan-communications/README.md) | Overview, architecture, 20 critical Q&A |
+| [03-loan-communications/comment-source-matrix.md](03-loan-communications/comment-source-matrix.md) | Information type → API source matrix |
+| [03-loan-communications/comments-vs-notes-vs-conversations.md](03-loan-communications/comments-vs-notes-vs-conversations.md) | Comment vs Note vs Conversation comparison |
+| [03-loan-communications/comments.md](03-loan-communications/comments.md) | Deep dive: all comment types |
+| [03-loan-communications/unified-loan-timeline.md](03-loan-communications/unified-loan-timeline.md) | End-to-end timeline architecture |
+| [03-loan-communications/timeline-data-model.md](03-loan-communications/timeline-data-model.md) | LoanTimelineEvent schema & event taxonomy |
+| [03-loan-communications/timeline-api-strategy.md](03-loan-communications/timeline-api-strategy.md) | Webhook & REST ingestion strategy |
+| [03-loan-communications/search-strategy.md](03-loan-communications/search-strategy.md) | Dashboard search & filter design |

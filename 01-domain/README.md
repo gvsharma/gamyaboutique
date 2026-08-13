@@ -102,6 +102,14 @@ CONDITIONS
 DISCLOSURES
 ```
 
+## API reference (Phase 2)
+
+Official Developer Connect API mapping: [02-apis/API-INDEX.md](../02-apis/API-INDEX.md)
+
+## Communications & timeline (Phase 3)
+
+Unified loan activity timeline — comment sources, ingestion architecture, search: [03-loan-communications/README.md](../03-loan-communications/README.md)
+
 ## Official Developer Connect entry points
 
 - [Loan Management](https://developer.icemortgagetechnology.com/developer-connect/reference/loan-management)
