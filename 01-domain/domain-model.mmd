@@ -1,0 +1,210 @@
+%% Encompass Domain Model — ICE Mortgage Technology Encompass Developer Connect
+%% Conceptual ER diagram for lending dashboard integrations
+
+erDiagram
+    LOAN ||--o{ APPLICATION : contains
+    LOAN ||--o{ MILESTONE_LOG : tracks
+    LOAN ||--o{ CONDITION : requires
+    LOAN ||--o{ EFOLDER_DOCUMENT : stores
+    LOAN ||--o{ CONVERSATION_LOG : records
+    LOAN ||--o{ DISCLOSURE_LOG : complies
+    LOAN ||--o{ WORKFLOW_TASK : associates
+    LOAN ||--o{ SYSTEM_LOG : generates
+    LOAN ||--o{ LOAN_ASSOCIATE : assigns
+
+    APPLICATION ||--|| BORROWER : has
+    APPLICATION ||--o| CO_BORROWER : may_have
+    APPLICATION ||--|| PROPERTY : secures
+    APPLICATION ||--o{ EMPLOYMENT : includes
+    APPLICATION ||--o{ INCOME : includes
+    APPLICATION ||--o{ ASSET : includes
+    APPLICATION ||--o{ LIABILITY : includes
+
+    MILESTONE_LOG ||--o| LOAN_ASSOCIATE : assigned_to
+    MILESTONE_LOG }o--|| MILESTONE_SETTING : configured_by
+
+    CONDITION ||--o{ CONDITION_TRACKING : tracks
+    CONDITION ||--o{ CONDITION_COMMENT : annotates
+    CONDITION }o--o{ EFOLDER_DOCUMENT : assigned_documents
+
+    EFOLDER_DOCUMENT ||--o{ ATTACHMENT : contains
+    EFOLDER_DOCUMENT ||--o{ DOCUMENT_COMMENT : annotates
+
+    WORKFLOW_TASK ||--o{ SUBTASK : decomposes
+    WORKFLOW_TASK ||--o{ TASK_COMMENT : annotates
+    WORKFLOW_TASK }o--o{ CONDITION : associated_via
+
+    DOCUMENT_ORDER ||--o| DISCLOSURE_LOG : creates
+    DOCUMENT_ORDER ||--o{ EFOLDER_DOCUMENT : creates
+    DOCUMENT_ORDER ||--|| DOCUMENT_DELIVERY : sends
+
+    USER ||--o{ LOAN_ASSOCIATE : serves_as
+    ROLE ||--o{ LOAN_ASSOCIATE : defines
+    PERSONA ||--o{ USER : grants_access
+    ORGANIZATION ||--o{ USER : employs
+
+    WEBHOOK_EVENT }o--|| LOAN : notifies
+    FIELD_CHANGE }o--|| LOAN : mutates
+
+    LOAN {
+        guid loanId PK
+        string loanNumber
+        boolean useEnhancedConditionIndicator
+        string loanFolder
+    }
+
+    APPLICATION {
+        guid entityId PK
+        string entityName
+        string legacyId
+    }
+
+    BORROWER {
+        guid id PK
+        string applicantType
+    }
+
+    CO_BORROWER {
+        guid id PK
+        string applicantType
+    }
+
+    PROPERTY {
+        string address
+        number value
+        string purpose
+    }
+
+    MILESTONE_LOG {
+        guid id PK
+        string name
+        datetime startDate
+        int days
+        int duration
+        boolean doneIndicator
+        boolean reviewedIndicator
+        string comments
+    }
+
+    MILESTONE_SETTING {
+        guid entityId PK
+        string name
+        int expectedDays
+    }
+
+    CONDITION {
+        guid id PK
+        string conditionType
+        string title
+        string status
+        string priorTo
+        string category
+        string requestedFrom
+        string recipient
+        int daysToReceive
+        boolean isRemoved
+        string sourceOfCondition
+    }
+
+    CONDITION_TRACKING {
+        string status
+        datetime date
+        boolean isChecked
+    }
+
+    EFOLDER_DOCUMENT {
+        guid documentId PK
+        string title
+        string documentStatus
+    }
+
+    ATTACHMENT {
+        guid attachmentId PK
+        string title
+        string attachmentType
+    }
+
+    WORKFLOW_TASK {
+        guid id PK
+        string name
+        string status
+        int priority
+        datetime due
+        datetime completed
+        string templateId
+    }
+
+    SUBTASK {
+        guid id PK
+        string name
+        boolean required
+        string status
+    }
+
+    CONVERSATION_LOG {
+        guid id PK
+        string comments
+        datetime dateUtc
+        boolean isEmailIndicator
+    }
+
+    DISCLOSURE_LOG {
+        guid id PK
+        string disclosureType
+        datetime trackingDate
+    }
+
+    DOCUMENT_ORDER {
+        guid orderId PK
+        string packageType
+        string difference
+    }
+
+    DOCUMENT_DELIVERY {
+        guid deliveryOrderId PK
+        string status
+    }
+
+    LOAN_ASSOCIATE {
+        string loanAssociateType
+        boolean writeAccess
+    }
+
+    USER {
+        string entityId PK
+        string firstName
+        string lastName
+    }
+
+    ROLE {
+        guid entityId PK
+        string entityName
+    }
+
+    PERSONA {
+        guid entityId PK
+        string entityName
+    }
+
+    ORGANIZATION {
+        guid orgId PK
+        string name
+    }
+
+    WEBHOOK_EVENT {
+        guid eventId PK
+        string eventType
+        datetime eventTime
+        string resourceRef
+    }
+
+    FIELD_CHANGE {
+        string modifiedField
+        string previousValue
+        string newValue
+    }
+
+    SYSTEM_LOG {
+        string logType
+        datetime timestamp
+    }
