@@ -357,3 +357,25 @@ Unified activity timeline design — comment source matrix, ingestion architectu
 | [03-loan-communications/timeline-data-model.md](03-loan-communications/timeline-data-model.md) | LoanTimelineEvent schema & event taxonomy |
 | [03-loan-communications/timeline-api-strategy.md](03-loan-communications/timeline-api-strategy.md) | Webhook & REST ingestion strategy |
 | [03-loan-communications/search-strategy.md](03-loan-communications/search-strategy.md) | Dashboard search & filter design |
+
+---
+
+## Encompass Lending Dashboard Architecture (Phase 5)
+
+Production AWS architecture for the read-optimized operational dashboard — ingestion, data model, security, scale.
+
+| Document | Description |
+|----------|-------------|
+| [05-dashboard-architecture/README.md](05-dashboard-architecture/README.md) | Overview, store roles, stack |
+| [05-dashboard-architecture/system-architecture.md](05-dashboard-architecture/system-architecture.md) | AWS topology & data flows |
+| [05-dashboard-architecture/data-model.md](05-dashboard-architecture/data-model.md) | Aurora entities — Encompass vs derived fields |
+| [05-dashboard-architecture/event-ingestion.md](05-dashboard-architecture/event-ingestion.md) | Webhooks, SQS, event processor |
+| [05-dashboard-architecture/timeline-service.md](05-dashboard-architecture/timeline-service.md) | Timeline normalization |
+| [05-dashboard-architecture/search.md](05-dashboard-architecture/search.md) | OpenSearch indexes |
+| [05-dashboard-architecture/security.md](05-dashboard-architecture/security.md) | PII, RBAC, encryption |
+| [05-dashboard-architecture/scalability.md](05-dashboard-architecture/scalability.md) | 100k+ loans, millions of events |
+| [05-dashboard-architecture/reconciliation.md](05-dashboard-architecture/reconciliation.md) | Idempotency, replay, drift |
+| [05-dashboard-architecture/api-design.md](05-dashboard-architecture/api-design.md) | Spring Boot dashboard REST API |
+| [05-dashboard-architecture/dashboard-ux.md](05-dashboard-architecture/dashboard-ux.md) | Loan page UX wireframe |
+| [05-dashboard-architecture/observability.md](05-dashboard-architecture/observability.md) | Metrics, alerts, tracing |
+| [05-dashboard-architecture/failure-handling.md](05-dashboard-architecture/failure-handling.md) | DLQ, degradation, recovery |
