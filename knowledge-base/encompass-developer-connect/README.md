@@ -16,6 +16,7 @@ It is designed to be **downloaded, shared, and used as onboarding material** for
 | Design an integration | Read [12](./12-events-and-webhooks.md), [13](./13-enhanced-field-change.md), [14](./14-production-architecture.md), [16](./16-normalized-communications-timeline.md) |
 | Confirm API contracts | Always verify against [18](./18-official-documentation.md) and current ICE docs |
 | Research ICE APIs | Use [19](./19-api-research-matrix.md) and fill worksheets in [research/](./research/README.md) — do not guess |
+| Deep onboarding | Read [master-kb/](./master-kb/README.md) — domain model, APIs, events, John Smith case |
 
 **Source of truth:** Official ICE Mortgage Technology Developer Connect documentation. These files are a domain model and integration seed. They must not replace current ICE docs.
 
@@ -47,6 +48,7 @@ It is designed to be **downloaded, shared, and used as onboarding material** for
 | [20-per-resource-research-template.md](./20-per-resource-research-template.md) | Required fields to document for every resource |
 | [21-all-notes-and-comments-research.md](./21-all-notes-and-comments-research.md) | Special research: all notes/comments for one loan |
 | [research/README.md](./research/README.md) | Fill-in worksheets (one file per domain) |
+| [master-kb/README.md](./master-kb/README.md) | Senior-engineer master KB (18 teaching files) |
 
 ## Core distinction (memorize this)
 
