@@ -277,3 +277,83 @@ tail -f /opt/gamya-couture/logs/application.log
 | [docs/AUTH_FLOW.md](docs/AUTH_FLOW.md) | Security & auth |
 | [docs/TESTING.md](docs/TESTING.md) | QA & test strategy |
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
+
+---
+
+## Encompass Domain Knowledge Base
+
+Production-grade conceptual documentation for building lending dashboards against **ICE Mortgage Technology Encompass** (Developer Connect). Domain model only — no API implementation in this phase.
+
+| Document | Description |
+|----------|-------------|
+| [01-domain/README.md](01-domain/README.md) | Knowledge base overview and navigation |
+| [01-domain/loan-domain.md](01-domain/loan-domain.md) | Loan aggregate, V3 schema entity types, views |
+| [01-domain/mortgage-lifecycle.md](01-domain/mortgage-lifecycle.md) | Mortgage lifecycle stages and example loan progression |
+| [01-domain/borrowers-applications.md](01-domain/borrowers-applications.md) | Borrowers, applications, property, financial data |
+| [01-domain/people-roles-associates.md](01-domain/people-roles-associates.md) | Users, personas, roles, loan associates |
+| [01-domain/milestones.md](01-domain/milestones.md) | Milestone logs, SLA metrics, history |
+| [01-domain/tasks.md](01-domain/tasks.md) | Workflow tasks vs milestone tasks |
+| [01-domain/conditions.md](01-domain/conditions.md) | Standard conditions domain |
+| [01-domain/enhanced-conditions.md](01-domain/enhanced-conditions.md) | Enhanced conditions, templates, automation |
+| [01-domain/documents-efolder.md](01-domain/documents-efolder.md) | eFolder, documents, attachments, document orders |
+| [01-domain/disclosures.md](01-domain/disclosures.md) | Disclosure tracking (2015), RESPA-TILA |
+| [01-domain/communications.md](01-domain/communications.md) | Conversation logs, email logs |
+| [01-domain/comments-notes-logs.md](01-domain/comments-notes-logs.md) | Comments vs notes vs logs comparison |
+| [01-domain/events.md](01-domain/events.md) | Webhooks, EFC, integration patterns |
+| [01-domain/domain-relationships.md](01-domain/domain-relationships.md) | Cross-object relationships and diagrams |
+| [01-domain/domain-glossary.md](01-domain/domain-glossary.md) | Term definitions |
+| [01-domain/domain-model.mmd](01-domain/domain-model.mmd) | Mermaid entity-relationship diagram |
+
+**Primary source:** [Encompass Developer Connect](https://developer.icemortgagetechnology.com/developer-connect)
+
+---
+
+## Encompass API Reference (Developer Connect)
+
+Official API mapping for the domain model — endpoints, versions, webhooks, and integration patterns.
+
+| Document | Description |
+|----------|-------------|
+| [02-apis/API-INDEX.md](02-apis/API-INDEX.md) | Complete API matrix (domain → endpoint) |
+| [02-apis/loan-api.md](02-apis/loan-api.md) | Loan Management V3/V1 |
+| [02-apis/milestone-api.md](02-apis/milestone-api.md) | Milestones & associates |
+| [02-apis/task-api.md](02-apis/task-api.md) | Workflow tasks |
+| [02-apis/condition-api.md](02-apis/condition-api.md) | Standard conditions |
+| [02-apis/enhanced-condition-api.md](02-apis/enhanced-condition-api.md) | Enhanced conditions |
+| [02-apis/condition-template-api.md](02-apis/condition-template-api.md) | Condition settings |
+| [02-apis/document-api.md](02-apis/document-api.md) | eFolder documents |
+| [02-apis/attachment-api.md](02-apis/attachment-api.md) | Attachments |
+| [02-apis/document-order-api.md](02-apis/document-order-api.md) | Document orders |
+| [02-apis/document-delivery-api.md](02-apis/document-delivery-api.md) | Document delivery |
+| [02-apis/disclosure-api.md](02-apis/disclosure-api.md) | Disclosure tracking |
+| [02-apis/conversation-log-api.md](02-apis/conversation-log-api.md) | Conversation logs |
+| [02-apis/notes-api.md](02-apis/notes-api.md) | Entity-scoped notes |
+| [02-apis/field-change-api.md](02-apis/field-change-api.md) | Field change & EFC |
+| [02-apis/webhook-api.md](02-apis/webhook-api.md) | Webhook subscriptions |
+| [02-apis/users-organizations-api.md](02-apis/users-organizations-api.md) | Users & organizations |
+| [02-apis/scheduler-api.md](02-apis/scheduler-api.md) | Scheduler timers |
+| [02-apis/epc-api.md](02-apis/epc-api.md) | Partner Connect |
+| [02-apis/dda-api.md](02-apis/dda-api.md) | Data & Document Automation |
+| [02-apis/trades-api.md](02-apis/trades-api.md) | Secondary trades |
+| [02-apis/api-version-matrix.md](02-apis/api-version-matrix.md) | Version cross-reference |
+| [02-apis/api-authentication.md](02-apis/api-authentication.md) | OAuth 2.0 |
+| [02-apis/api-error-handling.md](02-apis/api-error-handling.md) | Error handling |
+| [02-apis/api-pagination.md](02-apis/api-pagination.md) | Pagination & filtering |
+| [02-apis/api-production-guidelines.md](02-apis/api-production-guidelines.md) | Production guidelines |
+
+---
+
+## Encompass Loan Communications & Timeline (Phase 3)
+
+Unified activity timeline design — comment source matrix, ingestion architecture, `LoanTimelineEvent` model, search strategy.
+
+| Document | Description |
+|----------|-------------|
+| [03-loan-communications/README.md](03-loan-communications/README.md) | Overview, architecture, 20 critical Q&A |
+| [03-loan-communications/comment-source-matrix.md](03-loan-communications/comment-source-matrix.md) | Information type → API source matrix |
+| [03-loan-communications/comments-vs-notes-vs-conversations.md](03-loan-communications/comments-vs-notes-vs-conversations.md) | Comment vs Note vs Conversation comparison |
+| [03-loan-communications/comments.md](03-loan-communications/comments.md) | Deep dive: all comment types |
+| [03-loan-communications/unified-loan-timeline.md](03-loan-communications/unified-loan-timeline.md) | End-to-end timeline architecture |
+| [03-loan-communications/timeline-data-model.md](03-loan-communications/timeline-data-model.md) | LoanTimelineEvent schema & event taxonomy |
+| [03-loan-communications/timeline-api-strategy.md](03-loan-communications/timeline-api-strategy.md) | Webhook & REST ingestion strategy |
+| [03-loan-communications/search-strategy.md](03-loan-communications/search-strategy.md) | Dashboard search & filter design |
