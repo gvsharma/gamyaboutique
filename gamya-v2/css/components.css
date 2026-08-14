@@ -219,9 +219,24 @@
 }
 
 .gallery-card__caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   padding: 1rem 1.125rem;
+}
+
+.gallery-card__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-charcoal);
+  line-height: 1.35;
+}
+
+.gallery-card__price {
   font-size: 0.875rem;
-  color: var(--color-stone);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-maroon);
 }
 
 .video-grid {

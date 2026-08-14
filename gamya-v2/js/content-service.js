@@ -51,19 +51,55 @@ const ContentService = {
   },
 
   /**
+   * Parse `product-name_4500.jpg` → { title, price }.
+   * Last underscore + digits before extension = price (INR).
+   * @param {string} filename
+   * @returns {{ title: string, price: string|null }}
+   */
+  parseNamePrice(filename) {
+    if (!filename) return { title: "", price: null };
+
+    const base = filename.replace(/\.[^.]+$/, "");
+    const match = base.match(/^(.+)_(\d+)$/);
+
+    const humanize = (text) =>
+      text
+        .replace(/[-_]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    if (match) {
+      return { title: humanize(match[1]), price: match[2] };
+    }
+
+    return { title: humanize(base), price: null };
+  },
+
+  /**
    * @param {object} data
    * @param {string} folderKey
    * @returns {{ items: Array }}
    */
   _normalize(data, folderKey) {
     const items = (data.items || data.images || data.videos || []).map(
-      (item) => ({
-        ...item,
-        src: item.src || Media.url(folderKey, item.file),
-        poster: item.poster
-          ? Media.url(folderKey, item.poster)
-          : item.posterUrl || "",
-      })
+      (item) => {
+        const parsed = this.parseNamePrice(item.file || "");
+        return {
+          ...item,
+          title: item.title || parsed.title,
+          price: item.price != null && item.price !== "" ? item.price : parsed.price,
+          alt:
+            item.alt ||
+            (parsed.title
+              ? `${parsed.title} — Gamya Couture`
+              : "Gamya Couture"),
+          src: item.src || Media.url(folderKey, item.file),
+          poster: item.poster
+            ? Media.url(folderKey, item.poster)
+            : item.posterUrl || "",
+        };
+      }
     );
     return { items };
   },

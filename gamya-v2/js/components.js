@@ -8,6 +8,13 @@ const Components = {
     return div.innerHTML;
   },
 
+  formatPrice(price) {
+    if (price == null || price === "") return "";
+    const num = Number(String(price).replace(/[^\d]/g, ""));
+    if (Number.isNaN(num)) return String(price);
+    return `\u20B9${num.toLocaleString("en-IN")}`;
+  },
+
   /**
    * @param {HTMLElement} container
    * @param {Array} items
@@ -89,8 +96,11 @@ const Components = {
             <img src="${item.src}" alt="${this.escapeHtml(item.alt || item.title || "")}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='images/placeholder.svg'" />
           </div>
           ${
-            item.title
-              ? `<figcaption class="gallery-card__caption">${this.escapeHtml(item.title)}</figcaption>`
+            item.title || item.price
+              ? `<figcaption class="gallery-card__caption">
+                  ${item.title ? `<span class="gallery-card__title">${this.escapeHtml(item.title)}</span>` : ""}
+                  ${item.price ? `<span class="gallery-card__price">${this.escapeHtml(this.formatPrice(item.price))}</span>` : ""}
+                </figcaption>`
               : ""
           }
         </figure>
