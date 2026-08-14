@@ -16,17 +16,20 @@ trap cleanup EXIT
 cp -a "$SRC_DIR"/. "$WORK_DIR"/
 cd "$WORK_DIR"
 
+BRANCH="${ENCOMPASS_DEV_BRANCH:-encompass-files-1}"
+
 if [[ ! -d .git ]]; then
   git init -b main
   git add .
   git commit -m "Add Encompass Developer Connect knowledge base (18 modules + master doc)"
+  git checkout -b "$BRANCH"
 fi
 
 if ! git remote get-url origin &>/dev/null; then
   git remote add origin "$REPO_URL"
 fi
 
-echo "Pushing to $REPO_URL ..."
-git push -u origin main
+echo "Pushing branch $BRANCH to $REPO_URL ..."
+git push -u origin "$BRANCH"
 
 echo "Done: $REPO_URL"
