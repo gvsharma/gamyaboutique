@@ -252,6 +252,11 @@
   .video-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .video-grid:has(.video-card:only-child) {
+    grid-template-columns: minmax(0, 48rem);
+    justify-content: start;
+  }
 }
 
 .video-card {

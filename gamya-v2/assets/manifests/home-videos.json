@@ -1,1 +1,9 @@
-{ "items": [] }
+{
+  "items": [
+    {
+      "file": "promo-01.mp4",
+      "poster": "promo-01-poster.jpg",
+      "title": "New season preview"
+    }
+  ]
+}
