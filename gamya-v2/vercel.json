@@ -4,7 +4,7 @@
   "trailingSlash": false,
   "headers": [
     {
-      "source": "/js/config.js",
+      "source": "/js/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -13,7 +13,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.(css|js|svg|jpg|jpeg|png|webp|woff2|ico)",
+      "source": "/(.*)\\.(svg|jpg|jpeg|png|webp|woff2|ico)",
       "headers": [
         {
           "key": "Cache-Control",

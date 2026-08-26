@@ -1,10 +1,10 @@
 {
   "items": [
-    { "file": "look-01.jpg", "src": "images/placeholder.svg", "title": "Silk saree drape", "alt": "Silk saree collection" },
-    { "file": "look-02.jpg", "src": "images/placeholder.svg", "title": "Bridal lehenga", "alt": "Bridal lehenga ensemble" },
-    { "file": "look-03.jpg", "src": "images/placeholder.svg", "title": "Designer blouse", "alt": "Designer blouse detail" },
-    { "file": "look-04.jpg", "src": "images/placeholder.svg", "title": "Festive ready", "alt": "Festive ethnic wear" },
-    { "file": "look-05.jpg", "src": "images/placeholder.svg", "title": "Party lehenga", "alt": "Party lehenga look" },
-    { "file": "look-06.jpg", "src": "images/placeholder.svg", "title": "Everyday elegance", "alt": "Everyday cotton saree" }
+    { "file": "look-01.png", "title": "Mustard festive gown", "alt": "Mustard yellow embroidered festive gown" },
+    { "file": "look-02.png", "title": "Teal silk saree", "alt": "Teal silk saree with purple gold paisley border" },
+    { "file": "look-03.png", "title": "Designer blouse", "alt": "Royal blue blouse with scalloped back and potli buttons" },
+    { "file": "look-04.png", "title": "Lotus silk drape", "alt": "Dusty pink lotus silk saree with red gold zari border" },
+    { "file": "look-05.png", "title": "Checked silk saree", "alt": "Pink checked silk saree with mint floral pallu" },
+    { "file": "look-06.png", "title": "Custom blouse set", "alt": "Magenta striped saree with olive zigzag designer blouse" }
   ]
 }
