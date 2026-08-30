@@ -86,6 +86,8 @@ s3://gamya-content/
       "file": "hero.jpg",
       "title": "Optional caption",
       "alt": "Accessibility text",
+      "category": "Designer blouses",
+      "src": "images/women/optional-local-file.jpg",
       "eyebrow": "Optional hero eyebrow",
       "subtitle": "Optional hero subtitle"
     }
@@ -119,7 +121,7 @@ python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-When S3 is unreachable, the site falls back to local manifests in `assets/manifests/` (controlled by `CONFIG.useLocalFallback`). Image files referenced in manifests will 404 until uploaded to S3 — the hero shows a local placeholder SVG when no hero image loads.
+When S3 is unreachable, the site falls back to local manifests in `assets/manifests/` (controlled by `CONFIG.useLocalFallback`). When S3 **is** reachable, local manifests are still merged in: they supply categories, captions, and any photos stored in this folder (for example `images/women/`). Files that only exist in the S3 manifest continue to appear at the end of the gallery.
 
 ## Deployment — Vercel (recommended for V2)
 
@@ -225,6 +227,6 @@ To migrate to REST APIs (V4), replace the internals of `ContentService` to `fetc
 | Page | Content sources |
 |------|-----------------|
 | `index.html` | `homeHero`, `homeGallery`, `homeVideos` |
-| `women.html` | `womenImages`, `womenVideos` |
+| `women.html` | `womenImages`, `womenVideos` (lookbook grouped by category: Designer blouses, Silk sarees, Party wear) |
 | `girls.html` | `girlsImages`, `girlsVideos` |
 | `about.html` | `aboutImages`, `aboutVideos` + static story copy |

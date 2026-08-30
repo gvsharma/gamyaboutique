@@ -1,10 +1,108 @@
 {
   "items": [
-    { "file": "women-01.jpg", "src": "images/placeholder.svg", "title": "Silk sarees", "alt": "Women's silk saree collection" },
-    { "file": "women-02.jpg", "src": "images/placeholder.svg", "title": "Bridal lehengas", "alt": "Bridal lehenga collection" },
-    { "file": "women-03.jpg", "src": "images/placeholder.svg", "title": "Designer blouses", "alt": "Designer blouse collection" },
-    { "file": "women-04.jpg", "src": "images/placeholder.svg", "title": "Party wear", "alt": "Party wear lehenga" },
-    { "file": "women-05.jpg", "src": "images/placeholder.svg", "title": "Festive drapes", "alt": "Festive saree drape" },
-    { "file": "women-06.jpg", "src": "images/placeholder.svg", "title": "Custom stitching", "alt": "Custom stitched blouse" }
+    {
+      "file": "crimson-velvet-cutout-blouse.jpg",
+      "src": "images/women/crimson-velvet-cutout-blouse.jpg",
+      "category": "Designer blouses",
+      "title": "Crimson velvet cutout blouse",
+      "alt": "Bright red velvet saree blouse with a circular back cutout, gold zari borders, and tassel dori"
+    },
+    {
+      "file": "purple-teardrop-cutout-blouse.jpg",
+      "src": "images/women/purple-teardrop-cutout-blouse.jpg",
+      "category": "Designer blouses",
+      "title": "Royal purple teardrop-back blouse",
+      "alt": "Purple silk-blend saree blouse with a teardrop back cutout, metallic buttas, and striped sleeve hems"
+    },
+    {
+      "file": "teal-pleated-back-blouse.jpg",
+      "src": "images/women/teal-pleated-back-blouse.jpg",
+      "category": "Designer blouses",
+      "title": "Teal blouse with yellow pleated back",
+      "alt": "Turquoise jacquard saree blouse with a deep round back and contrasting yellow pleated silk insert"
+    },
+    {
+      "file": "magenta-gold-butta-blouse.jpg",
+      "src": "images/women/magenta-gold-butta-blouse.jpg",
+      "category": "Designer blouses",
+      "group": "magenta-butta-blouse",
+      "title": "Magenta butta blouse",
+      "alt": "Deep pink raw-silk saree blouse with gold butta motifs, U-shaped back neck, and gold piping"
+    },
+    {
+      "file": "magenta-tulip-sleeve-blouse.jpg",
+      "src": "images/women/magenta-tulip-sleeve-blouse.jpg",
+      "category": "Designer blouses",
+      "group": "magenta-butta-blouse",
+      "title": "Magenta blouse — tulip sleeve",
+      "alt": "Sleeve detail of a magenta saree blouse with a gold brocade floral window and tulip overlap"
+    },
+    {
+      "file": "cherry-red-zari-blouse.jpg",
+      "src": "images/women/cherry-red-zari-blouse.jpg",
+      "category": "Designer blouses",
+      "title": "Cherry red zari blouse",
+      "alt": "Red silk blouse with gold buta motifs, keyhole back, sweetheart neck, and wide zari sleeve borders"
+    },
+    {
+      "file": "women-01.png",
+      "category": "Designer blouses",
+      "title": "Terracotta cutout blouse",
+      "alt": "Terracotta scalloped-back designer blouse"
+    },
+    {
+      "file": "women-02.png",
+      "category": "Designer blouses",
+      "title": "Royal blue blouse",
+      "alt": "Royal blue blouse with scalloped panel and potli buttons"
+    },
+    {
+      "file": "women-10.png",
+      "category": "Designer blouses",
+      "title": "Zigzag blouse set",
+      "alt": "Magenta striped saree with olive zigzag designer blouse"
+    },
+    {
+      "file": "women-03.png",
+      "category": "Silk sarees",
+      "title": "Teal paisley saree",
+      "alt": "Teal silk saree with purple gold paisley border"
+    },
+    {
+      "file": "women-04.png",
+      "category": "Silk sarees",
+      "title": "Purple zari saree",
+      "alt": "Deep purple silk saree with gold peacock and elephant motifs"
+    },
+    {
+      "file": "women-05.png",
+      "category": "Silk sarees",
+      "title": "Parrot-border saree",
+      "alt": "Purple silk saree with gold parrot and floral border"
+    },
+    {
+      "file": "women-06.png",
+      "category": "Silk sarees",
+      "title": "Checked silk saree",
+      "alt": "Pink checked silk saree with mint floral pallu"
+    },
+    {
+      "file": "women-07.png",
+      "category": "Silk sarees",
+      "title": "Lotus silk saree",
+      "alt": "Dusty pink lotus silk saree with red gold zari border"
+    },
+    {
+      "file": "women-08.png",
+      "category": "Party wear",
+      "title": "Mustard festive gown",
+      "alt": "Mustard yellow embroidered festive gown"
+    },
+    {
+      "file": "women-09.png",
+      "category": "Party wear",
+      "title": "Embroidered anarkali",
+      "alt": "Mustard yellow floral embroidered anarkali gown"
+    }
   ]
 }
