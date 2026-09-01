@@ -23,6 +23,7 @@ Major changes tracked for onboarding and release notes. Versions follow approxim
 - Reusable `validate.yml` workflow (backend tests, frontend lint/build, Trivy + npm audit)
 - `ci.yml` for PR gates; `deploy.yml` requires validate before EC2 deploy
 - Post-deploy `smoke-test-api.sh` in deploy pipeline
+- Frontend npm overrides for `js-yaml` ^4.3.2 and `nanoid` ^3.3.18 (npm audit HIGH: GHSA-5p4m-2wfm-xmqj, GHSA-2v37-7h3g-55p8)
 
 ### Security fixes
 - Session revocation on password reset and profile password change

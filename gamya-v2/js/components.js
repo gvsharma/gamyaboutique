@@ -66,6 +66,36 @@ const Components = {
     `;
   },
 
+  slugify(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  },
+
+  galleryCard(item) {
+    const category = item.category
+      ? `<p class="gallery-card__category">${this.escapeHtml(item.category)}</p>`
+      : "";
+    const title = item.title
+      ? `<p class="gallery-card__title">${this.escapeHtml(item.title)}</p>`
+      : "";
+    const caption =
+      category || title
+        ? `<figcaption class="gallery-card__caption">${category}${title}</figcaption>`
+        : "";
+
+    return `
+      <figure class="gallery-card animate-fade-up">
+        <div class="gallery-card__media">
+          <img src="${item.src}" alt="${this.escapeHtml(item.alt || item.title || "")}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='images/placeholder.svg'" />
+        </div>
+        ${caption}
+      </figure>
+    `;
+  },
+
   /**
    * @param {HTMLElement} container
    * @param {Array} items
@@ -75,28 +105,103 @@ const Components = {
     const columns = options.columns || 3;
 
     if (!items.length) {
-      container.innerHTML = `<p class="empty-state">Gallery content will appear here once uploaded to S3.</p>`;
+      container.innerHTML = `<p class="empty-state">Gallery content will appear here once uploaded.</p>`;
       container.classList.add("gallery-grid", `gallery-grid--${columns}`);
       return;
     }
 
     container.classList.add("gallery-grid", `gallery-grid--${columns}`);
-    container.innerHTML = items
-      .map(
-        (item) => `
-        <figure class="gallery-card animate-fade-up">
-          <div class="gallery-card__media">
-            <img src="${item.src}" alt="${this.escapeHtml(item.alt || item.title || "")}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='images/placeholder.svg'" />
-          </div>
-          ${
-            item.title
-              ? `<figcaption class="gallery-card__caption">${this.escapeHtml(item.title)}</figcaption>`
-              : ""
+    container.innerHTML = items.map((item) => this.galleryCard(item)).join("");
+  },
+
+  /**
+   * Grouped lookbook with category filter chips (Women page).
+   *
+   * @param {HTMLElement} filterRoot
+   * @param {HTMLElement} galleryRoot
+   * @param {Array} items
+   * @param {{ activeCategory?: string, columns?: number, onFilter?: function, categoryOrder?: string[] }} [options]
+   */
+  renderCategorizedGallery(filterRoot, galleryRoot, items, options = {}) {
+    const columns = options.columns || 3;
+    const categoryOrder = options.categoryOrder || [
+      "Designer blouses",
+      "Silk sarees",
+      "Party wear",
+    ];
+    const grouped = this._groupByCategory(items, categoryOrder);
+    const categories = grouped.map((group) => group.category);
+    const requested = options.activeCategory || "all";
+    const active =
+      requested === "all" || categories.includes(requested) ? requested : "all";
+
+    if (filterRoot) {
+      const chips = [
+        { id: "all", label: "All" },
+        ...categories.map((category) => ({ id: category, label: category })),
+      ];
+      filterRoot.innerHTML = chips
+        .map(
+          (chip) => `
+          <button type="button" class="gallery-filter${chip.id === active ? " is-active" : ""}" data-category="${this.escapeHtml(chip.id)}" aria-pressed="${chip.id === active}">
+            ${this.escapeHtml(chip.label)}
+          </button>
+        `
+        )
+        .join("");
+
+      filterRoot.querySelectorAll("[data-category]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (typeof options.onFilter === "function") {
+            options.onFilter(button.getAttribute("data-category"));
           }
-        </figure>
+        });
+      });
+    }
+
+    const visible =
+      active === "all" ? grouped : grouped.filter((group) => group.category === active);
+
+    if (!items.length) {
+      galleryRoot.innerHTML = `<p class="empty-state">Gallery content will appear here once uploaded.</p>`;
+      return;
+    }
+
+    galleryRoot.innerHTML = visible
+      .map(
+        (group) => `
+        <section class="gallery-group" data-category="${this.escapeHtml(group.category)}">
+          <div class="gallery-group__header">
+            <h3 class="gallery-group__title">${this.escapeHtml(group.category)}</h3>
+          </div>
+          <div class="gallery-grid gallery-grid--${columns}">
+            ${group.items.map((item) => this.galleryCard(item)).join("")}
+          </div>
+        </section>
       `
       )
       .join("");
+  },
+
+  _groupByCategory(items, categoryOrder) {
+    const buckets = new Map();
+    items.forEach((item) => {
+      const category = item.category || "Lookbook";
+      if (!buckets.has(category)) buckets.set(category, []);
+      buckets.get(category).push(item);
+    });
+
+    const ordered = [];
+    categoryOrder.forEach((category) => {
+      if (buckets.has(category)) {
+        ordered.push({ category, items: buckets.get(category) });
+        buckets.delete(category);
+      }
+    });
+    buckets.forEach((groupItems, category) => {
+      ordered.push({ category, items: groupItems });
+    });
+    return ordered;
   },
 
   /**
