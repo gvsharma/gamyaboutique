@@ -50,3 +50,9 @@
 | [CICD-IMPLEMENTATION-PLAN.md](./CICD-IMPLEMENTATION-PLAN.md) | CI/CD design rationale |
 
 **Keep docs in sync:** Update `CHANGELOG.md` and relevant doc when merging features that change APIs, schema, or deploy steps.
+
+### Standalone knowledge bases
+
+| Document | Purpose |
+|----------|---------|
+| [../knowledge-base/encompass-developer-connect/README.md](../knowledge-base/encompass-developer-connect/README.md) | Encompass Developer Connect domain seed (download/share as markdown) |
